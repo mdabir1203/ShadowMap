@@ -57,6 +57,17 @@ cargo clippy -- -D warnings
 2. Enter a domain and press **Run Scan** to execute the built-in recon logic. The output directory will be displayed once the scan completes.
 3. The GUI is built with [`eframe`](https://docs.rs/eframe/latest/eframe/), keeping the codebase purely in Rust for easier maintenance.
 
+### Modern Desktop App (Tauri)
+
+An experimental Tauri interface with glassmorphism styling lives under `tauri-app/`.
+Run it with:
+
+```bash
+cargo tauri dev -p shadowmap-tauri
+```
+
+The HTML/CSS bundle showcases translucent panels and blurred backgrounds for a polished startup-grade look.
+
 🎯 Usage Examples
 Enumerate & Analyze Subdomains
 ```bash
