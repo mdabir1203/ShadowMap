@@ -73,7 +73,7 @@ Export to JSON for Integration
 shadowmap -d target.com --json > report.json
 ```
 
-📂 Output Example
+## 📂 Output Example
 
 ```csv
 subdomain,http_status,server_header,open_ports,cors_issues,fingerprints,takeover_risks
@@ -81,7 +81,7 @@ api.example.com,200,nginx,"80,443","Wildcard CORS allowed","{server: nginx, fram
 cdn.example.com,0,,,"","",Potential AWS S3 takeover
 ```
 
-🤖 Roadmap
+## 🤖 Roadmap
  Passive + Active DNS integrations (SecurityTrails, Shodan, etc.)
 
  Advanced port fingerprinting (Nmap integration)
@@ -92,19 +92,22 @@ cdn.example.com,0,,,"","",Potential AWS S3 takeover
 
  Continuous recon mode
 
-💀 Disclaimer
+## 💀 Disclaimer
 This tool is for educational and authorized security testing only.
 Do not use ShadowMap against systems you don’t own or have explicit permission to test.
 
-🌟 Contributing
+## 🌟 Contributing
 Pull requests are welcome! Please open an issue to discuss improvements, new modules, or bug fixes.
 
-🧭 Philosophy
+## 🧭 Philosophy
 ShadowMap is built on the idea that attackers don’t wait.
 To defend, researchers need tools that are:
 
-Fast ⚡
-Global 🌍
-Reliable 🛡
+- Fast ⚡
+- Global 🌍
+- Reliable 🛡
+- Open-source 🤝
 
-Open-source 🤝
+## Contributions 
+
+![Alt](https://repobeats.axiom.co/api/embed/09cd32b3e91b58e3094e7592a33604c397c96f40.svg "Repobeats analytics image")
