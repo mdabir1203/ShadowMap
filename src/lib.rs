@@ -30,8 +30,7 @@ use reporting::{write_outputs, ReconMaps};
 use std::path::Path;
 use takeover::check_subdomain_takeover;
 
-pub async fn run(args: Args) -> Result<String, Box<dyn std::error::Error>> {
-
+pub async fn run(args: Args) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     let timestamp = Local::now().format("%Y%m%d_%H%M%S").to_string();
     let output_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("recon_results")
@@ -133,4 +132,3 @@ pub async fn run(args: Args) -> Result<String, Box<dyn std::error::Error>> {
     println!("[*] Recon complete. Outputs in: {}", output_dir);
     Ok(output_dir)
 }
-
