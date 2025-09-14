@@ -2,7 +2,7 @@
 
 use eframe::egui::{self, Color32, CornerRadius, Frame, Layout, Stroke, Visuals};
 use shadowmap::{run, Args};
-use std::sync::mpsc::{self, Receiver};
+use std::sync::mpsc::{self, Receiver, TryRecvError};
 use std::thread;
 
 struct App {
@@ -28,11 +28,16 @@ impl eframe::App for App {
         ctx.set_visuals(Visuals::dark());
 
         if let Some(rx) = &self.worker {
-            if let Ok(msg) = rx.try_recv() {
-                self.status = msg;
-                self.worker = None;
-            } else {
-                ctx.request_repaint();
+            match rx.try_recv() {
+                Ok(msg) => {
+                    self.status = msg;
+                    self.worker = None;
+                }
+                Err(TryRecvError::Empty) => ctx.request_repaint(),
+                Err(TryRecvError::Disconnected) => {
+                    self.status = "Scan failed: worker disconnected".to_string();
+                    self.worker = None;
+                }
             }
         }
         let frame = Frame::new()

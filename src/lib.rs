@@ -38,13 +38,13 @@ pub async fn run(args: Args) -> Result<String, Box<dyn std::error::Error + Send 
     std::fs::create_dir_all(&output_dir)?;
     let output_dir = output_dir.to_string_lossy().to_string();
 
-    println!("[*] Starting security-enhanced recon for *.{}", args.domain);
-    println!("[*] Configuration:");
-    println!("    - Domain: {}", args.domain);
-    println!("    - Concurrency: {}", args.concurrency);
-    println!("    - Timeout: {}s", args.timeout);
-    println!("    - Retries: {}", args.retries);
-    println!("    - Output: {}", output_dir);
+    eprintln!("[*] Starting security-enhanced recon for *.{}", args.domain);
+    eprintln!("[*] Configuration:");
+    eprintln!("    - Domain: {}", args.domain);
+    eprintln!("    - Concurrency: {}", args.concurrency);
+    eprintln!("    - Timeout: {}s", args.timeout);
+    eprintln!("    - Retries: {}", args.retries);
+    eprintln!("    - Output: {}", output_dir);
 
     let client = Client::builder()
         .timeout(Duration::from_secs(args.timeout))
@@ -54,7 +54,7 @@ pub async fn run(args: Args) -> Result<String, Box<dyn std::error::Error + Send 
         .build()?;
 
     let crt_subs = crtsh_enum_async(&client, &args.domain, args.retries).await?;
-    println!("[+] crt.sh found {} potential subdomains", crt_subs.len());
+    eprintln!("[+] crt.sh found {} potential subdomains", crt_subs.len());
 
     let validated_subs: HashSet<String> = crt_subs
         .into_iter()
@@ -77,40 +77,40 @@ pub async fn run(args: Args) -> Result<String, Box<dyn std::error::Error + Send 
             }
         })
         .collect();
-    println!("[+] Validated {} subdomains", validated_subs.len());
+    eprintln!("[+] Validated {} subdomains", validated_subs.len());
 
     let resolver = create_secure_resolver().await?;
     let live_subs = check_dns_live(&validated_subs, resolver, args.concurrency).await;
-    println!("[+] {} live subdomains detected", live_subs.len());
+    eprintln!("[+] {} live subdomains detected", live_subs.len());
 
     let open_ports_map = scan_ports(&live_subs, args.concurrency).await;
-    println!(
+    eprintln!(
         "[+] Port scan complete - found {} subdomains with open ports",
         open_ports_map.len()
     );
 
     let header_map = check_headers_tls(&client, &live_subs, args.concurrency, args.timeout).await;
-    println!("[+] Header/TLS check complete");
+    eprintln!("[+] Header/TLS check complete");
 
     let cors_map = check_cors(&client, &live_subs, args.concurrency, args.timeout).await;
-    println!(
+    eprintln!(
         "[+] CORS check complete - found {} potential issues",
         cors_map.len()
     );
 
     let software_map =
         fingerprint_software(&client, &live_subs, args.concurrency, args.timeout).await;
-    println!("[+] Software fingerprinting complete");
+    eprintln!("[+] Software fingerprinting complete");
 
     let resolver_for_cloud = create_secure_resolver().await?;
     let cloud_saas_map = cloud_saas_recon(&live_subs, resolver_for_cloud, args.concurrency).await;
-    println!(
+    eprintln!(
         "[+] Cloud/SaaS reconnaissance complete - found {} subdomains with SaaS patterns or predictions",
         cloud_saas_map.len()
     );
 
     let takeover_map = check_subdomain_takeover(&live_subs).await;
-    println!(
+    eprintln!(
         "[+] Takeover check complete - found {} potential targets (including cloud)",
         takeover_map.len()
     );
@@ -129,6 +129,6 @@ pub async fn run(args: Args) -> Result<String, Box<dyn std::error::Error + Send 
         &args.domain,
     )?;
 
-    println!("[*] Recon complete. Outputs in: {}", output_dir);
+    eprintln!("[*] Recon complete. Outputs in: {}", output_dir);
     Ok(output_dir)
 }

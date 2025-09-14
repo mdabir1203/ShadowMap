@@ -68,7 +68,7 @@ pub async fn crtsh_enum_async(
         retries += 1;
         if retries < max_retries {
             let delay = Duration::from_secs(2_u64.pow(retries as u32));
-            println!(
+            eprintln!(
                 "[!] Retry {}/{} due to error: {:?}",
                 retries, max_retries, last_error
             );
