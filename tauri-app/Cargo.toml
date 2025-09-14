@@ -1,0 +1,12 @@
+[package]
+name = "shadowmap-tauri"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tauri = { version = "1", features = ["shell-open"] }
+serde = { version = "1.0", features = ["derive"] }
+shadowmap = { path = ".." }
+
+[build-dependencies]
+tauri-build = { version = "1" }

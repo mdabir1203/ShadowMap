@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ShadowMap</title>
+  <style>
+    body {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1e1e2f, #27293d);
+      font-family: system-ui, sans-serif;
+      color: #fff;
+    }
+    .card {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      width: 300px;
+      text-align: center;
+    }
+    input, button {
+      width: 100%;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+    input {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+    button {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      cursor: pointer;
+    }
+    pre {
+      text-align: left;
+      white-space: pre-wrap;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>ShadowMap</h1>
+    <input id="domain" placeholder="example.com" />
+    <button onclick="runScan()">Run Scan</button>
+    <pre id="output"></pre>
+  </div>
+  <script>
+    async function runScan() {
+      const domain = document.getElementById('domain').value;
+      const result = await window.__TAURI__.invoke('run_scan', { domain });
+      document.getElementById('output').textContent = result;
+    }
+  </script>
+</body>
+</html>
