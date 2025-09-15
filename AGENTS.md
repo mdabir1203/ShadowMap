@@ -1,4 +1,5 @@
 ## Dev environment tips
+- Do the repo diff in small incremental steps 
 - Use `find . -name "Cargo.toml" -not -path "*/target/*" | fzf | xargs dirname` to jump to any crate instantly instead of scanning directories.
 - Run `cargo add --package <crate_name> <dependency>` to add dependencies to specific workspace crates so rust-analyzer can see them.
 - Use `cargo new --name <crate_name> --lib crates/<crate_name>` to spin up a new library crate with proper workspace integration.
