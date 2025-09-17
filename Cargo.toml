@@ -65,14 +65,14 @@ papaya = "0.2.3"
 httparse = "1.8"
 
 # Desktop GUI
-eframe = { version = "0.32", optional = true }
+iced = { version = "0.12", optional = true, features = ["wgpu", "tokio"] }
 
 [dev-dependencies]
 tokio-test = "0.4"
 
 [features]
 default = []
-gui = ["eframe"]
+gui = ["iced"]
 
 [profile.release]
 opt-level = 3
