@@ -89,6 +89,3 @@ path = "src/server.rs"
 name = "shadowmap-gui"
 path = "src/gui.rs"
 required-features = ["gui"]
-
-[workspace]
-members = ["tauri-app"]
