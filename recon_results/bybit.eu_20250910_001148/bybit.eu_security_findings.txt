@@ -1,0 +1,5 @@
+Security Findings Summary for bybit.eu
+=============================================
+Total subdomains found: 1
+Subdomains with CORS issues: 0
+Potential takeover targets: 0
