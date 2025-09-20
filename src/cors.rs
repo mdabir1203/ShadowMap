@@ -12,7 +12,7 @@ pub async fn check_cors(
     max_concurrency: usize,
     timeout_secs: u64,
 ) -> HashMap<String, Vec<String>> {
-    let semaphore = Arc::new(Semaphore::new(max_concurrency / 2));
+    let semaphore = Arc::new(Semaphore::new(std::cmp::max(1, max_concurrency / 2)));
     let mut result = HashMap::new();
     let mut tasks = FuturesUnordered::new();
 
@@ -25,12 +25,23 @@ pub async fn check_cors(
 
     for sub in subs.iter() {
         for origin in &test_origins {
-            let permit = semaphore.clone().acquire_owned().await.unwrap();
             let client = client.clone();
+            let semaphore = Arc::clone(&semaphore);
             let sub_clone = sub.clone();
             let origin_clone = origin.to_string();
 
             tasks.push(tokio::spawn(async move {
+                let permit = match semaphore.acquire_owned().await {
+                    Ok(permit) => permit,
+                    Err(e) => {
+                        eprintln!(
+                            "[!] Failed to acquire semaphore for {} (origin {}): {}",
+                            sub_clone, origin_clone, e
+                        );
+                        return None;
+                    }
+                };
+
                 let url = format!("https://{}", sub_clone);
                 let mut issues = Vec::new();
 
@@ -69,13 +80,16 @@ pub async fn check_cors(
                     {
                         issues.push(format!("PoC validated: {}", leak));
                     }
+                }
+
+                drop(permit);
+
+                if !issues.is_empty() {
                     Some((sub_clone, issues))
                 } else {
                     None
                 }
             }));
-
-            drop(permit);
         }
     }
 
