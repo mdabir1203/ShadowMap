@@ -1,4 +1,4 @@
-use rand::seq::SliceRandom;
+use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
 use reqwest::{header, Client};
 use serde::Deserialize;
 use std::collections::HashSet;
@@ -21,13 +21,12 @@ pub async fn crtsh_enum_async(
     let mut retries = 0;
     let mut last_error: Option<Box<dyn std::error::Error + Send + Sync>> = None;
 
+    let mut rng = StdRng::from_entropy();
+
     while retries < max_retries {
         let resp = client
             .get(&url)
-            .header(
-                header::USER_AGENT,
-                *USER_AGENTS.choose(&mut rand::thread_rng()).unwrap(),
-            )
+            .header(header::USER_AGENT, *USER_AGENTS.choose(&mut rng).unwrap())
             .header(header::ACCEPT, "application/json")
             .send()
             .await;
