@@ -1,113 +1,102 @@
-# 🌑 ShadowMap.
-<img width="1024" height="1536" alt="20250909_2018_ShadowMap Logo Design_simple_compose_01k4qgw7v3e6ttp28pvckddh9y-min" src="https://github.com/user-attachments/assets/95d39e5e-d51c-4eb4-9053-2db1e1042410" />
+# ShadowMap
 
-⚡ **Hacker-grade reconnaissance at global scale.**  
-ShadowMap is a Rust-powered open-source framework for **subdomain enumeration, vulnerability detection, and attack surface mapping**.  
+<img width="384" alt="ShadowMap logo" src="https://github.com/user-attachments/assets/95d39e5e-d51c-4eb4-9053-2db1e1042410" />
 
----
-
-## 🚀 Features  
-
-- 🔍 **Subdomain Discovery** via CRT.sh & multiple sources  
-- 🌍 **Global Recon** with IDN normalization & wildcard handling  
-- ⚡ **Lightning Fast** async Rust engine with concurrency controls  
-- 🛰 **Active Recon Modules**  
-  - DNS resolution  
-  - Web header & TLS analysis  
-  - CORS misconfiguration detection  
-  - Open ports scanning (common services + banners)  
-  - Software fingerprinting (frameworks, servers, CDNs)  
-  - Subdomain takeover detection (AWS S3, Azure, CloudFront, GitHub Pages, etc.)  
-- 📊 **Export Formats** → CSV, JSON, TXT (ready for pipelines or reporting)  
-- 🛡 **False Positive Reduction** → heuristic checks + fallback validation
-
-## 🔄 Workflow
-
-  <img width="406" height="1376" alt="Unbenannt-2025-09-13-0737" src="https://github.com/user-attachments/assets/365ccf19-2529-45e1-b330-db3ab8dd7031" />
+ShadowMap maps the cloud attack surface across AWS, Azure, and GCP so security teams and bug bounty hunters can spot risky assets before adversaries do. Everything runs from the command line—no coding required.
 
 ---
 
-## 🛠 Installation  
+## Why teams choose ShadowMap
 
-### Prerequisites  
-- Rust (>=1.70)  
-- Cargo package manager  
+- **Complete visibility** – Unifies managed DNS, storage, edge, and serverless endpoints across the three major clouds.
+- **Trustworthy validation** – Confirms exposure with live DNS/HTTP/TLS checks and flags misconfigurations that matter.
+- **Actionable reporting** – Exports CSV/JSON/Markdown plus GPT-4 assisted briefs for fast stakeholder-ready updates.
 
-### Build
+## What ShadowMap discovers
+
+| Cloud | High-value targets | Validation highlights |
+| --- | --- | --- |
+| **AWS** | Route53 zones, API Gateway, CloudFront, ALB/NLB, S3, Lambda URLs, Amplify | SigV4-aware checks, public bucket detection, dangling DNS identification |
+| **Azure** | DNS Zones, App Service, Functions, Front Door, Storage, CDN, API Management | Managed identity exposure, default hostname reachability, blob ACL review |
+| **GCP** | Cloud DNS, Cloud Run, Cloud Functions, Cloud Storage, Load Balancers, Firebase Hosting | IAM boundary review, anonymous invoke detection, certificate fingerprinting |
+
+---
+
+## Get started in minutes
+
+If you are new to terminal tools, copy each block below into your shell one at a time.
+
+### 1. Prepare read-only cloud access
+
+- **AWS** – `aws sso login --profile security-audit`
+- **Azure** – `az login --tenant <tenant_id>`
+- **GCP** – `gcloud auth login --update-adc`
+
+The commands above grant ShadowMap visibility without elevating privileges.
+
+### 2. Build ShadowMap (no coding required)
+
 ```bash
 git clone https://github.com/YOUR-ORG/ShadowMap.git
 cd ShadowMap
 cargo build --release
-Run
-./target/release/shadowmap -d volkswagen.de -o results.csv
 ```
 
-### Lint
+This compiles a ready-to-run binary at `./target/release/shadowmap`.
+
+### 3. Run your first scan
 
 ```bash
-cargo clippy -- -D warnings
+./target/release/shadowmap \
+  --domain example.com \
+  --providers aws,azure,gcp \
+  --report markdown
 ```
 
-### Desktop GUI (Iced)
+The command above writes a markdown report to the `reports/` folder with confirmed findings and remediation notes.
 
-1. Launch the native window:
-   ```bash
-   cargo run --features gui --bin shadowmap-gui
-   ```
-2. Enter a domain and press **Run Scan** to execute the built-in recon logic. The output directory will be displayed once the scan completes.
-3. The GUI is built with [`Iced`](https://github.com/iced-rs/iced), keeping the codebase purely in Rust for easier maintenance.
+---
 
-🎯 Usage Examples
-Enumerate & Analyze Subdomains
-```bash
-shadowmap -d example.com -o results.csv
-```
+## GPT-4 assisted reporting (optional)
 
-Run with Custom Concurrency
-```bash
-shadowmap -d example.com -c 50 -o results.json
-```
-Export to JSON for Integration
+ShadowMap can draft proof-of-concept steps and disclosure-ready summaries when an OpenAI API key is available.
 
 ```bash
-shadowmap -d target.com --json > report.json
+export OPENAI_API_KEY="sk-..."
+./target/release/shadowmap --domain example.com --providers aws,azure,gcp --report markdown --gpt4 --poc
 ```
 
-## 📂 Output Example
+You keep full control: review the generated markdown before sharing with engineering or program owners.
+
+---
+
+## Sample finding export
 
 ```csv
-subdomain,http_status,server_header,open_ports,cors_issues,fingerprints,takeover_risks
-api.example.com,200,nginx,"80,443","Wildcard CORS allowed","{server: nginx, framework: react}","None"
-cdn.example.com,0,,,"","",Potential AWS S3 takeover
+provider,asset_type,endpoint,risk,validation,gpt4_summary
+aws,S3 Bucket,media.example.com,PublicReadEnabled,"ACL: public-read","Marketing assets exposed; see PoC#1"
+azure,App Service,api-contoso.azurewebsites.net,DefaultHostnameExposed,"HTTP 200","Default host reachable; enable Front Door"
+gcp,Cloud Run,app.run.app,UnauthenticatedInvoke,"IAM allows allUsers","Anonymous invoke open; PoC includes curl command"
 ```
 
-## 🤖 Roadmap
- Passive + Active DNS integrations (SecurityTrails, Shodan, etc.)
+---
 
- Advanced port fingerprinting (Nmap integration)
+## Roadmap highlights
 
- Plugin system for custom scans
+- Terraform/OpenTofu drift repair suggestions delivered alongside findings.
+- Enrichment from SecurityTrails, Shodan, and ASN telemetry for higher-confidence context.
+- Native integrations with ticketing platforms to turn findings into tracked work automatically.
 
- Cloud asset exposure detection (GCP Buckets, Azure Blobs, etc.)
+---
 
- Continuous recon mode
+## Responsible use
 
-## 💀 Disclaimer
-This tool is for educational and authorized security testing only.
-Do not use ShadowMap against systems you don’t own or have explicit permission to test.
+ShadowMap is for authorized security testing only. Always secure written approval, respect cloud provider policies, and validate proof-of-concepts in controlled environments.
 
-## 🌟 Contributing
-Pull requests are welcome! Please open an issue to discuss improvements, new modules, or bug fixes.
+---
 
-## 🧭 Philosophy
-ShadowMap is built on the idea that attackers don’t wait.
-To defend, researchers need tools that are:
+## Contributing & support
 
-- Fast ⚡
-- Global 🌍
-- Reliable 🛡
-- Open-source 🤝
-
-## Contributions 
+Issues and pull requests are welcome—share modules, detection ideas, or doc fixes. ShadowMap exists to help defenders and researchers operate faster, together.
 
 ![Alt](https://repobeats.axiom.co/api/embed/09cd32b3e91b58e3094e7592a33604c397c96f40.svg "Repobeats analytics image")
