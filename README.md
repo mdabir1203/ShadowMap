@@ -2,7 +2,8 @@
 
 ShadowMap is a Rust framework for disciplined subdomain enumeration, vulnerability detection, and attack-surface mapping at scale.
 
-![Uploading 20250927-1723-29.1659684.gif…]
+https://github.com/user-attachments/assets/732cae1e-6219-4cdc-8cdf-7f1038bff897
+
 
 ---
 
