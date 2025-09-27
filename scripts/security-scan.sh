@@ -29,20 +29,27 @@ MSG
   exit 1
 fi
 
-# Generate SBOM
+# Generate SBOM where the caller expects it so the subsequent Grype call can find it
+BOM_PATH="$PWD/$BOM_FILENAME"
+BOM_DIR="$(dirname "$BOM_PATH")"
+BOM_BASENAME="$(basename "$BOM_PATH")"
+
+mkdir -p "$BOM_DIR"
+
 cargo cyclonedx \
   --format json \
   --spec-version 1.5 \
   --all-features \
-  --override-filename "$BOM_FILENAME"
+  --override-filename "$BOM_BASENAME" \
+  --output "$BOM_DIR"
 
-echo "Generated SBOM at $BOM_FILENAME"
+echo "Generated SBOM at $BOM_PATH"
 
 # Scan SBOM with Grype
 if [[ -n "$REPORT_FILENAME" ]]; then
-  grype "sbom:./$BOM_FILENAME" -o json --file "$REPORT_FILENAME"
+  grype "sbom:$BOM_PATH" -o json --file "$REPORT_FILENAME"
   echo "Stored vulnerability report at $REPORT_FILENAME"
 else
-  grype "sbom:./$BOM_FILENAME"
+  grype "sbom:$BOM_PATH"
 fi
 
