@@ -1,0 +1,38 @@
+name: "ShadowMap Security Scan"
+description: "Generate a CycloneDX SBOM and scan it with Grype"
+inputs:
+  bom-file:
+    description: "Filename for the generated CycloneDX SBOM"
+    required: false
+    default: "bom.json"
+  report-file:
+    description: "Optional JSON file to store Grype results"
+    required: false
+    default: ""
+runs:
+  using: "composite"
+  steps:
+    - uses: dtolnay/rust-toolchain@stable
+
+    - name: Ensure cargo-cyclonedx is installed
+      shell: bash
+      run: |
+        if ! cargo cyclonedx --version >/dev/null 2>&1; then
+          cargo install cargo-cyclonedx --locked
+        fi
+
+    - name: Ensure grype is installed
+      shell: bash
+      run: |
+        if ! command -v grype >/dev/null 2>&1; then
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sudo sh -s -- -b /usr/local/bin
+        fi
+
+    - name: Run security scan
+      shell: bash
+      run: |
+        ARGS=("${{ inputs.bom-file }}")
+        if [[ -n "${{ inputs.report-file }}" ]]; then
+          ARGS+=("${{ inputs.report-file }}")
+        fi
+        ./scripts/security-scan.sh "${ARGS[@]}"
