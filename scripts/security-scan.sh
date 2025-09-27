@@ -12,6 +12,39 @@ fi
 BOM_DIR="$(dirname "$BOM_PATH")"
 BOM_BASENAME="$(basename "$BOM_PATH")"
 
+case "$BOM_BASENAME" in
+  *.json)
+    BOM_EXTENSION="json"
+    ;;
+  *.xml)
+    BOM_EXTENSION="xml"
+    ;;
+  *)
+    BOM_EXTENSION="json"
+    BOM_BASENAME="$BOM_BASENAME.json"
+    BOM_PATH="$BOM_DIR/$BOM_BASENAME"
+    ;;
+esac
+
+BOM_STEM="${BOM_BASENAME%.*}"
+
+if [[ -z "$BOM_STEM" ]]; then
+  echo "SBOM filename must include a base name (got '$BOM_BASENAME')." >&2
+  exit 1
+fi
+
+if [[ -n "$REPORT_FILENAME" ]]; then
+  if [[ "$REPORT_FILENAME" = /* ]]; then
+    REPORT_PATH="$REPORT_FILENAME"
+  else
+    REPORT_PATH="$PWD/$REPORT_FILENAME"
+  fi
+  REPORT_DIR="$(dirname "$REPORT_PATH")"
+  mkdir -p "$REPORT_DIR"
+else
+  REPORT_PATH=""
+fi
+
 command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
@@ -37,36 +70,35 @@ MSG
   exit 1
 fi
 
-# Generate the SBOM and copy it to the requested destination (defaults to the CWD)
+# Generate the SBOM and move it to the requested destination (defaults to the CWD)
 mkdir -p "$BOM_DIR"
 
+GENERATED_NAME="$BOM_STEM.$BOM_EXTENSION"
+GENERATED_PATH="$PWD/$GENERATED_NAME"
+
+rm -f "$GENERATED_PATH"
+
 cargo cyclonedx \
-  --format json \
+  --format "$BOM_EXTENSION" \
   --spec-version 1.5 \
   --all-features \
-  --override-filename "$BOM_BASENAME"
+  --override-filename "$BOM_STEM"
 
-SOURCE_DIR="${CARGO_TARGET_DIR:-target}/cyclonedx"
-SOURCE_PATH="$SOURCE_DIR/$BOM_BASENAME"
-
-if [[ ! -f "$SOURCE_PATH" ]]; then
-  echo "cargo-cyclonedx did not produce $SOURCE_PATH" >&2
+if [[ ! -f "$GENERATED_PATH" ]]; then
+  echo "cargo-cyclonedx did not produce $GENERATED_PATH" >&2
   exit 1
 fi
 
-SOURCE_DIR_ABS="$(cd "$(dirname "$SOURCE_PATH")" && pwd)"
-SOURCE_PATH="$SOURCE_DIR_ABS/$BOM_BASENAME"
-
-if [[ "$SOURCE_PATH" != "$BOM_PATH" ]]; then
-  cp "$SOURCE_PATH" "$BOM_PATH"
+if [[ "$GENERATED_PATH" != "$BOM_PATH" ]]; then
+  mv "$GENERATED_PATH" "$BOM_PATH"
 fi
 
 echo "Generated SBOM at $BOM_PATH"
 
 # Scan SBOM with Grype
-if [[ -n "$REPORT_FILENAME" ]]; then
-  grype "sbom:$BOM_PATH" -o json --file "$REPORT_FILENAME"
-  echo "Stored vulnerability report at $REPORT_FILENAME"
+if [[ -n "$REPORT_PATH" ]]; then
+  grype "sbom:$BOM_PATH" -o json --file "$REPORT_PATH"
+  echo "Stored vulnerability report at $REPORT_PATH"
 else
   grype "sbom:$BOM_PATH"
 fi
