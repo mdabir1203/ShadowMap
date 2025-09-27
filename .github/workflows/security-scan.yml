@@ -1,0 +1,43 @@
+name: Supply chain security scan
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.rs'
+      - Cargo.toml
+      - Cargo.lock
+      - scripts/security-scan.sh
+      - .github/actions/security-scan/**
+      - .github/workflows/security-scan.yml
+  pull_request:
+    paths:
+      - '**/*.rs'
+      - Cargo.toml
+      - Cargo.lock
+      - scripts/security-scan.sh
+      - .github/actions/security-scan/**
+      - .github/workflows/security-scan.yml
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate SBOM and scan for vulnerabilities
+        uses: ./.github/actions/security-scan
+        with:
+          bom-file: shadowmap-bom.json
+          report-file: grype-report.json
+
+      - name: Upload scan artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shadowmap-security-scan
+          path: |
+            shadowmap-bom.json
+            grype-report.json
+          if-no-files-found: error

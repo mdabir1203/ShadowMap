@@ -71,8 +71,11 @@ ty guide referenced in this task.
    grype sbom:./bom.json -o json --file vulnerability-report.json
    ```
 
-For repeatability you can run `./scripts/security-scan.sh` which wraps the SBOM generation and Grype scan with sensible default
-s.
+For repeatability you can run `./scripts/security-scan.sh` which wraps the SBOM generation and Grype scan with sensible defaults.
+
+### Automated security workflow
+
+The repository ships with a dedicated GitHub Action located at [`.github/workflows/security-scan.yml`](.github/workflows/security-scan.yml). It installs `cargo-cyclonedx` and `grype`, generates `shadowmap-bom.json`, scans it for vulnerabilities, and uploads the SBOM plus a JSON report as build artifacts. The workflow runs automatically for pull requests and pushes to `main`, and can also be started manually from the **Actions** tab via the **Run workflow** button.
 
 ### Desktop GUI (optional)
 ```bash
