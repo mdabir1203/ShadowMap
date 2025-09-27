@@ -39,6 +39,41 @@ cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
 ```
 
+### Supply Chain Security
+
+ShadowMap includes a lightweight workflow for generating a Software Bill of Materials (SBOM) and scanning it for known vulnerab
+ilities. The steps below follow the [cargo-cyclonedx + Grype quickstart](https://gitlab.com/-/snippets/4892073) from the securi
+ty guide referenced in this task.
+
+1. **Install cargo-cyclonedx** (once per machine):
+   ```bash
+   cargo install cargo-cyclonedx
+   ```
+
+2. **Install Grype** (Linux/WSL example):
+   ```bash
+   curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sudo sh -s -- -b /usr/local/bin
+   ```
+   Refer to the [Grype README](https://github.com/anchore/grype) for macOS and Windows alternatives.
+
+3. **Generate the SBOM** in CycloneDX JSON format with all ShadowMap features enabled:
+   ```bash
+   cargo cyclonedx --format json --spec-version 1.5 --all-features --override-filename bom.json
+   ```
+
+4. **Scan the SBOM with Grype**:
+   ```bash
+   grype sbom:./bom.json
+   ```
+
+5. (Optional) Export detailed findings:
+   ```bash
+   grype sbom:./bom.json -o json --file vulnerability-report.json
+   ```
+
+For repeatability you can run `./scripts/security-scan.sh` which wraps the SBOM generation and Grype scan with sensible default
+s.
+
 ### Desktop GUI (optional)
 ```bash
 cargo run --features gui --bin shadowmap-gui
