@@ -56,13 +56,10 @@ ty guide referenced in this task.
    ```
    Refer to the [Grype README](https://github.com/anchore/grype) for macOS and Windows alternatives.
 
-3. **Generate the SBOM** in CycloneDX JSON format with all ShadowMap features enabled. Either emit the file to the current directory or read it from Cargo's default `target/cyclonedx` folder:
+3. **Generate the SBOM** in CycloneDX JSON format with all ShadowMap features enabled. The command writes to Cargo's default `target/cyclonedx` folder; copy it beside your working tree if that's more convenient for follow-up tooling:
    ```bash
-   # Option A: write bom.json alongside your working copy so follow-up scans can find it
-   cargo cyclonedx --format json --spec-version 1.5 --all-features --override-filename bom.json --output "$(pwd)"
-
-   # Option B: rely on the default output directory and reference it explicitly later
    cargo cyclonedx --format json --spec-version 1.5 --all-features --override-filename bom.json
+   cp target/cyclonedx/bom.json ./bom.json  # optional convenience copy
    ```
 
 4. **Scan the SBOM with Grype** (pointing at whichever location you chose above):
