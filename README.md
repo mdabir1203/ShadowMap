@@ -81,6 +81,13 @@ ShadowMap aligns its operational safeguards with SOC 2 Trust Services Criteria a
 [Data Security and Compliance Strategy](docs/data-security.md) describes the control owners, evidence expectations, and
 validation activities that keep reconnaissance data secure throughout its lifecycle.
 
+### Application Governance & Resilience
+
+Teams that need to spot unapproved apps, fragmented data flows, or silent system failures can extend ShadowMap's
+discoveries into governance and reliability workflows using the
+[Application Governance Integration guide](docs/app-governance-integration.md). It outlines how to fuse ShadowMap outputs
+with CMDBs, data lineage tools, and observability platforms to close monitoring gaps.
+
 ### Organizational Adoption Playbook
 
 Security programs that want to operationalize ShadowMap across large enterprises can follow the
