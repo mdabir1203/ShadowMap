@@ -5,6 +5,8 @@ use std::io::Write;
 use csv::Writer;
 use itertools::Itertools;
 
+use crate::cloud::CloudAssetFinding;
+
 pub struct ReconMaps<'a> {
     pub header_map: &'a HashMap<String, (u16, Option<String>)>,
     pub open_ports_map: &'a HashMap<String, Vec<u16>>,
@@ -12,6 +14,7 @@ pub struct ReconMaps<'a> {
     pub software_map: &'a HashMap<String, HashMap<String, String>>,
     pub takeover_map: &'a HashMap<String, Vec<String>>,
     pub cloud_saas_map: &'a HashMap<String, Vec<String>>,
+    pub cloud_asset_map: &'a HashMap<String, Vec<CloudAssetFinding>>,
 }
 
 pub fn write_outputs(
@@ -62,6 +65,11 @@ pub fn write_outputs(
             serde_json::json!(maps.cloud_saas_map.get(sub).cloned().unwrap_or_default()),
         );
 
+        entry.insert(
+            "cloud_assets".to_string(),
+            serde_json::json!(maps.cloud_asset_map.get(sub).cloned().unwrap_or_default()),
+        );
+
         json_obj.insert(sub.clone(), serde_json::Value::Object(entry));
     }
 
@@ -78,6 +86,7 @@ pub fn write_outputs(
         "fingerprints",
         "takeover_risks",
         "cloud_saas",
+        "cloud_assets",
     ])?;
 
     for sub in subs.iter().sorted() {
@@ -100,6 +109,10 @@ pub fn write_outputs(
             .cloud_saas_map
             .get(sub)
             .map_or("".to_string(), |v| v.join("; "));
+        let cloud_assets = maps
+            .cloud_asset_map
+            .get(sub)
+            .map_or_else(|| "".to_string(), |v| format_cloud_assets(v.as_slice()));
 
         wtr.write_record([
             sub,
@@ -110,6 +123,7 @@ pub fn write_outputs(
             &fingerprints,
             &takeover,
             &cloud_saas,
+            &cloud_assets,
         ])?;
     }
     wtr.flush()?;
@@ -130,6 +144,11 @@ pub fn write_outputs(
         "Potential takeover targets: {}",
         maps.takeover_map.len()
     )?;
+    writeln!(
+        findings,
+        "Deep cloud assets flagged: {}",
+        maps.cloud_asset_map.len()
+    )?;
 
     let cloud_file = format!("{}/{}_cloud_saas.json", output_dir, domain);
     std::fs::write(
@@ -137,5 +156,26 @@ pub fn write_outputs(
         serde_json::to_string_pretty(&maps.cloud_saas_map)?,
     )?;
 
+    let deep_cloud_file = format!("{}/{}_cloud_assets.json", output_dir, domain);
+    std::fs::write(
+        deep_cloud_file,
+        serde_json::to_string_pretty(&maps.cloud_asset_map)?,
+    )?;
+
     Ok(())
+}
+
+fn format_cloud_assets(findings: &[CloudAssetFinding]) -> String {
+    findings
+        .iter()
+        .map(|finding| {
+            format!(
+                "{} [{}] {}",
+                finding.provider,
+                finding.status_string(),
+                finding.asset
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("; ")
 }

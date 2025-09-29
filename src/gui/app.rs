@@ -189,6 +189,7 @@ impl ShadowMapApp {
             concurrency: self.config.concurrency,
             timeout: self.config.timeout,
             retries: self.config.retries,
+            autonomous: false,
         };
 
         Command::perform(run_scan(args), Message::ScanFinished)
