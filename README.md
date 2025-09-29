@@ -81,6 +81,12 @@ ShadowMap aligns its operational safeguards with SOC 2 Trust Services Criteria a
 [Data Security and Compliance Strategy](docs/data-security.md) describes the control owners, evidence expectations, and
 validation activities that keep reconnaissance data secure throughout its lifecycle.
 
+### Organizational Adoption Playbook
+
+Security programs that want to operationalize ShadowMap across large enterprises can follow the
+[Organizational Adoption Playbook](docs/org-adaptation.md). It lays out governance structures, stakeholder roles, and
+business metrics that translate reconnaissance coverage into measurable risk reduction and executive-aligned value.
+
 ### Automated security workflow
 
 The repository ships with a dedicated GitHub Action located at [`.github/workflows/security-scan.yml`](.github/workflows/security-scan.yml). It installs `cargo-cyclonedx` and `grype`, generates `shadowmap-bom.json`, scans it for vulnerabilities, and uploads the SBOM plus a JSON report as build artifacts. The workflow runs automatically for pull requests and pushes to `main`, and can also be started manually from the **Actions** tab via the **Run workflow** button.
