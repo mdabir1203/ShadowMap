@@ -141,7 +141,7 @@ pub async fn deep_cloud_asset_discovery(
                                 CloudAssetStatus::Accessible,
                                 Some(format!("HTTP {}", status)),
                             ),
-                            401 | 402 | 403 => (
+                            401..=403 => (
                                 CloudAssetStatus::ExistsNoAccess,
                                 Some(format!("Restricted access ({})", status)),
                             ),

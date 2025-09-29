@@ -291,98 +291,109 @@ impl AutonomousReconAgent {
             loop {
                 attempt += 1;
                 let step_result = match step.kind {
-                    StepKind::Enumerate => {
-                        let enumeration = engine.enumerate_subdomains().await?;
-                        eprintln!(
-                            "[agent]    discovered {} candidates, {} survived validation",
-                            enumeration.discovered.len(),
-                            enumeration.validated.len()
-                        );
-                        state.enumeration = Some(enumeration);
-                        Ok(())
-                    }
+                    StepKind::Enumerate => match engine.enumerate_subdomains().await {
+                        Ok(enumeration) => {
+                            eprintln!(
+                                "[agent]    discovered {} candidates, {} survived validation",
+                                enumeration.discovered.len(),
+                                enumeration.validated.len()
+                            );
+                            state.enumeration = Some(enumeration);
+                            Ok(())
+                        }
+                        Err(err) => Err(err),
+                    },
                     StepKind::Resolve => {
-                        let enumeration = state
-                            .enumeration
-                            .as_ref()
-                            .ok_or_else(|| missing_step_error("enumeration step missing"))?;
-                        let live = engine
-                            .resolve_live_subdomains(&enumeration.validated)
-                            .await?;
-                        eprintln!(
-                            "[agent]    {} live subdomains after DNS validation",
-                            live.len()
-                        );
-                        state.live_subdomains = Some(live);
-                        Ok(())
+                        if let Some(enumeration) = state.enumeration.as_ref() {
+                            match engine.resolve_live_subdomains(&enumeration.validated).await {
+                                Ok(live) => {
+                                    eprintln!(
+                                        "[agent]    {} live subdomains after DNS validation",
+                                        live.len()
+                                    );
+                                    state.live_subdomains = Some(live);
+                                    Ok(())
+                                }
+                                Err(err) => Err(err),
+                            }
+                        } else {
+                            Err(missing_step_error("enumeration step missing"))
+                        }
                     }
                     StepKind::Ports => {
-                        let live = state
-                            .live_subdomains
-                            .as_ref()
-                            .ok_or_else(|| missing_step_error("live subdomains missing"))?;
-                        let ports = engine.scan_open_ports(live).await;
-                        eprintln!("[agent]    {} subdomains expose open ports", ports.len());
-                        state.open_ports_map = Some(ports);
-                        Ok(())
+                        if let Some(live) = state.live_subdomains.as_ref() {
+                            let ports = engine.scan_open_ports(live).await;
+                            eprintln!("[agent]    {} subdomains expose open ports", ports.len());
+                            state.open_ports_map = Some(ports);
+                            Ok(())
+                        } else {
+                            Err(missing_step_error("live subdomains missing"))
+                        }
                     }
                     StepKind::Headers => {
-                        let live = state
-                            .live_subdomains
-                            .as_ref()
-                            .ok_or_else(|| missing_step_error("live subdomains missing"))?;
-                        let headers = engine.inspect_headers(live).await;
-                        state.header_map = Some(headers);
-                        Ok(())
+                        if let Some(live) = state.live_subdomains.as_ref() {
+                            let headers = engine.inspect_headers(live).await;
+                            state.header_map = Some(headers);
+                            Ok(())
+                        } else {
+                            Err(missing_step_error("live subdomains missing"))
+                        }
                     }
                     StepKind::Cors => {
-                        let live = state
-                            .live_subdomains
-                            .as_ref()
-                            .ok_or_else(|| missing_step_error("live subdomains missing"))?;
-                        let cors = engine.inspect_cors(live).await;
-                        eprintln!("[agent]    CORS anomalies flagged on {} hosts", cors.len());
-                        state.cors_map = Some(cors);
-                        Ok(())
+                        if let Some(live) = state.live_subdomains.as_ref() {
+                            let cors = engine.inspect_cors(live).await;
+                            eprintln!("[agent]    CORS anomalies flagged on {} hosts", cors.len());
+                            state.cors_map = Some(cors);
+                            Ok(())
+                        } else {
+                            Err(missing_step_error("live subdomains missing"))
+                        }
                     }
                     StepKind::Fingerprint => {
-                        let live = state
-                            .live_subdomains
-                            .as_ref()
-                            .ok_or_else(|| missing_step_error("live subdomains missing"))?;
-                        let fingerprints = engine.fingerprint_software(live).await;
-                        state.software_map = Some(fingerprints);
-                        Ok(())
+                        if let Some(live) = state.live_subdomains.as_ref() {
+                            let fingerprints = engine.fingerprint_software(live).await;
+                            state.software_map = Some(fingerprints);
+                            Ok(())
+                        } else {
+                            Err(missing_step_error("live subdomains missing"))
+                        }
                     }
                     StepKind::CloudSaas => {
-                        let live = state
-                            .live_subdomains
-                            .as_ref()
-                            .ok_or_else(|| missing_step_error("live subdomains missing"))?;
-                        let saas = engine.discover_cloud_saas(live).await?;
-                        eprintln!("[agent]    {} SaaS indicators identified", saas.len());
-                        state.cloud_saas_map = Some(saas);
-                        Ok(())
+                        if let Some(live) = state.live_subdomains.as_ref() {
+                            match engine.discover_cloud_saas(live).await {
+                                Ok(saas) => {
+                                    eprintln!(
+                                        "[agent]    {} SaaS indicators identified",
+                                        saas.len()
+                                    );
+                                    state.cloud_saas_map = Some(saas);
+                                    Ok(())
+                                }
+                                Err(err) => Err(err),
+                            }
+                        } else {
+                            Err(missing_step_error("live subdomains missing"))
+                        }
                     }
                     StepKind::CloudAssets => {
-                        let live = state
-                            .live_subdomains
-                            .as_ref()
-                            .ok_or_else(|| missing_step_error("live subdomains missing"))?;
-                        let assets = engine.discover_cloud_assets(live).await;
-                        eprintln!("[agent]    {} cloud assets worth review", assets.len());
-                        state.cloud_asset_map = Some(assets);
-                        Ok(())
+                        if let Some(live) = state.live_subdomains.as_ref() {
+                            let assets = engine.discover_cloud_assets(live).await;
+                            eprintln!("[agent]    {} cloud assets worth review", assets.len());
+                            state.cloud_asset_map = Some(assets);
+                            Ok(())
+                        } else {
+                            Err(missing_step_error("live subdomains missing"))
+                        }
                     }
                     StepKind::Takeover => {
-                        let live = state
-                            .live_subdomains
-                            .as_ref()
-                            .ok_or_else(|| missing_step_error("live subdomains missing"))?;
-                        let takeover = engine.detect_takeovers(live).await;
-                        eprintln!("[agent]    {} takeover candidates queued", takeover.len());
-                        state.takeover_map = Some(takeover);
-                        Ok(())
+                        if let Some(live) = state.live_subdomains.as_ref() {
+                            let takeover = engine.detect_takeovers(live).await;
+                            eprintln!("[agent]    {} takeover candidates queued", takeover.len());
+                            state.takeover_map = Some(takeover);
+                            Ok(())
+                        } else {
+                            Err(missing_step_error("live subdomains missing"))
+                        }
                     }
                 };
 
