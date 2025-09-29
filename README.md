@@ -147,6 +147,14 @@ cdn.example.com,0,,,"","",Potential AWS S3 takeover
 - Cloud asset exposure detection (GCP Buckets, Azure Blobs, etc.)
 - Continuous recon mode for persistent monitoring
 
+## Acknowledgements
+
+ShadowMap's SBOM generation and vulnerability scanning workflows rely on the
+[CycloneDX](https://cyclonedx.org/) standard and the [Grype](https://github.com/anchore/grype)
+scanner maintained by Anchore. If you redistribute ShadowMap guidance or reuse the automation
+scripts, please keep those upstream attributions (or submodule references) intact so the
+maintainers receive credit for their work.
+
 ## Disclaimer
 This tool is for educational and authorized security testing only.
 Do not use ShadowMap against systems you don’t own or have explicit permission to test.

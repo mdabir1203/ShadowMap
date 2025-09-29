@@ -53,3 +53,12 @@ operational tooling.
 By treating ShadowMap as the discovery front-end for governance, data lineage, and reliability
 programs, teams gain a shared source of truth that continuously exposes gaps in application
 registration, data handling, and operational health.
+
+## Tooling acknowledgements
+
+ShadowMap's SBOM and vulnerability workflows build on the [CycloneDX specification](https://cyclonedx.org/)
+and the [Grype scanner](https://github.com/anchore/grype) maintained by Anchore.
+If you surface ShadowMap findings in governance or resilience reports, please retain those
+attributions and link back to the upstream projects or any vendored submodules so their
+maintainers receive credit for the foundational tooling.
+
