@@ -1,5 +1,6 @@
 mod agent;
 pub mod args;
+pub mod cli;
 mod cloud;
 mod constants;
 mod cors;
