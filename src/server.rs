@@ -142,6 +142,7 @@ async fn run_job(state: AppState, job_id: JobId, domain: String, config: JobConf
         concurrency: config.concurrency,
         timeout: config.timeout,
         retries: config.retries,
+        autonomous: false,
     };
     match run(args).await {
         Ok(path) => {

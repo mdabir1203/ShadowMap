@@ -18,4 +18,8 @@ pub struct Args {
     /// Number of retries for failed requests
     #[arg(short, long, default_value = "3")]
     pub retries: usize,
+
+    /// Enable the autonomous Rig-inspired orchestration engine
+    #[arg(long, default_value_t = false)]
+    pub autonomous: bool,
 }

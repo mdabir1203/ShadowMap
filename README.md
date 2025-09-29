@@ -13,6 +13,7 @@ ShadowMap is a Rust framework for disciplined subdomain enumeration, vulnerabili
 - **Performance-first engine**: Async Rust core with configurable concurrency to cover large scopes quickly.
 - **Actionable exports**: Ships clean CSV, JSON, and TXT outputs for reporting or downstream automation.
 - **Extensible recon modules**: Plug-in architecture for port scanning, fingerprinting, and cloud exposure checks.
+- **Rig-style autonomy**: Optional agent orchestrator that sequences every recon module, retries failures, and flags deep cloud assets automatically.
 
 ---
 
@@ -102,6 +103,12 @@ Pipe JSON output for downstream automation:
 ```bash
 shadowmap -d target.com --json > report.json
 ```
+
+Enable the autonomous Rig-inspired orchestrator with deep cloud discovery:
+```bash
+shadowmap -d target.com --autonomous
+```
+The agent executes each reconnaissance stage with retry-aware control flow, surfaces SaaS predictors, and produces `cloud_assets.json` alongside traditional reports for deep storage/bucket exposure review.
 
 ---
 
