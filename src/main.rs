@@ -1,8 +1,7 @@
-use clap::Parser;
-use shadowmap::{run, Args};
+use shadowmap::cli::ShadowMapCLI;
+use shadowmap::BoxError;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let args = Args::parse();
-    run(args).await.map(|_| ())
+async fn main() -> Result<(), BoxError> {
+    ShadowMapCLI::run().await
 }
