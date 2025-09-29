@@ -31,6 +31,8 @@ jobs:
         with:
           bom-file: shadowmap-bom.json
           report-file: grype-report.json
+          fail-on: medium
+          enable-reachability-analysis: true
 
       - name: Upload scan artifacts
         if: always()
