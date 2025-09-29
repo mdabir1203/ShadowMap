@@ -61,3 +61,4 @@ and the [Grype scanner](https://github.com/anchore/grype) maintained by Anchore.
 If you surface ShadowMap findings in governance or resilience reports, please retain those
 attributions and link back to the upstream projects or any vendored submodules so their
 maintainers receive credit for the foundational tooling.
+
