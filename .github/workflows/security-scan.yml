@@ -34,6 +34,9 @@ jobs:
           fail-on: medium
           enable-reachability-analysis: true
 
+      - name: Scan ubuntu:latest base image
+        run: grype ubuntu:latest --fail-on medium
+
       - name: Upload scan artifacts
         if: always()
         uses: actions/upload-artifact@v4

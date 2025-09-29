@@ -163,8 +163,24 @@ echo "Generated SBOM at $BOM_PATH"
 
 # Scan SBOM with Grype
 GRYPE_CMD=(grype "sbom:$BOM_PATH" -o json --file "$REPORT_PATH")
+if [[ -n "$FAIL_ON_LEVEL" ]]; then
+  GRYPE_CMD+=(--fail-on "$FAIL_ON_LEVEL")
+fi
+
 echo "Running: ${GRYPE_CMD[*]}"
+set +e
 "${GRYPE_CMD[@]}"
+GRYPE_EXIT=$?
+set -e
+
+if [[ ! -f "$REPORT_PATH" ]]; then
+  if [[ "$GRYPE_EXIT" -ne 0 ]]; then
+    echo "grype failed to produce a report (exit code $GRYPE_EXIT)." >&2
+    exit "$GRYPE_EXIT"
+  fi
+  echo "grype did not create a report file; skipping post-processing." >&2
+  exit 1
+fi
 
 POSTPROCESS_ARGS=(--report "$REPORT_PATH" --fail-on "$FAIL_ON_LEVEL")
 if [[ "$ENABLE_REACHABILITY" -eq 1 ]]; then
@@ -174,7 +190,7 @@ if [[ "$ENABLE_REACHABILITY" -eq 1 ]]; then
   fi
 fi
 
-python3 "$(dirname "$0")/grype-postprocess.py" "${POSTPROCESS_ARGS[@]}"
+python3 "$(dirname "$0")/grype-postprocess.py" --grype-exit-code "$GRYPE_EXIT" "${POSTPROCESS_ARGS[@]}"
 SCAN_RESULT=$?
 
 if [[ "$REPORT_IS_TEMP" -eq 0 ]]; then
