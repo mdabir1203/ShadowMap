@@ -81,6 +81,13 @@ ShadowMap aligns its operational safeguards with SOC 2 Trust Services Criteria a
 [Data Security and Compliance Strategy](docs/data-security.md) describes the control owners, evidence expectations, and
 validation activities that keep reconnaissance data secure throughout its lifecycle.
 
+### Application Governance & Resilience
+
+Teams that need to spot unapproved apps, fragmented data flows, or silent system failures can extend ShadowMap's
+discoveries into governance and reliability workflows using the
+[Application Governance Integration guide](docs/app-governance-integration.md). It outlines how to fuse ShadowMap outputs
+with CMDBs, data lineage tools, and observability platforms to close monitoring gaps.
+
 ### Organizational Adoption Playbook
 
 Security programs that want to operationalize ShadowMap across large enterprises can follow the
@@ -139,6 +146,14 @@ cdn.example.com,0,,,"","",Potential AWS S3 takeover
 - Plugin system for bespoke reconnaissance modules
 - Cloud asset exposure detection (GCP Buckets, Azure Blobs, etc.)
 - Continuous recon mode for persistent monitoring
+
+## Acknowledgements
+
+ShadowMap's SBOM generation and vulnerability scanning workflows rely on the
+[CycloneDX](https://cyclonedx.org/) standard and the [Grype](https://github.com/anchore/grype)
+scanner maintained by Anchore. If you redistribute ShadowMap guidance or reuse the automation
+scripts, please keep those upstream attributions (or submodule references) intact so the
+maintainers receive credit for their work.
 
 ## Disclaimer
 This tool is for educational and authorized security testing only.
