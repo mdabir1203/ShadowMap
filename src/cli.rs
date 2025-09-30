@@ -463,7 +463,7 @@ impl ShadowMapCLI {
 
         // Check fail threshold
         if let Some(threshold) = fail_on {
-            if Self::should_fail(&threshold, critical, high) {
+            if Self::should_fail(&threshold, critical, high, medium, low) {
                 TerminalUI::print_error("Build failed: Vulnerability threshold exceeded");
                 std::process::exit(1);
             }
@@ -528,7 +528,15 @@ impl ShadowMapCLI {
         // Step 2: Vulnerability Scan
         TerminalUI::print_step(2, 3, "Vulnerability Scan");
         TerminalUI::show_progress("Scanning for known vulnerabilities");
-        TerminalUI::print_vulnerability_summary(2, 5, 10, 3);
+        let (critical, high, medium, low) = (2, 5, 10, 3);
+        TerminalUI::print_vulnerability_summary(critical, high, medium, low);
+
+        if let Some(threshold) = &fail_on {
+            if Self::should_fail(threshold, critical, high, medium, low) {
+                TerminalUI::print_error("Pipeline failed: Vulnerability threshold exceeded");
+                std::process::exit(1);
+            }
+        }
 
         // Step 3: Generate Reports
         TerminalUI::print_step(3, 3, "Generate Reports");
@@ -639,12 +647,12 @@ impl ShadowMapCLI {
     }
 
     // Helper functions
-
-    fn should_fail(threshold: &str, critical: u32, high: u32) -> bool {
+    fn should_fail(threshold: &str, critical: u32, high: u32, medium: u32, low: u32) -> bool {
         match threshold.to_lowercase().as_str() {
             "critical" => critical > 0,
             "high" => critical > 0 || high > 0,
-            "medium" => true,
+            "medium" => critical > 0 || high > 0 || medium > 0,
+            "low" => critical > 0 || high > 0 || medium > 0 || low > 0,
             _ => false,
         }
     }
