@@ -528,7 +528,15 @@ impl ShadowMapCLI {
         // Step 2: Vulnerability Scan
         TerminalUI::print_step(2, 3, "Vulnerability Scan");
         TerminalUI::show_progress("Scanning for known vulnerabilities");
-        TerminalUI::print_vulnerability_summary(2, 5, 10, 3);
+        let (critical, high, medium, low) = (2, 5, 10, 3);
+        TerminalUI::print_vulnerability_summary(critical, high, medium, low);
+
+        if let Some(threshold) = &fail_on {
+            if Self::should_fail(threshold, critical, high, medium, low) {
+                TerminalUI::print_error("Pipeline failed: Vulnerability threshold exceeded");
+                std::process::exit(1);
+            }
+        }
 
         // Step 3: Generate Reports
         TerminalUI::print_step(3, 3, "Generate Reports");
