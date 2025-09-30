@@ -647,7 +647,6 @@ impl ShadowMapCLI {
     }
 
     // Helper functions
-
     fn should_fail(threshold: &str, critical: u32, high: u32, medium: u32, low: u32) -> bool {
         match threshold.to_lowercase().as_str() {
             "critical" => critical > 0,
