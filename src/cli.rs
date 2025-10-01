@@ -1,8 +1,11 @@
 use clap::{Parser, Subcommand};
 use colored::*;
 use std::fmt;
+use std::fs;
 use std::io::{self, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use chrono::Utc;
+use serde_json::json;
 
 use crate::{run, Args, BoxError};
 
@@ -98,6 +101,7 @@ const SIMULATED_VULNERABILITIES: &[SimulatedVulnerability] = &[
         summary: "Verbose logging can expose bearer tokens in debug mode.",
     },
 ];
+
 // ============================================================================
 // CLI STRUCTURE - Elegant User Experience
 // ============================================================================
@@ -567,6 +571,9 @@ impl ShadowMapCLI {
         TerminalUI::show_progress("Resolving transitive dependencies");
         TerminalUI::show_progress(&format!("Generating {} SBOM", format));
 
+        let sbom_payload = Self::render_sbom_stub(&manifest, &format);
+        Self::write_stub_file(&output, &sbom_payload)?;
+
         TerminalUI::print_success(&format!("SBOM generated: {}", output.display()));
         TerminalUI::print_section_end();
 
@@ -585,7 +592,8 @@ impl ShadowMapCLI {
         TerminalUI::show_progress("Loading SBOM");
         TerminalUI::show_progress("Querying vulnerability databases");
         TerminalUI::show_progress("Analyzing CVE matches");
-      
+
+
         let vulnerabilities = SIMULATED_VULNERABILITIES;
         let (critical, high, medium, low) = Self::count_vulnerabilities(vulnerabilities);
 
@@ -614,6 +622,9 @@ impl ShadowMapCLI {
         TerminalUI::show_progress("Loading scan results");
         TerminalUI::show_progress(&format!("Generating {} report", format.to_uppercase()));
         TerminalUI::show_progress("Checking compliance standards");
+
+        let report_payload = Self::render_report_stub(&format, SIMULATED_VULNERABILITIES);
+        Self::write_stub_file(&output, &report_payload)?;
 
         TerminalUI::print_success(&format!("Report generated: {}", output.display()));
         TerminalUI::print_info("✓ EO 14028 compliant");
@@ -651,11 +662,16 @@ impl ShadowMapCLI {
         if let Some(threshold) = &fail_on {
             TerminalUI::print_info(&format!("Fail threshold: {}", threshold));
         }
+      
+        fs::create_dir_all(&output_dir).map_err(|err| -> BoxError { Box::new(err) })?;
 
         // Step 1: Generate SBOM
         TerminalUI::print_step(1, 3, "Generate SBOM");
         TerminalUI::show_progress("Analyzing project dependencies");
-        TerminalUI::print_success("SBOM created");
+        let sbom_path = output_dir.join("sbom.json");
+        let sbom_payload = Self::render_sbom_stub(&manifest, "cyclonedx");
+        Self::write_stub_file(&sbom_path, &sbom_payload)?;
+        TerminalUI::print_success(&format!("SBOM created: {}", sbom_path.display()));
 
         // Step 2: Vulnerability Scan
         TerminalUI::print_step(2, 3, "Vulnerability Scan");
@@ -664,6 +680,13 @@ impl ShadowMapCLI {
         let (critical, high, medium, low) = Self::count_vulnerabilities(vulnerabilities);
         TerminalUI::print_vulnerability_summary(critical, high, medium, low);
         TerminalUI::print_vulnerability_table(vulnerabilities);
+        let scan_results_path = output_dir.join("scan-results.json");
+        let scan_payload = Self::render_scan_results_stub(vulnerabilities);
+        Self::write_stub_file(&scan_results_path, &scan_payload)?;
+        TerminalUI::print_info(&format!(
+            "Scan results saved: {}",
+            scan_results_path.display()
+        ));
 
         if let Some(threshold) = &fail_on {
             if Self::should_fail(threshold, critical, high, medium, low) {
@@ -679,7 +702,10 @@ impl ShadowMapCLI {
         // Step 3: Generate Reports
         TerminalUI::print_step(3, 3, "Generate Reports");
         TerminalUI::show_progress("Creating compliance reports");
-        TerminalUI::print_success(&format!("Reports saved to {}/", output_dir.display()));
+        let report_path = output_dir.join("report.json");
+        let report_payload = Self::render_report_stub("json", vulnerabilities);
+        Self::write_stub_file(&report_path, &report_payload)?;
+        TerminalUI::print_success(&format!("Report saved: {}", report_path.display()));
 
         println!();
         println!("{}", "═".repeat(70).bright_green());
@@ -785,6 +811,8 @@ impl ShadowMapCLI {
     }
 
     // Helper functions
+
+
     fn should_fail(threshold: &str, critical: u32, high: u32, medium: u32, low: u32) -> bool {
         match threshold.to_lowercase().as_str() {
             "critical" => critical > 0,
@@ -808,5 +836,131 @@ impl ShadowMapCLI {
         }
 
         counts
+    }
+
+    fn render_sbom_stub(manifest: &Path, format: &str) -> String {
+        let sbom = json!({
+            "format": format,
+            "manifest": manifest.display().to_string(),
+            "generated_at": Utc::now().to_rfc3339(),
+            "components": [
+                {
+                    "name": "shadowmap",
+                    "version": VERSION,
+                    "type": "application",
+                    "licenses": ["Apache-2.0", "MIT"],
+                },
+                {
+                    "name": "openssl",
+                    "version": "3.2.1",
+                    "type": "library",
+                    "licenses": ["Apache-2.0"],
+                },
+                {
+                    "name": "tokio",
+                    "version": "1.40.0",
+                    "type": "library",
+                    "licenses": ["MIT"],
+                },
+            ],
+        });
+
+        serde_json::to_string_pretty(&sbom).unwrap_or_else(|_| "{}".to_string())
+    }
+
+    fn render_scan_results_stub(vulnerabilities: &[SimulatedVulnerability]) -> String {
+        let (critical, high, medium, low) = Self::count_vulnerabilities(vulnerabilities);
+        let total = critical + high + medium + low;
+
+        let findings: Vec<_> = vulnerabilities
+            .iter()
+            .map(|v| {
+                json!({
+                    "severity": v.severity.to_string(),
+                    "package": v.package,
+                    "identifier": v.identifier,
+                    "summary": v.summary,
+                })
+            })
+            .collect();
+
+        let scan = json!({
+            "generated_at": Utc::now().to_rfc3339(),
+            "summary": {
+                "critical": critical,
+                "high": high,
+                "medium": medium,
+                "low": low,
+                "total": total,
+            },
+            "findings": findings,
+        });
+
+        serde_json::to_string_pretty(&scan).unwrap_or_else(|_| "{}".to_string())
+    }
+
+    fn render_report_stub(format: &str, vulnerabilities: &[SimulatedVulnerability]) -> String {
+        let (critical, high, medium, low) = Self::count_vulnerabilities(vulnerabilities);
+        let total = critical + high + medium + low;
+        let generated_at = Utc::now().to_rfc3339();
+
+        match format.to_lowercase().as_str() {
+            "json" => {
+                let report = json!({
+                    "generated_at": generated_at,
+                    "summary": {
+                        "critical": critical,
+                        "high": high,
+                        "medium": medium,
+                        "low": low,
+                        "total": total,
+                    },
+                    "compliance": {
+                        "eo_14028": true,
+                        "nis2": true,
+                        "cra": true,
+                    },
+                    "notes": "Simulated data – replace with real scan findings in production.",
+                });
+
+                serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string())
+            }
+            "markdown" => {
+                format!(
+                    "# ShadowMap Security Report\n\nGenerated: {}\n\n| Severity | Count |\n| --- | ---: |\n| Critical | {} |\n| High | {} |\n| Medium | {} |\n| Low | {} |\n| **Total** | **{}** |\n\n- EO 14028 compliant\n- NIS2 compliant\n- CRA compliant\n",
+                    generated_at, critical, high, medium, low, total
+                )
+            }
+            "html" => {
+                format!(
+                    "<html><head><title>ShadowMap Report</title></head><body><h1>ShadowMap Security Report</h1><p>Generated: {}</p><table border=\"1\" cellpadding=\"6\"><thead><tr><th>Severity</th><th>Count</th></tr></thead><tbody><tr><td>Critical</td><td>{}</td></tr><tr><td>High</td><td>{}</td></tr><tr><td>Medium</td><td>{}</td></tr><tr><td>Low</td><td>{}</td></tr><tr><td><strong>Total</strong></td><td><strong>{}</strong></td></tr></tbody></table><p>Compliance: EO 14028 ✅ | NIS2 ✅ | CRA ✅</p></body></html>",
+                    generated_at, critical, high, medium, low, total
+                )
+            }
+            "pdf" => {
+                format!(
+                    "ShadowMap PDF report placeholder\nGenerated: {}\nTotal findings: {} (Critical: {}, High: {}, Medium: {}, Low: {})\nCompliance: EO 14028 ✓, NIS2 ✓, CRA ✓\n",
+                    generated_at, total, critical, high, medium, low
+                )
+            }
+            _ => {
+                format!(
+                    "ShadowMap report generated at {}\nTotal findings: {} (Critical: {}, High: {}, Medium: {}, Low: {})\nCompliance targets met: EO 14028, NIS2, CRA\n",
+                    generated_at, total, critical, high, medium, low
+                )
+            }
+        }
+    }
+
+    fn write_stub_file(path: &Path, contents: &str) -> Result<(), BoxError> {
+        if let Some(parent) = path.parent() {
+            if !parent.as_os_str().is_empty() {
+                fs::create_dir_all(parent).map_err(|err| -> BoxError { Box::new(err) })?;
+            }
+        }
+
+        fs::write(path, contents).map_err(|err| -> BoxError { Box::new(err) })?;
+
+        Ok(())
     }
 }
