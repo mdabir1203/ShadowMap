@@ -1,0 +1,2 @@
+subdomain,http_status,server_header,open_ports,cors_issues,fingerprints,takeover_risks,cloud_saas
+bybit.eu,200,wswaf,"80,443",,"{""server"":""wswaf"",""framework"":""react""}",,Predicted exists: api.bybit.eu; Predicted exists: bybit.eu.s3.amazonaws.com; Predicted exists: bybit.eu.storage.googleapis.com
