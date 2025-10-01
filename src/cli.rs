@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 use colored::*;
+use std::fmt;
 use std::io::{self, Write};
 use std::path::PathBuf;
 
@@ -21,6 +22,82 @@ const SHADOWMAP_LOGO: &str = r#"
 const TAGLINE: &str = "Unified Network & Software Security Framework";
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
+#[derive(Clone, Copy)]
+enum Severity {
+    Critical,
+    High,
+    Medium,
+    Low,
+}
+
+impl fmt::Display for Severity {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            Severity::Critical => "Critical",
+            Severity::High => "High",
+            Severity::Medium => "Medium",
+            Severity::Low => "Low",
+        })
+    }
+}
+
+struct SimulatedVulnerability {
+    severity: Severity,
+    package: &'static str,
+    identifier: &'static str,
+    summary: &'static str,
+}
+
+const SIMULATED_VULNERABILITIES: &[SimulatedVulnerability] = &[
+    SimulatedVulnerability {
+        severity: Severity::Critical,
+        package: "openssl",
+        identifier: "CVE-2024-37895",
+        summary: "TLS handshake bypass enables remote code execution.",
+    },
+    SimulatedVulnerability {
+        severity: Severity::High,
+        package: "glibc",
+        identifier: "CVE-2024-3094",
+        summary: "Out-of-bounds write in iconv input validation.",
+    },
+    SimulatedVulnerability {
+        severity: Severity::High,
+        package: "libxml2",
+        identifier: "CVE-2024-25062",
+        summary: "XXE payload may leak credentials via crafted XML.",
+    },
+    SimulatedVulnerability {
+        severity: Severity::Medium,
+        package: "serde_json",
+        identifier: "GHSA-23f6-8h9m-6g78",
+        summary: "Unchecked recursion can lead to denial of service.",
+    },
+    SimulatedVulnerability {
+        severity: Severity::Medium,
+        package: "openssl",
+        identifier: "CVE-2024-4741",
+        summary: "Timing side-channel leaks key material during RSA ops.",
+    },
+    SimulatedVulnerability {
+        severity: Severity::Medium,
+        package: "tokio",
+        identifier: "CVE-2024-34070",
+        summary: "Improper task cancellation may drop pending writes.",
+    },
+    SimulatedVulnerability {
+        severity: Severity::Low,
+        package: "clap",
+        identifier: "GHSA-5m4v-mc3r-q2v4",
+        summary: "Shell completion script may disclose flag defaults.",
+    },
+    SimulatedVulnerability {
+        severity: Severity::Low,
+        package: "hyper",
+        identifier: "CVE-2024-28131",
+        summary: "Verbose logging can expose bearer tokens in debug mode.",
+    },
+];
 // ============================================================================
 // CLI STRUCTURE - Elegant User Experience
 // ============================================================================
@@ -337,6 +414,60 @@ impl TerminalUI {
         println!("  {} {:<12} {}", icon, severity, colored_count);
     }
 
+    fn print_vulnerability_table(vulnerabilities: &[SimulatedVulnerability]) {
+        if vulnerabilities.is_empty() {
+            return;
+        }
+
+        println!();
+        println!("{}", "TOP FINDINGS".bright_white().bold());
+        println!("{}", "─".repeat(50).bright_black());
+
+        for vuln in vulnerabilities {
+            let (icon, badge) = match vuln.severity {
+                Severity::Critical => (
+                    "🛑",
+                    format!("{:^8}", vuln.severity)
+                        .bright_white()
+                        .on_bright_red()
+                        .bold(),
+                ),
+                Severity::High => (
+                    "🚨",
+                    format!("{:^8}", vuln.severity)
+                        .bright_white()
+                        .on_red()
+                        .bold(),
+                ),
+                Severity::Medium => (
+                    "⚠️",
+                    format!("{:^8}", vuln.severity)
+                        .bright_black()
+                        .on_yellow()
+                        .bold(),
+                ),
+                Severity::Low => (
+                    "ℹ️",
+                    format!("{:^8}", vuln.severity)
+                        .bright_black()
+                        .on_bright_green()
+                        .bold(),
+                ),
+            };
+
+            println!(
+                "  {} {} {:<16} {:<18} {}",
+                icon,
+                badge,
+                vuln.package.bright_white().bold(),
+                vuln.identifier.bright_cyan(),
+                vuln.summary
+            );
+        }
+
+        println!("{}", "─".repeat(50).bright_black());
+    }
+
     /// Animated progress bar
     fn show_progress(message: &str) {
         print!("  {} {} ", "⏳".bright_cyan(), message);
@@ -454,11 +585,12 @@ impl ShadowMapCLI {
         TerminalUI::show_progress("Loading SBOM");
         TerminalUI::show_progress("Querying vulnerability databases");
         TerminalUI::show_progress("Analyzing CVE matches");
-
-        // Simulated vulnerability results
-        let (critical, high, medium, low) = (2, 5, 10, 3);
+      
+        let vulnerabilities = SIMULATED_VULNERABILITIES;
+        let (critical, high, medium, low) = Self::count_vulnerabilities(vulnerabilities);
 
         TerminalUI::print_vulnerability_summary(critical, high, medium, low);
+        TerminalUI::print_vulnerability_table(vulnerabilities);
         TerminalUI::print_section_end();
 
         // Check fail threshold
@@ -528,12 +660,18 @@ impl ShadowMapCLI {
         // Step 2: Vulnerability Scan
         TerminalUI::print_step(2, 3, "Vulnerability Scan");
         TerminalUI::show_progress("Scanning for known vulnerabilities");
-        let (critical, high, medium, low) = (2, 5, 10, 3);
+        let vulnerabilities = SIMULATED_VULNERABILITIES;
+        let (critical, high, medium, low) = Self::count_vulnerabilities(vulnerabilities);
         TerminalUI::print_vulnerability_summary(critical, high, medium, low);
+        TerminalUI::print_vulnerability_table(vulnerabilities);
 
         if let Some(threshold) = &fail_on {
             if Self::should_fail(threshold, critical, high, medium, low) {
                 TerminalUI::print_error("Pipeline failed: Vulnerability threshold exceeded");
+                TerminalUI::print_info(&format!("📁 Output: {}/", output_dir.display()));
+                TerminalUI::print_info("📄 Files: sbom.json, scan-results.json, report.json");
+                io::stdout().flush().ok();
+                io::stderr().flush().ok();
                 std::process::exit(1);
             }
         }
@@ -655,5 +793,20 @@ impl ShadowMapCLI {
             "low" => critical > 0 || high > 0 || medium > 0 || low > 0,
             _ => false,
         }
+    }
+
+    fn count_vulnerabilities(vulnerabilities: &[SimulatedVulnerability]) -> (u32, u32, u32, u32) {
+        let mut counts = (0_u32, 0_u32, 0_u32, 0_u32);
+
+        for vuln in vulnerabilities {
+            match vuln.severity {
+                Severity::Critical => counts.0 += 1,
+                Severity::High => counts.1 += 1,
+                Severity::Medium => counts.2 += 1,
+                Severity::Low => counts.3 += 1,
+            }
+        }
+
+        counts
     }
 }
