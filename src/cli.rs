@@ -98,7 +98,6 @@ const SIMULATED_VULNERABILITIES: &[SimulatedVulnerability] = &[
         summary: "Verbose logging can expose bearer tokens in debug mode.",
     },
 ];
-
 // ============================================================================
 // CLI STRUCTURE - Elegant User Experience
 // ============================================================================
@@ -586,7 +585,7 @@ impl ShadowMapCLI {
         TerminalUI::show_progress("Loading SBOM");
         TerminalUI::show_progress("Querying vulnerability databases");
         TerminalUI::show_progress("Analyzing CVE matches");
-
+      
         let vulnerabilities = SIMULATED_VULNERABILITIES;
         let (critical, high, medium, low) = Self::count_vulnerabilities(vulnerabilities);
 
@@ -786,7 +785,6 @@ impl ShadowMapCLI {
     }
 
     // Helper functions
-
     fn should_fail(threshold: &str, critical: u32, high: u32, medium: u32, low: u32) -> bool {
         match threshold.to_lowercase().as_str() {
             "critical" => critical > 0,

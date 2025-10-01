@@ -1,0 +1,21 @@
+{
+  "bybit.eu": {
+    "cloud_saas": [
+      "Predicted exists: api.bybit.eu",
+      "Predicted exists: bybit.eu.s3.amazonaws.com",
+      "Predicted exists: bybit.eu.storage.googleapis.com"
+    ],
+    "cors_issues": [],
+    "fingerprints": {
+      "framework": "react",
+      "server": "wswaf"
+    },
+    "http_status": 200,
+    "open_ports": [
+      80,
+      443
+    ],
+    "server_header": "wswaf",
+    "takeover_risks": []
+  }
+}
