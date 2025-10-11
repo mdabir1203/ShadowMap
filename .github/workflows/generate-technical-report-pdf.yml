@@ -1,0 +1,32 @@
+name: Generate technical report PDF
+permissions:
+    contents: read
+    pull-requests: write
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'docs/technical-report.md'
+      - '.github/workflows/generate-technical-report-pdf.yml'
+
+jobs:
+  build:
+    name: Build PDF
+    runs-on: ubuntu-latest
+    container:
+      image: pandoc/latex:latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate PDF artifact
+        run: |
+          mkdir -p build
+          pandoc docs/technical-report.md -o build/technical-report.pdf
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: technical-report
+          path: build/technical-report.pdf
