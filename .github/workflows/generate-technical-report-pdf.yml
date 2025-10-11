@@ -1,5 +1,6 @@
 name: Generate technical report PDF
-
+permissions:
+  contents: read
 on:
   workflow_dispatch:
   push:
