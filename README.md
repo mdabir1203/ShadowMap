@@ -81,6 +81,13 @@ ShadowMap aligns its operational safeguards with SOC 2 Trust Services Criteria a
 [Data Security and Compliance Strategy](docs/data-security.md) describes the control owners, evidence expectations, and
 validation activities that keep reconnaissance data secure throughout its lifecycle.
 
+### Technical report automation
+
+Run `./scripts/generate-technical-report.sh` to materialize the latest reconnaissance brief as `build/technical-report.md`.
+The [Generate technical report PDF workflow](.github/workflows/generate-technical-report-pdf.yml) wires this script into the
+CI pipeline and uses Pandoc to emit a downloadable artifact—trigger it manually from the **Actions** tab whenever you need a
+fresh PDF without committing binaries.
+
 ### Application Governance & Resilience
 
 Teams that need to spot unapproved apps, fragmented data flows, or silent system failures can extend ShadowMap's

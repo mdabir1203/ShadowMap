@@ -1,0 +1,31 @@
+name: Generate technical report PDF
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/generate-technical-report.sh'
+      - '.github/workflows/generate-technical-report-pdf.yml'
+
+jobs:
+  build:
+    name: Build PDF
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate report markdown
+        run: scripts/generate-technical-report.sh build
+
+      - name: Convert markdown to PDF
+        uses: docker://pandoc/latex:latest
+        with:
+          args: >-
+            /bin/sh -c "pandoc build/technical-report.md -o build/technical-report.pdf"
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: technical-report
+          path: build/technical-report.pdf
