@@ -1,0 +1,301 @@
+import { Button, ProgressIndicator, LineEdit, ListView } from "std-widgets.slint";
+
+export struct StatCard {
+    title: string,
+    value: string,
+    subtitle: string,
+}
+
+export struct SubdomainRow {
+    name: string,
+    status: string,
+    highlight: bool,
+}
+
+export struct ActivityBar {
+    label: string,
+    value: float,
+}
+
+export struct AlertRow {
+    label: string,
+    count: string,
+    accent: brush,
+}
+
+export component Dashboard inherits Window {
+    width: 1024px;
+    height: 640px;
+    title: "ShadowMap Dashboard";
+    background: @linear-gradient(180deg, #101323, #1b1f38);
+
+    in property <string> current-date;
+    in property <string> current-time;
+    in-out property <string> domain-input;
+    in property <string> status-text;
+    in property <brush> status-color;
+    in property <bool> scan-in-progress;
+    in property <string> last-run;
+    in property <float> scan-progress;
+    in property <[StatCard]> stats;
+    in property <[SubdomainRow]> subdomains;
+    in property <[ActivityBar]> activity;
+    in property <[AlertRow]> alerts;
+
+    callback start-scan(string);
+
+    VerticalLayout {
+        padding: 28px;
+        spacing: 20px;
+        HorizontalLayout {
+            Text {
+                text: root.current-date;
+                font-size: 22px;
+                color: #f2f4ff;
+            }
+            Rectangle {
+                horizontal-stretch: 1;
+                opacity: 0;
+            }
+            Text {
+                text: root.current-time;
+                font-size: 18px;
+                color: #8ea0ff;
+            }
+        }
+
+        Rectangle {
+            background: @linear-gradient(120deg, #20264a, #181d3a);
+            border-radius: 24px;
+            padding: 24px;
+            VerticalLayout {
+                spacing: 14px;
+                Text {
+                    text: "Recon Orchestrator";
+                    font-size: 26px;
+                    color: #ffffff;
+                }
+                HorizontalLayout {
+                    spacing: 18px;
+                    LineEdit {
+                        width: 360px;
+                        text <=> root.domain-input;
+                        placeholder-text: "Enter a target domain";
+                        enabled: !root.scan-in-progress;
+                    }
+                    Button {
+                        text: root.scan-in-progress ? "Scanning..." : "Launch Scan";
+                        enabled: !root.scan-in-progress;
+                        clicked => { root.start-scan(root.domain-input); }
+                    }
+                    ProgressIndicator {
+                        visible: root.scan-in-progress;
+                        indeterminate: root.scan-in-progress;
+                        progress: root.scan-progress;
+                    }
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        opacity: 0;
+                    }
+                    VerticalLayout {
+                        spacing: 4px;
+                        alignment: center;
+                        Text {
+                            text: "Last Run";
+                            font-size: 12px;
+                            color: #9aa8ff;
+                        }
+                        Text {
+                            text: root.last-run;
+                            font-size: 16px;
+                            color: #ffffff;
+                        }
+                    }
+                }
+                Text {
+                    text: root.status-text;
+                    color: root.status-color;
+                    font-size: 16px;
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 18px;
+            width: parent.width;
+            for card[idx] in root.stats : Rectangle {
+                width: parent.width / 4;
+                background: @linear-gradient(160deg, #1c2242, #0f1327);
+                border-radius: 20px;
+                padding: 18px;
+                VerticalLayout {
+                    spacing: 6px;
+                    Text {
+                        text: card.title;
+                        color: #7f8cff;
+                        font-size: 14px;
+                    }
+                    Text {
+                        text: card.value;
+                        color: #ffffff;
+                        font-size: 30px;
+                        font-weight: 600;
+                    }
+                    Text {
+                        text: card.subtitle;
+                        color: #9ca9ff;
+                        font-size: 12px;
+                    }
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 18px;
+            Rectangle {
+                background: @linear-gradient(160deg, #1d2344, #141a34);
+                border-radius: 20px;
+                padding: 20px;
+                width: parent.width * 0.6;
+                VerticalLayout {
+                    spacing: 12px;
+                    Text {
+                        text: "Live Service Activity";
+                        font-size: 18px;
+                        color: #ffffff;
+                    }
+                    HorizontalLayout {
+                        spacing: 14px;
+                        alignment: end;
+                        for point[idx] in root.activity : VerticalLayout {
+                            spacing: 8px;
+                            alignment: center;
+                            Rectangle {
+                                border-radius: 12px;
+                                width: 22px;
+                                height: 12px + point.value * 108px;
+                                background: @linear-gradient(180deg, #5a7cff, #45d5ff);
+                            }
+                            Text {
+                                text: point.label;
+                                font-size: 11px;
+                                color: #b8c5ff;
+                                horizontal-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+            Rectangle {
+                background: @linear-gradient(160deg, #1f2548, #151a35);
+                border-radius: 20px;
+                padding: 20px;
+                width: parent.width * 0.4;
+                VerticalLayout {
+                    spacing: 12px;
+                    Text {
+                        text: "Risk Alerts";
+                        font-size: 18px;
+                        color: #ffffff;
+                    }
+                    VerticalLayout {
+                        spacing: 10px;
+                        for alert[idx] in root.alerts : Rectangle {
+                            background: alert.accent;
+                            border-radius: 16px;
+                            padding: 12px;
+                            opacity: 0.85;
+                            VerticalLayout {
+                                spacing: 4px;
+                                Text {
+                                    text: alert.label;
+                                    font-size: 14px;
+                                    color: #10142a;
+                                }
+                                Text {
+                                    text: alert.count;
+                                    font-size: 22px;
+                                    color: #020305;
+                                    font-weight: 600;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 18px;
+            Rectangle {
+                background: @linear-gradient(160deg, #1b2140, #141a34);
+                border-radius: 20px;
+                padding: 20px;
+                width: parent.width * 0.6;
+                VerticalLayout {
+                    spacing: 12px;
+                    Text {
+                        text: "Live Subdomains";
+                        font-size: 18px;
+                        color: #ffffff;
+                    }
+                    ListView {
+                        for row[idx] in root.subdomains : Rectangle {
+                            background: row.highlight ? @linear-gradient(90deg, #29305a, #1b203f) : #161b34;
+                            border-radius: 12px;
+                            padding: 12px;
+                            HorizontalLayout {
+                                spacing: 12px;
+                                Text {
+                                    text: row.name;
+                                    color: #ffffff;
+                                    font-size: 14px;
+                                }
+                                Rectangle {
+                                    horizontal-stretch: 1;
+                                    opacity: 0;
+                                }
+                                Text {
+                                    text: row.status;
+                                    color: row.highlight ? #89f9ff : #9fb0ff;
+                                    font-size: 13px;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Rectangle {
+                background: @linear-gradient(160deg, #20264b, #151a35);
+                border-radius: 20px;
+                padding: 20px;
+                width: parent.width * 0.4;
+                VerticalLayout {
+                    spacing: 12px;
+                    Text {
+                        text: "Execution Timeline";
+                        font-size: 18px;
+                        color: #ffffff;
+                    }
+                    Text {
+                        text: root.status-text;
+                        font-size: 14px;
+                        color: #9fb0ff;
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            height: 12px;
+            border-radius: 12px;
+            background: #12162c;
+            Rectangle {
+                width: root.scan-progress * parent.width;
+                height: parent.height;
+                border-radius: parent.border-radius;
+                background: @linear-gradient(90deg, #597dff, #43d5ff);
+            }
+        }
+    }
+}
