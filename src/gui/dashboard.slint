@@ -1,0 +1,425 @@
+import { ProgressIndicator, ListView, LineEdit } from "std-widgets.slint";
+
+component PrimaryButton inherits Rectangle {
+    in property <string> label;
+    in property <bool> enabled;
+    callback clicked;
+
+    min-width: 160px;
+    height: 46px;
+    border-radius: 18px;
+    background: @linear-gradient(100deg, #5c7dff, #48d6ff);
+    border-width: 1px;
+    border-color: #6fbaf855;
+    clip: true;
+    opacity: root.enabled ? 1.0 : 0.45;
+
+    Text {
+        width: parent.width;
+        height: parent.height;
+        text: root.label;
+        color: #061028;
+        font-size: 16px;
+        font-weight: 600;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    TouchArea {
+        width: parent.width;
+        height: parent.height;
+        enabled: root.enabled;
+        clicked => { root.clicked(); }
+    }
+}
+
+component PremiumInput inherits Rectangle {
+    in-out property <string> value;
+    in property <string> placeholder;
+    in property <bool> enabled;
+
+    width: 380px;
+    height: 48px;
+    border-radius: 18px;
+    background: #101835f2;
+    border-width: 1px;
+    border-color: #3a4780;
+    padding: 6px;
+    opacity: root.enabled ? 1.0 : 0.55;
+
+    LineEdit {
+        width: parent.width;
+        height: parent.height;
+        text <=> root.value;
+        placeholder-text: root.placeholder;
+        enabled: root.enabled;
+    }
+}
+
+export struct StatCard {
+    title: string,
+    value: string,
+    subtitle: string,
+}
+
+export struct SubdomainRow {
+    name: string,
+    status: string,
+    highlight: bool,
+}
+
+export struct ActivityBar {
+    label: string,
+    value: float,
+}
+
+export struct AlertRow {
+    label: string,
+    count: string,
+    accent: brush,
+}
+
+export component Dashboard inherits Window {
+    width: 1200px;
+    height: 720px;
+    title: "ShadowMap Dashboard";
+    background: @linear-gradient(140deg, #050713, #0e1429);
+
+    in property <string> current-date;
+    in property <string> current-time;
+    in-out property <string> domain-input;
+    in property <string> status-text;
+    in property <brush> status-color;
+    in property <bool> scan-in-progress;
+    in property <string> last-run;
+    in property <float> scan-progress;
+    in property <[StatCard]> stats;
+    in property <[SubdomainRow]> subdomains;
+    in property <[ActivityBar]> activity;
+    in property <[AlertRow]> alerts;
+
+    callback start-scan(string);
+
+    VerticalLayout {
+        padding: 36px;
+        spacing: 24px;
+        HorizontalLayout {
+            Text {
+                text: root.current-date;
+                font-size: 24px;
+                font-weight: 600;
+                color: #f4f6ff;
+            }
+            Rectangle {
+                horizontal-stretch: 1;
+                opacity: 0;
+            }
+            Text {
+                text: root.current-time;
+                font-size: 16px;
+                color: #93a5ff;
+                opacity: 0.88;
+            }
+        }
+
+        Rectangle {
+            background: @linear-gradient(120deg, #202b55f5, #151a37f0);
+            border-radius: 28px;
+            padding: 28px;
+            border-width: 1px;
+            border-color: #4c5ad466;
+            drop-shadow-color: #040617c0;
+            drop-shadow-offset-x: 0px;
+            drop-shadow-offset-y: 18px;
+            drop-shadow-blur: 36px;
+            VerticalLayout {
+                spacing: 18px;
+                Text {
+                    text: "Recon Orchestrator";
+                    font-size: 28px;
+                    font-weight: 600;
+                    color: #ffffff;
+                }
+                HorizontalLayout {
+                    spacing: 20px;
+                    PremiumInput {
+                        value <=> root.domain-input;
+                        placeholder: "Enter a target domain";
+                        enabled: !root.scan-in-progress;
+                    }
+                    PrimaryButton {
+                        label: root.scan-in-progress ? "Scanning..." : "Launch Scan";
+                        enabled: !root.scan-in-progress;
+                        clicked => { root.start-scan(root.domain-input); }
+                    }
+                    ProgressIndicator {
+                        visible: root.scan-in-progress;
+                        indeterminate: root.scan-in-progress;
+                        progress: root.scan-progress;
+                    }
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        opacity: 0;
+                    }
+                    VerticalLayout {
+                        spacing: 6px;
+                        alignment: center;
+                        Text {
+                            text: "LAST RUN";
+                            font-size: 12px;
+                            color: #a4b2ff;
+                            font-weight: 500;
+                            opacity: 0.85;
+                        }
+                        Text {
+                            text: root.last-run;
+                            font-size: 18px;
+                            font-weight: 500;
+                            color: #ffffff;
+                        }
+                    }
+                }
+                Text {
+                    text: root.status-text;
+                    color: root.status-color;
+                    font-size: 16px;
+                    opacity: 0.92;
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 20px;
+            width: parent.width;
+            for card[idx] in root.stats : Rectangle {
+                width: parent.width / 4;
+                background: @linear-gradient(160deg, #1d2548f2, #121731f2);
+                border-radius: 24px;
+                padding: 22px;
+                border-width: 1px;
+                border-color: #3a457599;
+                drop-shadow-color: #040617aa;
+                drop-shadow-offset-x: 0px;
+                drop-shadow-offset-y: 16px;
+                drop-shadow-blur: 32px;
+                VerticalLayout {
+                    spacing: 8px;
+                    Text {
+                        text: card.title;
+                        color: #9aa8ff;
+                        font-size: 13px;
+                    }
+                    Text {
+                        text: card.value;
+                        color: #ffffff;
+                        font-size: 32px;
+                        font-weight: 600;
+                    }
+                    Text {
+                        text: card.subtitle;
+                        color: #b5c3ff;
+                        font-size: 13px;
+                        opacity: 0.86;
+                    }
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 20px;
+            Rectangle {
+                background: @linear-gradient(160deg, #1b244bf2, #131a36f2);
+                border-radius: 24px;
+                padding: 24px;
+                border-width: 1px;
+                border-color: #314070a8;
+                drop-shadow-color: #040617aa;
+                drop-shadow-offset-x: 0px;
+                drop-shadow-offset-y: 16px;
+                drop-shadow-blur: 32px;
+                width: parent.width * 0.6;
+                VerticalLayout {
+                    spacing: 16px;
+                    Text {
+                        text: "Live Service Activity";
+                        font-size: 20px;
+                        color: #ffffff;
+                        font-weight: 500;
+                    }
+                    HorizontalLayout {
+                        spacing: 18px;
+                        alignment: end;
+                        for point[idx] in root.activity : VerticalLayout {
+                            spacing: 10px;
+                            alignment: center;
+                            Rectangle {
+                                border-radius: 14px;
+                                width: 26px;
+                                height: 16px + point.value * 120px;
+                                background: @linear-gradient(190deg, #5b7eff, #48d5ff);
+                                border-width: 1px;
+                                border-color: #5d7bff99;
+                            }
+                            Text {
+                                text: point.label;
+                                font-size: 12px;
+                                color: #c3cffc;
+                                horizontal-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+            Rectangle {
+                background: @linear-gradient(160deg, #1f2750f2, #151a35f2);
+                border-radius: 24px;
+                padding: 24px;
+                border-width: 1px;
+                border-color: #374677a8;
+                drop-shadow-color: #040617aa;
+                drop-shadow-offset-x: 0px;
+                drop-shadow-offset-y: 16px;
+                drop-shadow-blur: 32px;
+                width: parent.width * 0.4;
+                VerticalLayout {
+                    spacing: 16px;
+                    Text {
+                        text: "Risk Alerts";
+                        font-size: 20px;
+                        color: #ffffff;
+                        font-weight: 500;
+                    }
+                    VerticalLayout {
+                        spacing: 12px;
+                        for alert[idx] in root.alerts : Rectangle {
+                            background: alert.accent;
+                            border-radius: 18px;
+                            padding: 16px;
+                            opacity: 0.9;
+                            VerticalLayout {
+                                spacing: 6px;
+                                Text {
+                                    text: alert.label;
+                                    font-size: 15px;
+                                    color: #10142a;
+                                    font-weight: 500;
+                                }
+                                Text {
+                                    text: alert.count;
+                                    font-size: 26px;
+                                    color: #020305;
+                                    font-weight: 600;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 20px;
+            Rectangle {
+                background: @linear-gradient(160deg, #1b2246f2, #131a37f2);
+                border-radius: 24px;
+                padding: 24px;
+                border-width: 1px;
+                border-color: #33406fa8;
+                drop-shadow-color: #040617aa;
+                drop-shadow-offset-x: 0px;
+                drop-shadow-offset-y: 16px;
+                drop-shadow-blur: 32px;
+                width: parent.width * 0.6;
+                VerticalLayout {
+                    spacing: 16px;
+                    Text {
+                        text: "Live Subdomains";
+                        font-size: 20px;
+                        color: #ffffff;
+                        font-weight: 500;
+                    }
+                    ListView {
+                        for row[idx] in root.subdomains : Rectangle {
+                            background: row.highlight
+                                ? @linear-gradient(100deg, #27315cff, #1c2345f2)
+                                : #141a34f2;
+                            border-radius: 18px;
+                            padding: 16px;
+                            border-width: 1px;
+                            border-color: row.highlight ? #3f4f8aff : #2a345ea8;
+                            drop-shadow-color: row.highlight ? #050b24aa : #00000000;
+                            drop-shadow-offset-x: 0px;
+                            drop-shadow-offset-y: row.highlight ? 8px : 0px;
+                            drop-shadow-blur: row.highlight ? 24px : 0px;
+                            HorizontalLayout {
+                                spacing: 12px;
+                                Text {
+                                    text: row.name;
+                                    color: #ffffff;
+                                    font-size: 15px;
+                                    font-weight: row.highlight ? 600 : 500;
+                                }
+                                Rectangle {
+                                    horizontal-stretch: 1;
+                                    opacity: 0;
+                                }
+                                Text {
+                                    text: row.status;
+                                    color: row.highlight ? #8af7ff : #9fb0ff;
+                                    font-size: 13px;
+                                    opacity: 0.9;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Rectangle {
+                background: @linear-gradient(160deg, #1f2750f2, #131a35f2);
+                border-radius: 24px;
+                padding: 24px;
+                border-width: 1px;
+                border-color: #384678a8;
+                drop-shadow-color: #040617aa;
+                drop-shadow-offset-x: 0px;
+                drop-shadow-offset-y: 16px;
+                drop-shadow-blur: 32px;
+                width: parent.width * 0.4;
+                VerticalLayout {
+                    spacing: 16px;
+                    Text {
+                        text: "Execution Timeline";
+                        font-size: 20px;
+                        color: #ffffff;
+                        font-weight: 500;
+                    }
+                    Text {
+                        text: root.status-text;
+                        font-size: 15px;
+                        color: #b0bdfd;
+                        opacity: 0.88;
+                        wrap: word-wrap;
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            height: 14px;
+            border-radius: 14px;
+            background: #0d1328;
+            border-width: 1px;
+            border-color: #2a335b;
+            Rectangle {
+                width: root.scan-progress * parent.width;
+                height: parent.height;
+                border-radius: parent.border-radius;
+                background: @linear-gradient(100deg, #5f81ff, #49d6ff);
+                drop-shadow-color: #1a55ff88;
+                drop-shadow-offset-x: 0px;
+                drop-shadow-offset-y: 0px;
+                drop-shadow-blur: 24px;
+            }
+        }
+    }
+}
