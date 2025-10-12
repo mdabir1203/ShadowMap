@@ -111,6 +111,12 @@ cargo run --features gui --bin shadowmap-gui
 ```
 Enter a target domain in the GUI and select **Run Scan**; results are written to the output directory displayed on completion. The interface is implemented entirely in Rust via [`iced`](https://github.com/iced-rs/iced).
 
+### Slint dashboard preview (experimental)
+```bash
+cargo run --features dashboard --bin shadowmap-dashboard
+```
+Use the Slint-powered dashboard to launch scans, review live status messages, and visualize summaries of subdomain activity and alert categories.
+
 ---
 
 ## Usage
