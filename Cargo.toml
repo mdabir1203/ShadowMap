@@ -69,6 +69,7 @@ v_htmlescape = "0.15"
 
 # Desktop GUI
 iced = { version = "0.12", optional = true, features = ["wgpu", "tokio"] }
+slint = { version = "1.5", optional = true, default-features = false, features = ["std", "backend-winit", "renderer-femtovg", "compat-1-2"] }
 colored = "3.0.0"
 
 [dev-dependencies]
@@ -77,6 +78,7 @@ tokio-test = "0.4"
 [features]
 default = []
 gui = ["iced"]
+dashboard = ["slint"]
 
 [profile.release]
 opt-level = 3
@@ -93,3 +95,11 @@ path = "src/server.rs"
 name = "shadowmap-gui"
 path = "src/gui.rs"
 required-features = ["gui"]
+
+[build-dependencies]
+slint-build = "1.5"
+
+[[bin]]
+name = "shadowmap-dashboard"
+path = "src/dashboard.rs"
+required-features = ["dashboard"]
