@@ -1,4 +1,6 @@
 name: Generate technical report PDF
+permissions:
+  contents: readV
 
 on:
   workflow_dispatch:
