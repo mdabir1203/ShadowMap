@@ -23,6 +23,11 @@ export struct AlertRow {
     accent: brush,
 }
 
+export struct FeatureFeedbackRow {
+    title: string,
+    detail: string,
+}
+
 export component Dashboard inherits Window {
     width: 1024px;
     height: 640px;
@@ -41,8 +46,11 @@ export component Dashboard inherits Window {
     in property <[SubdomainRow]> subdomains;
     in property <[ActivityBar]> activity;
     in property <[AlertRow]> alerts;
+    in property <[FeatureFeedbackRow]> feature-feedback;
+    in-out property <bool> report-available;
 
     callback start-scan(string);
+    callback download-compliance-report();
 
     VerticalLayout {
         padding: 28px;
@@ -92,6 +100,11 @@ export component Dashboard inherits Window {
                         visible: root.scan-in-progress;
                         indeterminate: root.scan-in-progress;
                         progress: root.scan-progress;
+                    }
+                    Button {
+                        text: "Download Compliance Report";
+                        enabled: root.report-available && !root.scan-in-progress;
+                        clicked => { root.download-compliance-report(); }
                     }
                     Rectangle {
                         horizontal-stretch: 1;
@@ -281,6 +294,36 @@ export component Dashboard inherits Window {
                         text: root.status-text;
                         font-size: 14px;
                         color: #9fb0ff;
+                    }
+                    Rectangle {
+                        height: 1px;
+                        background: #283059;
+                        opacity: 0.8;
+                    }
+                    Text {
+                        text: "Continuous Feature Monitoring";
+                        font-size: 14px;
+                        color: #c7d3ff;
+                    }
+                    ListView {
+                        for feedback[idx] in root.feature-feedback : Rectangle {
+                            background: @linear-gradient(160deg, #232a52, #1b2142);
+                            border-radius: 14px;
+                            padding: 10px;
+                            VerticalLayout {
+                                spacing: 4px;
+                                Text {
+                                    text: feedback.title;
+                                    font-size: 13px;
+                                    color: #f5f7ff;
+                                }
+                                Text {
+                                    text: feedback.detail;
+                                    font-size: 12px;
+                                    color: #9fb0ff;
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -17,17 +17,7 @@ pub use agent::{AutonomousReconAgent, ReconEngine, ReconReport};
 pub use args::Args;
 use reporting::{write_outputs, ReconMaps};
 
-pub async fn run(args: Args) -> Result<String, BoxError> {
-    let engine = ReconEngine::bootstrap(args).await?;
-    engine.log_run_banner();
-    let use_agent = engine.is_autonomous();
-
-    let report = if use_agent {
-        AutonomousReconAgent::new(engine).execute().await?
-    } else {
-        engine.execute_full_scan().await?
-    };
-
+pub fn generate_compliance_outputs(report: &ReconReport) -> Result<(), BoxError> {
     write_outputs(
         &report.live_subdomains,
         ReconMaps {
@@ -41,7 +31,21 @@ pub async fn run(args: Args) -> Result<String, BoxError> {
         },
         &report.output_dir,
         &report.domain,
-    )?;
+    )
+}
+
+pub async fn run(args: Args) -> Result<String, BoxError> {
+    let engine = ReconEngine::bootstrap(args).await?;
+    engine.log_run_banner();
+    let use_agent = engine.is_autonomous();
+
+    let report = if use_agent {
+        AutonomousReconAgent::new(engine).execute().await?
+    } else {
+        engine.execute_full_scan().await?
+    };
+
+    generate_compliance_outputs(&report)?;
 
     eprintln!(
         "[*] Recon complete. Outputs in: {} ({} live, {} deep cloud alerts)",
