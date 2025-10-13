@@ -40,6 +40,40 @@ cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
 ```
 
+### Landing page & billing checkout
+
+ShadowMap now ships with a minimalist marketing landing page, localized pricing, and optional Stripe Checkout integration.
+
+1. Export your Stripe credentials and price IDs (test or live):
+   ```bash
+   export STRIPE_PUBLISHABLE_KEY=pk_test_...
+   export STRIPE_SECRET_KEY=sk_test_...
+   export STRIPE_PRICE_STARTER_USD=price_123
+   export STRIPE_PRICE_STARTER_EUR=price_456
+   export STRIPE_PRICE_GROWTH_USD=price_789
+   export STRIPE_PRICE_GROWTH_EUR=price_abc
+   export STRIPE_PRICE_ENTERPRISE_USD=price_def
+   export STRIPE_PRICE_ENTERPRISE_EUR=price_ghi
+   # Optional overrides for post-checkout navigation
+   export STRIPE_SUCCESS_URL=https://shadowmap.io/app?checkout=success
+   export STRIPE_CANCEL_URL=https://shadowmap.io/pricing
+   ```
+
+2. (Optional) Point the lead-capture database at a custom SQLite location. The server defaults to
+   `sqlite://shadowmap.db` in the working directory and will automatically create the
+   `landing_leads` table when it starts:
+   ```bash
+   export DATABASE_URL=sqlite:///var/lib/shadowmap/leads.db
+   ```
+
+3. Launch the server:
+   ```bash
+   cargo run --bin shadowmap-server
+   ```
+
+4. Visit `http://localhost:8080/` for the public landing page and `http://localhost:8080/app` for the authenticated recon dashboard. Every checkout attempt stores the work email, plan, and region in
+   the `landing_leads` table for follow-up.
+
 ### Supply Chain Security
 
 ShadowMap includes a lightweight workflow for generating a Software Bill of Materials (SBOM) and scanning it for known vulnerab
