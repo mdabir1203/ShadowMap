@@ -182,7 +182,9 @@ struct StripeSession {
 }
 
 async fn create_checkout_session(
+
     State(state): State<AppState>,
+
     Json(payload): Json<CheckoutRequest>,
 ) -> Result<Json<CheckoutResponse>, (StatusCode, String)> {
     let plan = payload.plan_id.trim().to_lowercase();

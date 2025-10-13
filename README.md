@@ -59,6 +59,7 @@ ShadowMap now ships with a minimalist marketing landing page, localized pricing,
    export STRIPE_CANCEL_URL=https://shadowmap.io/pricing
    ```
 
+
 2. (Optional) Point the lead-capture database at a custom SQLite location. The server defaults to
    `sqlite://shadowmap.db` in the working directory and will automatically create the
    `landing_leads` table when it starts:
@@ -73,6 +74,7 @@ ShadowMap now ships with a minimalist marketing landing page, localized pricing,
 
 4. Visit `http://localhost:8080/` for the public landing page and `http://localhost:8080/app` for the authenticated recon dashboard. Every checkout attempt stores the work email, plan, and region in
    the `landing_leads` table for follow-up.
+
 
 ### Supply Chain Security
 
