@@ -66,6 +66,7 @@ papaya = "0.2.3"
 # Web server + HTML rendering
 axum = { version = "0.7", features = ["macros", "form"] }
 v_htmlescape = "0.15"
+sqlx = { version = "0.7", features = ["runtime-tokio", "macros", "sqlite"] }
 
 # Desktop GUI
 iced = { version = "0.12", optional = true, features = ["wgpu", "tokio"] }

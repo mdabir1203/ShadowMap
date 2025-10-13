@@ -42,10 +42,10 @@ fn default_retries() -> usize {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
-    let state = AppState::new();
+    let state = AppState::new().await?;
     let app = Router::new()
         .route("/", get(landing))
         .route("/app", get(index))
@@ -182,16 +182,34 @@ struct StripeSession {
 }
 
 async fn create_checkout_session(
+
+    State(state): State<AppState>,
+
     Json(payload): Json<CheckoutRequest>,
 ) -> Result<Json<CheckoutResponse>, (StatusCode, String)> {
     let plan = payload.plan_id.trim().to_lowercase();
     let region = payload.region.trim().to_lowercase();
+    let lead_email = payload.email.and_then(|value| {
+        let trimmed = value.trim();
+        if trimmed.is_empty() {
+            None
+        } else {
+            Some(trimmed.to_string())
+        }
+    });
+
     let Some(env_key) = stripe_price_env_key(&plan, &region) else {
         return Err((
             StatusCode::BAD_REQUEST,
             "Unknown plan or region selected".to_string(),
         ));
     };
+
+    if let Some(email) = lead_email.as_deref() {
+        if let Err(err) = state.record_work_email(email, &plan, &region).await {
+            error!(?err, email = %email, plan = %plan, region = %region, "failed to store lead email");
+        }
+    }
 
     let price_id = std::env::var(env_key).map_err(|_| {
         (
@@ -221,14 +239,7 @@ async fn create_checkout_session(
         ("allow_promotion_codes".to_string(), "true".to_string()),
     ];
 
-    if let Some(email) = payload.email.and_then(|value| {
-        let trimmed = value.trim();
-        if trimmed.is_empty() {
-            None
-        } else {
-            Some(trimmed.to_string())
-        }
-    }) {
+    if let Some(email) = lead_email {
         form_body.push(("customer_email".to_string(), email));
     }
 
