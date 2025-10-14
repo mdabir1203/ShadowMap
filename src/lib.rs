@@ -15,7 +15,7 @@ mod takeover;
 pub use agent::BoxError;
 pub use agent::{AutonomousReconAgent, ReconEngine, ReconReport};
 pub use args::Args;
-use reporting::{write_outputs, ReconMaps};
+pub use reporting::{write_outputs, ReconMaps};
 
 pub async fn run(args: Args) -> Result<String, BoxError> {
     let engine = ReconEngine::bootstrap(args).await?;

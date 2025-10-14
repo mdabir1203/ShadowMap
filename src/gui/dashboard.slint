@@ -1,0 +1,725 @@
+import { ProgressIndicator, ListView, LineEdit } from "std-widgets.slint";
+
+export global PremiumTheme {
+    out property <brush> background-gradient: @linear-gradient(160deg, #0f172a, #1e293b);
+    out property <brush> accent-gradient: @linear-gradient(115deg, #3b82f6, #14b8a6);
+    out property <brush> accent-glow: #3b82f626;
+    out property <brush> subtle-teal: #14b8a6;
+    out property <brush> text-primary: #f8fafc;
+    out property <brush> text-muted: #94a3b8;
+    out property <brush> glass-surface: #ffffff1f;
+    out property <brush> glass-alt-surface: #0f172a8c;
+    out property <brush> glass-modal: #ffffff14;
+    out property <brush> glass-border: #ffffff40;
+    out property <brush> semantic-growth: #22c55e;
+    out property <brush> semantic-decline: #ef4444;
+    out property <brush> semantic-stability: #3b82f6;
+    out property <length> radius-small: 8px;
+    out property <length> radius-medium: 16px;
+    out property <length> radius-large: 24px;
+    out property <length> blur-card: 25px;
+    out property <length> blur-modal: 20px;
+    out property <length> blur-background: 35px;
+    out property <length> spacing-xxs: 4px;
+    out property <length> spacing-xs: 8px;
+    out property <length> spacing-sm: 12px;
+    out property <length> spacing-md: 16px;
+    out property <length> spacing-lg: 24px;
+    out property <length> spacing-xl: 32px;
+    out property <length> spacing-xxl: 64px;
+    out property <length> layout-max-width: 1440px;
+    out property <length> layout-gutter: 24px;
+    out property <length> layout-sidebar-width: 280px;
+    out property <length> layout-header-height: 64px;
+    out property <string> font-family: "Inter";
+}
+
+component GlassPanel inherits Rectangle {
+    in-out property <brush> fill: PremiumTheme.glass-surface;
+    in-out property <length> corner-radius: PremiumTheme.radius-large;
+    in-out property <length> panel-padding: PremiumTheme.spacing-lg;
+
+    background: root.fill;
+    border-radius: root.corner-radius;
+    border-width: 1px;
+    border-color: PremiumTheme.glass-border;
+    drop-shadow-color: #080b1773;
+    drop-shadow-offset-x: 0px;
+    drop-shadow-offset-y: 14px;
+    drop-shadow-blur: 36px;
+    padding: root.panel-padding;
+    clip: true;
+}
+
+component PrimaryButton inherits Rectangle {
+    in property <string> label;
+    in property <bool> enabled;
+    callback clicked;
+
+    min-width: 180px;
+    height: 48px;
+    border-radius: PremiumTheme.radius-medium;
+    background: PremiumTheme.accent-gradient;
+    border-width: 1px;
+    border-color: PremiumTheme.glass-border;
+    drop-shadow-color: #3b82f64c;
+    drop-shadow-offset-x: 0px;
+    drop-shadow-offset-y: 12px;
+    drop-shadow-blur: 28px;
+    clip: true;
+    opacity: root.enabled ? 1.0 : 0.45;
+
+    Text {
+        width: parent.width;
+        height: parent.height;
+        text: root.label;
+        color: #020817;
+        font-family: PremiumTheme.font-family;
+        font-size: 18px;
+        font-weight: 600;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    TouchArea {
+        width: parent.width;
+        height: parent.height;
+        enabled: root.enabled;
+        clicked => { root.clicked(); }
+    }
+}
+
+component SecondaryButton inherits Rectangle {
+    in property <string> label;
+    in property <bool> enabled;
+    callback clicked;
+
+    min-width: 160px;
+    height: 48px;
+    horizontal-stretch: 0;
+    border-radius: PremiumTheme.radius-medium;
+    background: PremiumTheme.glass-modal;
+    border-width: 1px;
+    border-color: PremiumTheme.glass-border;
+    drop-shadow-color: #00000033;
+    drop-shadow-offset-y: 10px;
+    drop-shadow-blur: 22px;
+    opacity: root.enabled ? 1.0 : 0.45;
+
+    Text {
+        width: parent.width;
+        height: parent.height;
+        text: root.label;
+        color: PremiumTheme.text-primary;
+        font-family: PremiumTheme.font-family;
+        font-size: 16px;
+        font-weight: 500;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    TouchArea {
+        width: parent.width;
+        height: parent.height;
+        enabled: root.enabled;
+        clicked => { root.clicked(); }
+    }
+}
+
+component PremiumInput inherits Rectangle {
+    in-out property <string> value;
+    in property <string> placeholder;
+    in property <bool> enabled;
+
+    min-width: 320px;
+    horizontal-stretch: 1;
+    height: 52px;
+    border-radius: PremiumTheme.radius-medium;
+    background: PremiumTheme.glass-modal;
+    border-width: 1px;
+    border-color: PremiumTheme.glass-border;
+    padding: PremiumTheme.spacing-xs;
+    drop-shadow-color: #080b1739;
+    drop-shadow-offset-y: 12px;
+    drop-shadow-blur: 22px;
+    opacity: root.enabled ? 1.0 : 0.55;
+
+    LineEdit {
+        width: parent.width;
+        height: parent.height;
+        text <=> root.value;
+        placeholder-text: root.placeholder;
+        enabled: root.enabled;
+    }
+}
+
+export struct StatCard {
+    title: string,
+    value: string,
+    subtitle: string,
+}
+
+export struct SubdomainRow {
+    name: string,
+    status: string,
+    highlight: bool,
+}
+
+export struct ActivityBar {
+    label: string,
+    value: float,
+}
+
+export struct AlertRow {
+    label: string,
+    count: string,
+    accent: brush,
+}
+
+export component Dashboard inherits Window {
+    width: 1200px;
+    height: 720px;
+    title: "ShadowMap Dashboard";
+    background: PremiumTheme.background-gradient;
+
+    in property <string> current-date;
+    in property <string> current-time;
+    in-out property <string> domain-input;
+    in property <string> status-text;
+    in property <brush> status-color;
+    in property <bool> scan-in-progress;
+    in property <bool> report-ready;
+    in property <string> last-run;
+    in property <float> scan-progress;
+    in property <string> report-path;
+    in property <[StatCard]> stats;
+    in property <[SubdomainRow]> subdomains;
+    in property <[ActivityBar]> activity;
+    in property <[AlertRow]> alerts;
+
+    callback start-scan(string);
+    callback open-report-folder();
+
+    property <int> stat-columns: root.width >= 1360px ? 4 : root.width >= 960px ? 2 : 1;
+    property <int> panel-columns: root.width >= 1220px ? 2 : 1;
+    property <length> content-width: max(
+        320px,
+        min(root.width - PremiumTheme.spacing-xl * 2, PremiumTheme.layout-max-width),
+    );
+
+    VerticalLayout {
+        width: parent.width;
+        height: parent.height;
+
+        HorizontalLayout {
+            width: parent.width;
+            height: parent.height;
+            padding: PremiumTheme.spacing-xl;
+            alignment: center;
+
+            VerticalLayout {
+                width: root.content-width;
+                spacing: PremiumTheme.spacing-lg;
+
+                HorizontalLayout {
+                    spacing: PremiumTheme.spacing-md;
+                    Text {
+                        text: root.current-date;
+                        font-size: 28px;
+                        font-family: PremiumTheme.font-family;
+                        font-weight: 600;
+                        color: PremiumTheme.text-primary;
+                        letter-spacing: 0.5px;
+                    }
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        opacity: 0;
+                    }
+                    Text {
+                        text: root.current-time;
+                        font-size: 18px;
+                        font-family: PremiumTheme.font-family;
+                        color: PremiumTheme.text-muted;
+                        opacity: 0.92;
+                    }
+                }
+
+                GlassPanel {
+                    fill: @linear-gradient(145deg, PremiumTheme.glass-surface, PremiumTheme.glass-modal);
+                    VerticalLayout {
+                        spacing: PremiumTheme.spacing-md;
+                        Text {
+                            text: "Recon Orchestrator";
+                            font-size: 32px;
+                            font-family: PremiumTheme.font-family;
+                            font-weight: 600;
+                            color: PremiumTheme.text-primary;
+                            letter-spacing: 0.8px;
+                        }
+                        HorizontalLayout {
+                            spacing: PremiumTheme.spacing-md;
+                            PremiumInput {
+                                value <=> root.domain-input;
+                                placeholder: "Enter a target domain";
+                                enabled: !root.scan-in-progress;
+                            }
+                            PrimaryButton {
+                                label: root.scan-in-progress ? "Scanning..." : "Launch Scan";
+                                enabled: !root.scan-in-progress;
+                                clicked => { root.start-scan(root.domain-input); }
+                            }
+                            SecondaryButton {
+                                label: "Open Download Folder";
+                                enabled: root.report-ready;
+                                clicked => { root.open-report-folder(); }
+                            }
+                            ProgressIndicator {
+                                visible: root.scan-in-progress;
+                                indeterminate: root.scan-in-progress;
+                                progress: root.scan-progress;
+                            }
+                            Rectangle {
+                                horizontal-stretch: 1;
+                                opacity: 0;
+                            }
+                            VerticalLayout {
+                                spacing: PremiumTheme.spacing-xxs;
+                                alignment: center;
+                                Text {
+                                    text: "LAST RUN";
+                                    font-size: 13px;
+                                    font-family: PremiumTheme.font-family;
+                                    color: PremiumTheme.text-muted;
+                                    font-weight: 500;
+                                    opacity: 0.95;
+                                }
+                                Text {
+                                    text: root.last-run;
+                                    font-size: 20px;
+                                    font-family: PremiumTheme.font-family;
+                                    font-weight: 500;
+                                    color: PremiumTheme.text-primary;
+                                }
+                            }
+                        }
+                        Text {
+                            text: root.status-text;
+                            color: root.status-color;
+                            font-size: 18px;
+                            font-family: PremiumTheme.font-family;
+                            opacity: 0.95;
+                            wrap: word-wrap;
+                        }
+                        if root.report-path != "" : Rectangle {
+                            border-radius: PremiumTheme.radius-medium;
+                            background: PremiumTheme.glass-modal;
+                            border-width: 1px;
+                            border-color: PremiumTheme.glass-border;
+                            padding: PremiumTheme.spacing-sm;
+                            Text {
+                                text: root.report-path;
+                                font-size: 14px;
+                                font-family: PremiumTheme.font-family;
+                                color: PremiumTheme.text-muted;
+                                wrap: word-wrap;
+                            }
+                        }
+                    }
+                }
+
+                if root.stat-columns == 1 : VerticalLayout {
+                    spacing: PremiumTheme.spacing-md;
+                    for card[idx] in root.stats : GlassPanel {
+                        horizontal-stretch: 1;
+                        min-width: 0;
+                        fill: @linear-gradient(170deg, PremiumTheme.glass-surface, PremiumTheme.glass-alt-surface);
+                        panel-padding: PremiumTheme.spacing-lg;
+                        VerticalLayout {
+                            spacing: PremiumTheme.spacing-xs;
+                            Text {
+                                text: card.title;
+                                color: PremiumTheme.text-muted;
+                                font-size: 14px;
+                                font-family: PremiumTheme.font-family;
+                            }
+                            Text {
+                                text: card.value;
+                                color: PremiumTheme.text-primary;
+                                font-size: 36px;
+                                font-family: PremiumTheme.font-family;
+                                font-weight: 600;
+                            }
+                            Text {
+                                text: card.subtitle;
+                                color: PremiumTheme.text-muted;
+                                font-size: 14px;
+                                font-family: PremiumTheme.font-family;
+                                opacity: 0.9;
+                            }
+                        }
+                    }
+                }
+                if root.stat-columns != 1 : HorizontalLayout {
+                    spacing: PremiumTheme.spacing-md;
+                    for card[idx] in root.stats : GlassPanel {
+                        horizontal-stretch: 1;
+                        min-width: 0;
+                        fill: @linear-gradient(170deg, PremiumTheme.glass-surface, PremiumTheme.glass-alt-surface);
+                        panel-padding: PremiumTheme.spacing-lg;
+                        VerticalLayout {
+                            spacing: PremiumTheme.spacing-xs;
+                            Text {
+                                text: card.title;
+                                color: PremiumTheme.text-muted;
+                                font-size: 14px;
+                                font-family: PremiumTheme.font-family;
+                            }
+                            Text {
+                                text: card.value;
+                                color: PremiumTheme.text-primary;
+                                font-size: 36px;
+                                font-family: PremiumTheme.font-family;
+                                font-weight: 600;
+                            }
+                            Text {
+                                text: card.subtitle;
+                                color: PremiumTheme.text-muted;
+                                font-size: 14px;
+                                font-family: PremiumTheme.font-family;
+                                opacity: 0.9;
+                            }
+                        }
+                    }
+                }
+
+                if root.panel-columns == 1 : VerticalLayout {
+                    spacing: PremiumTheme.spacing-md;
+                    GlassPanel {
+                        min-width: 0;
+                        panel-padding: PremiumTheme.spacing-lg;
+                        VerticalLayout {
+                            spacing: PremiumTheme.spacing-md;
+                            Text {
+                                text: "Live Service Activity";
+                                font-size: 22px;
+                                font-family: PremiumTheme.font-family;
+                                color: PremiumTheme.text-primary;
+                                font-weight: 600;
+                            }
+                            HorizontalLayout {
+                                spacing: PremiumTheme.spacing-md;
+                                alignment: end;
+                                for point[idx] in root.activity : VerticalLayout {
+                                    spacing: PremiumTheme.spacing-sm;
+                                    alignment: center;
+                                    Rectangle {
+                                        border-radius: PremiumTheme.radius-small;
+                                        width: 28px;
+                                        height: 20px + point.value * 120px;
+                                        background: @linear-gradient(200deg, PremiumTheme.semantic-stability, PremiumTheme.subtle-teal);
+                                        border-width: 1px;
+                                        border-color: PremiumTheme.glass-border;
+                                        drop-shadow-color: PremiumTheme.accent-glow;
+                                        drop-shadow-offset-y: 8px;
+                                        drop-shadow-blur: 18px;
+                                    }
+                                    Text {
+                                        text: point.label;
+                                        font-size: 13px;
+                                        font-family: PremiumTheme.font-family;
+                                        color: PremiumTheme.text-muted;
+                                        horizontal-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    GlassPanel {
+                        min-width: 0;
+                        VerticalLayout {
+                            spacing: PremiumTheme.spacing-md;
+                            Text {
+                                text: "Risk Alerts";
+                                font-size: 22px;
+                                font-family: PremiumTheme.font-family;
+                                color: PremiumTheme.text-primary;
+                                font-weight: 600;
+                            }
+                            VerticalLayout {
+                                spacing: PremiumTheme.spacing-sm;
+                                for alert[idx] in root.alerts : GlassPanel {
+                                    fill: @linear-gradient(155deg, alert.accent, PremiumTheme.glass-modal);
+                                    corner-radius: PremiumTheme.radius-medium;
+                                    panel-padding: PremiumTheme.spacing-md;
+                                    drop-shadow-color: #00000040;
+                                    VerticalLayout {
+                                        spacing: PremiumTheme.spacing-xxs;
+                                        Text {
+                                            text: alert.label;
+                                            font-size: 16px;
+                                            font-family: PremiumTheme.font-family;
+                                            color: PremiumTheme.text-primary;
+                                            font-weight: 500;
+                                        }
+                                        Text {
+                                            text: alert.count;
+                                            font-size: 28px;
+                                            font-family: PremiumTheme.font-family;
+                                            color: PremiumTheme.text-primary;
+                                            font-weight: 600;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if root.panel-columns != 1 : HorizontalLayout {
+                    spacing: PremiumTheme.spacing-md;
+                    GlassPanel {
+                        min-width: 0;
+                        panel-padding: PremiumTheme.spacing-lg;
+                        VerticalLayout {
+                            spacing: PremiumTheme.spacing-md;
+                            Text {
+                                text: "Live Service Activity";
+                                font-size: 22px;
+                                font-family: PremiumTheme.font-family;
+                                color: PremiumTheme.text-primary;
+                                font-weight: 600;
+                            }
+                            HorizontalLayout {
+                                spacing: PremiumTheme.spacing-md;
+                                alignment: end;
+                                for point[idx] in root.activity : VerticalLayout {
+                                    spacing: PremiumTheme.spacing-sm;
+                                    alignment: center;
+                                    Rectangle {
+                                        border-radius: PremiumTheme.radius-small;
+                                        width: 28px;
+                                        height: 20px + point.value * 120px;
+                                        background: @linear-gradient(200deg, PremiumTheme.semantic-stability, PremiumTheme.subtle-teal);
+                                        border-width: 1px;
+                                        border-color: PremiumTheme.glass-border;
+                                        drop-shadow-color: PremiumTheme.accent-glow;
+                                        drop-shadow-offset-y: 8px;
+                                        drop-shadow-blur: 18px;
+                                    }
+                                    Text {
+                                        text: point.label;
+                                        font-size: 13px;
+                                        font-family: PremiumTheme.font-family;
+                                        color: PremiumTheme.text-muted;
+                                        horizontal-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    GlassPanel {
+                        min-width: 0;
+                        VerticalLayout {
+                            spacing: PremiumTheme.spacing-md;
+                            Text {
+                                text: "Risk Alerts";
+                                font-size: 22px;
+                                font-family: PremiumTheme.font-family;
+                                color: PremiumTheme.text-primary;
+                                font-weight: 600;
+                            }
+                            VerticalLayout {
+                                spacing: PremiumTheme.spacing-sm;
+                                for alert[idx] in root.alerts : GlassPanel {
+                                    fill: @linear-gradient(155deg, alert.accent, PremiumTheme.glass-modal);
+                                    corner-radius: PremiumTheme.radius-medium;
+                                    panel-padding: PremiumTheme.spacing-md;
+                                    drop-shadow-color: #00000040;
+                                    VerticalLayout {
+                                        spacing: PremiumTheme.spacing-xxs;
+                                        Text {
+                                            text: alert.label;
+                                            font-size: 16px;
+                                            font-family: PremiumTheme.font-family;
+                                            color: PremiumTheme.text-primary;
+                                            font-weight: 500;
+                                        }
+                                        Text {
+                                            text: alert.count;
+                                            font-size: 28px;
+                                            font-family: PremiumTheme.font-family;
+                                            color: PremiumTheme.text-primary;
+                                            font-weight: 600;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if root.panel-columns == 1 : VerticalLayout {
+                    spacing: PremiumTheme.spacing-md;
+                    GlassPanel {
+                        min-width: 0;
+                        panel-padding: PremiumTheme.spacing-lg;
+                        VerticalLayout {
+                            spacing: PremiumTheme.spacing-md;
+                            Text {
+                                text: "Live Subdomains";
+                                font-size: 22px;
+                                font-family: PremiumTheme.font-family;
+                                color: PremiumTheme.text-primary;
+                                font-weight: 600;
+                            }
+                            ListView {
+                                for row[idx] in root.subdomains : GlassPanel {
+                                    fill: row.highlight
+                                        ? @linear-gradient(135deg, PremiumTheme.accent-gradient, PremiumTheme.glass-modal)
+                                        : PremiumTheme.glass-alt-surface;
+                                    corner-radius: PremiumTheme.radius-medium;
+                                    panel-padding: PremiumTheme.spacing-md;
+                                    drop-shadow-color: row.highlight ? PremiumTheme.accent-glow : #0000002d;
+                                    drop-shadow-offset-y: row.highlight ? 10px : 6px;
+                                    drop-shadow-blur: row.highlight ? 26px : 16px;
+                                    HorizontalLayout {
+                                        spacing: PremiumTheme.spacing-sm;
+                                        Text {
+                                            text: row.name;
+                                            color: PremiumTheme.text-primary;
+                                            font-size: 16px;
+                                            font-family: PremiumTheme.font-family;
+                                            font-weight: row.highlight ? 600 : 500;
+                                        }
+                                        Rectangle {
+                                            horizontal-stretch: 1;
+                                            opacity: 0;
+                                        }
+                                        Text {
+                                            text: row.status;
+                                            color: row.highlight ? PremiumTheme.text-primary : PremiumTheme.text-muted;
+                                            font-size: 14px;
+                                            font-family: PremiumTheme.font-family;
+                                            opacity: 0.92;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    GlassPanel {
+                        min-width: 0;
+                        panel-padding: PremiumTheme.spacing-lg;
+                        VerticalLayout {
+                            spacing: PremiumTheme.spacing-md;
+                            Text {
+                                text: "Execution Timeline";
+                                font-size: 22px;
+                                font-family: PremiumTheme.font-family;
+                                color: PremiumTheme.text-primary;
+                                font-weight: 600;
+                            }
+                            Text {
+                                text: root.status-text;
+                                font-size: 16px;
+                                font-family: PremiumTheme.font-family;
+                                color: PremiumTheme.text-muted;
+                                opacity: 0.95;
+                                wrap: word-wrap;
+                            }
+                        }
+                    }
+                }
+                if root.panel-columns != 1 : HorizontalLayout {
+                    spacing: PremiumTheme.spacing-md;
+                    GlassPanel {
+                        min-width: 0;
+                        panel-padding: PremiumTheme.spacing-lg;
+                        VerticalLayout {
+                            spacing: PremiumTheme.spacing-md;
+                            Text {
+                                text: "Live Subdomains";
+                                font-size: 22px;
+                                font-family: PremiumTheme.font-family;
+                                color: PremiumTheme.text-primary;
+                                font-weight: 600;
+                            }
+                            ListView {
+                                for row[idx] in root.subdomains : GlassPanel {
+                                    fill: row.highlight
+                                        ? @linear-gradient(135deg, PremiumTheme.accent-gradient, PremiumTheme.glass-modal)
+                                        : PremiumTheme.glass-alt-surface;
+                                    corner-radius: PremiumTheme.radius-medium;
+                                    panel-padding: PremiumTheme.spacing-md;
+                                    drop-shadow-color: row.highlight ? PremiumTheme.accent-glow : #0000002d;
+                                    drop-shadow-offset-y: row.highlight ? 10px : 6px;
+                                    drop-shadow-blur: row.highlight ? 26px : 16px;
+                                    HorizontalLayout {
+                                        spacing: PremiumTheme.spacing-sm;
+                                        Text {
+                                            text: row.name;
+                                            color: PremiumTheme.text-primary;
+                                            font-size: 16px;
+                                            font-family: PremiumTheme.font-family;
+                                            font-weight: row.highlight ? 600 : 500;
+                                        }
+                                        Rectangle {
+                                            horizontal-stretch: 1;
+                                            opacity: 0;
+                                        }
+                                        Text {
+                                            text: row.status;
+                                            color: row.highlight ? PremiumTheme.text-primary : PremiumTheme.text-muted;
+                                            font-size: 14px;
+                                            font-family: PremiumTheme.font-family;
+                                            opacity: 0.92;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    GlassPanel {
+                        min-width: 0;
+                        panel-padding: PremiumTheme.spacing-lg;
+                        VerticalLayout {
+                            spacing: PremiumTheme.spacing-md;
+                            Text {
+                                text: "Execution Timeline";
+                                font-size: 22px;
+                                font-family: PremiumTheme.font-family;
+                                color: PremiumTheme.text-primary;
+                                font-weight: 600;
+                            }
+                            Text {
+                                text: root.status-text;
+                                font-size: 16px;
+                                font-family: PremiumTheme.font-family;
+                                color: PremiumTheme.text-muted;
+                                opacity: 0.95;
+                                wrap: word-wrap;
+                            }
+                        }
+                    }
+                }
+
+                GlassPanel {
+                    panel-padding: PremiumTheme.spacing-xxs;
+                    height: 20px;
+                    border-radius: PremiumTheme.radius-medium;
+                    drop-shadow-color: PremiumTheme.accent-glow;
+                    clip: true;
+                    Rectangle {
+                        width: root.scan-progress * parent.width;
+                        height: parent.height;
+                        border-radius: parent.border-radius;
+                        background: PremiumTheme.accent-gradient;
+                        drop-shadow-color: PremiumTheme.accent-glow;
+                        drop-shadow-offset-x: 0px;
+                        drop-shadow-offset-y: 0px;
+                        drop-shadow-blur: 24px;
+                    }
+                }
+            }
+        }
+    }
+}
