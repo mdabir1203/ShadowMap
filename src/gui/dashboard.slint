@@ -1,112 +1,4 @@
-import { ProgressIndicator, ListView, LineEdit } from "std-widgets.slint";
-
-export global PremiumTheme {
-    out property <brush> background-gradient: @linear-gradient(160deg, #0f172a, #1e293b);
-    out property <brush> accent-gradient: @linear-gradient(115deg, #3b82f6, #14b8a6);
-    out property <brush> accent-glow: #3b82f626;
-    out property <brush> subtle-teal: #14b8a6;
-    out property <brush> text-primary: #f8fafc;
-    out property <brush> text-muted: #94a3b8;
-    out property <brush> glass-surface: #0f172ac7;
-    out property <brush> glass-alt-surface: #0f172a9e;
-    out property <brush> glass-modal: #ffffff14;
-    out property <brush> glass-border: #ffffff40;
-    out property <brush> semantic-growth: #22c55e;
-    out property <brush> semantic-decline: #ef4444;
-    out property <brush> semantic-stability: #3b82f6;
-    out property <length> radius-small: 8px;
-    out property <length> radius-medium: 16px;
-    out property <length> radius-large: 24px;
-    out property <length> spacing-xxs: 4px;
-    out property <length> spacing-xs: 8px;
-    out property <length> spacing-sm: 12px;
-    out property <length> spacing-md: 16px;
-    out property <length> spacing-lg: 24px;
-    out property <length> spacing-xl: 32px;
-    out property <length> spacing-xxl: 64px;
-    out property <string> font-family: "Inter";
-}
-
-component GlassPanel inherits Rectangle {
-    in-out property <brush> fill: PremiumTheme.glass-surface;
-    in-out property <length> corner-radius: PremiumTheme.radius-large;
-    in-out property <length> panel-padding: PremiumTheme.spacing-lg;
-
-    background: root.fill;
-    border-radius: root.corner-radius;
-    border-width: 1px;
-    border-color: PremiumTheme.glass-border;
-    drop-shadow-color: #080b1773;
-    drop-shadow-offset-x: 0px;
-    drop-shadow-offset-y: 14px;
-    drop-shadow-blur: 36px;
-    padding: root.panel-padding;
-    clip: true;
-}
-
-component PrimaryButton inherits Rectangle {
-    in property <string> label;
-    in property <bool> enabled;
-    callback clicked;
-
-    min-width: 180px;
-    height: 48px;
-    border-radius: PremiumTheme.radius-medium;
-    background: PremiumTheme.accent-gradient;
-    border-width: 1px;
-    border-color: PremiumTheme.glass-border;
-    drop-shadow-color: #3b82f64c;
-    drop-shadow-offset-x: 0px;
-    drop-shadow-offset-y: 12px;
-    drop-shadow-blur: 28px;
-    clip: true;
-    opacity: root.enabled ? 1.0 : 0.45;
-
-    Text {
-        width: parent.width;
-        height: parent.height;
-        text: root.label;
-        color: #020817;
-        font-family: PremiumTheme.font-family;
-        font-size: 18px;
-        font-weight: 600;
-        horizontal-alignment: center;
-        vertical-alignment: center;
-    }
-
-    TouchArea {
-        width: parent.width;
-        height: parent.height;
-        enabled: root.enabled;
-        clicked => { root.clicked(); }
-    }
-}
-
-component PremiumInput inherits Rectangle {
-    in-out property <string> value;
-    in property <string> placeholder;
-    in property <bool> enabled;
-
-    width: 420px;
-    height: 52px;
-    border-radius: PremiumTheme.radius-medium;
-    background: PremiumTheme.glass-modal;
-    border-width: 1px;
-    border-color: PremiumTheme.glass-border;
-    padding: PremiumTheme.spacing-xs;
-    drop-shadow-color: #080b1739;
-    drop-shadow-offset-y: 12px;
-    drop-shadow-blur: 22px;
-    opacity: root.enabled ? 1.0 : 0.55;
-
-    LineEdit {
-        width: parent.width;
-        height: parent.height;
-        text <=> root.value;
-        placeholder-text: root.placeholder;
-        enabled: root.enabled;
-    }
-}
+import { Button, ProgressIndicator, LineEdit, ListView } from "std-widgets.slint";
 
 export struct StatCard {
     title: string,
@@ -131,11 +23,16 @@ export struct AlertRow {
     accent: brush,
 }
 
+export struct FeatureFeedbackRow {
+    title: string,
+    detail: string,
+}
+
 export component Dashboard inherits Window {
-    width: 1200px;
-    height: 720px;
+    width: 1024px;
+    height: 640px;
     title: "ShadowMap Dashboard";
-    background: PremiumTheme.background-gradient;
+    background: @linear-gradient(180deg, #101323, #1b1f38);
 
     in property <string> current-date;
     in property <string> current-time;
@@ -149,20 +46,20 @@ export component Dashboard inherits Window {
     in property <[SubdomainRow]> subdomains;
     in property <[ActivityBar]> activity;
     in property <[AlertRow]> alerts;
+    in property <[FeatureFeedbackRow]> feature-feedback;
+    in-out property <bool> report-available;
 
     callback start-scan(string);
+    callback download-compliance-report();
 
     VerticalLayout {
-        padding: PremiumTheme.spacing-xl;
-        spacing: PremiumTheme.spacing-lg;
+        padding: 28px;
+        spacing: 20px;
         HorizontalLayout {
             Text {
                 text: root.current-date;
-                font-size: 28px;
-                font-family: PremiumTheme.font-family;
-                font-weight: 600;
-                color: PremiumTheme.text-primary;
-                letter-spacing: 0.5px;
+                font-size: 22px;
+                color: #f2f4ff;
             }
             Rectangle {
                 horizontal-stretch: 1;
@@ -171,33 +68,31 @@ export component Dashboard inherits Window {
             Text {
                 text: root.current-time;
                 font-size: 18px;
-                font-family: PremiumTheme.font-family;
-                color: PremiumTheme.text-muted;
-                opacity: 0.92;
+                color: #8ea0ff;
             }
         }
 
-        GlassPanel {
-            fill: @linear-gradient(145deg, PremiumTheme.glass-surface, PremiumTheme.glass-modal);
+        Rectangle {
+            background: @linear-gradient(120deg, #20264a, #181d3a);
+            border-radius: 24px;
+            padding: 24px;
             VerticalLayout {
-                spacing: PremiumTheme.spacing-md;
+                spacing: 14px;
                 Text {
                     text: "Recon Orchestrator";
-                    font-size: 32px;
-                    font-family: PremiumTheme.font-family;
-                    font-weight: 600;
-                    color: PremiumTheme.text-primary;
-                    letter-spacing: 0.8px;
+                    font-size: 26px;
+                    color: #ffffff;
                 }
                 HorizontalLayout {
-                    spacing: PremiumTheme.spacing-md;
-                    PremiumInput {
-                        value <=> root.domain-input;
-                        placeholder: "Enter a target domain";
+                    spacing: 18px;
+                    LineEdit {
+                        width: 360px;
+                        text <=> root.domain-input;
+                        placeholder-text: "Enter a target domain";
                         enabled: !root.scan-in-progress;
                     }
-                    PrimaryButton {
-                        label: root.scan-in-progress ? "Scanning..." : "Launch Scan";
+                    Button {
+                        text: root.scan-in-progress ? "Scanning..." : "Launch Scan";
                         enabled: !root.scan-in-progress;
                         clicked => { root.start-scan(root.domain-input); }
                     }
@@ -206,148 +101,134 @@ export component Dashboard inherits Window {
                         indeterminate: root.scan-in-progress;
                         progress: root.scan-progress;
                     }
+                    Button {
+                        text: "Download Compliance Report";
+                        enabled: root.report-available && !root.scan-in-progress;
+                        clicked => { root.download-compliance-report(); }
+                    }
                     Rectangle {
                         horizontal-stretch: 1;
                         opacity: 0;
                     }
                     VerticalLayout {
-                        spacing: PremiumTheme.spacing-xxs;
+                        spacing: 4px;
                         alignment: center;
                         Text {
-                            text: "LAST RUN";
-                            font-size: 13px;
-                            font-family: PremiumTheme.font-family;
-                            color: PremiumTheme.text-muted;
-                            font-weight: 500;
-                            opacity: 0.95;
+                            text: "Last Run";
+                            font-size: 12px;
+                            color: #9aa8ff;
                         }
                         Text {
                             text: root.last-run;
-                            font-size: 20px;
-                            font-family: PremiumTheme.font-family;
-                            font-weight: 500;
-                            color: PremiumTheme.text-primary;
+                            font-size: 16px;
+                            color: #ffffff;
                         }
                     }
                 }
                 Text {
                     text: root.status-text;
                     color: root.status-color;
-                    font-size: 18px;
-                    font-family: PremiumTheme.font-family;
-                    opacity: 0.95;
+                    font-size: 16px;
                 }
             }
         }
 
         HorizontalLayout {
-            spacing: PremiumTheme.spacing-md;
+            spacing: 18px;
             width: parent.width;
-            for card[idx] in root.stats : GlassPanel {
-                horizontal-stretch: 1;
-                min-width: 0;
-                fill: @linear-gradient(170deg, PremiumTheme.glass-surface, PremiumTheme.glass-alt-surface);
-                panel-padding: PremiumTheme.spacing-lg;
+            for card[idx] in root.stats : Rectangle {
+                width: parent.width / 4;
+                background: @linear-gradient(160deg, #1c2242, #0f1327);
+                border-radius: 20px;
+                padding: 18px;
                 VerticalLayout {
-                    spacing: PremiumTheme.spacing-xs;
+                    spacing: 6px;
                     Text {
                         text: card.title;
-                        color: PremiumTheme.text-muted;
+                        color: #7f8cff;
                         font-size: 14px;
-                        font-family: PremiumTheme.font-family;
                     }
                     Text {
                         text: card.value;
-                        color: PremiumTheme.text-primary;
-                        font-size: 36px;
-                        font-family: PremiumTheme.font-family;
+                        color: #ffffff;
+                        font-size: 30px;
                         font-weight: 600;
                     }
                     Text {
                         text: card.subtitle;
-                        color: PremiumTheme.text-muted;
-                        font-size: 14px;
-                        font-family: PremiumTheme.font-family;
-                        opacity: 0.9;
+                        color: #9ca9ff;
+                        font-size: 12px;
                     }
                 }
             }
         }
 
         HorizontalLayout {
-            spacing: PremiumTheme.spacing-md;
-            GlassPanel {
+            spacing: 18px;
+            Rectangle {
+                background: @linear-gradient(160deg, #1d2344, #141a34);
+                border-radius: 20px;
+                padding: 20px;
                 width: parent.width * 0.6;
-                panel-padding: PremiumTheme.spacing-lg;
                 VerticalLayout {
-                    spacing: PremiumTheme.spacing-md;
+                    spacing: 12px;
                     Text {
                         text: "Live Service Activity";
-                        font-size: 22px;
-                        font-family: PremiumTheme.font-family;
-                        color: PremiumTheme.text-primary;
-                        font-weight: 600;
+                        font-size: 18px;
+                        color: #ffffff;
                     }
                     HorizontalLayout {
-                        spacing: PremiumTheme.spacing-md;
+                        spacing: 14px;
                         alignment: end;
                         for point[idx] in root.activity : VerticalLayout {
-                            spacing: PremiumTheme.spacing-sm;
+                            spacing: 8px;
                             alignment: center;
                             Rectangle {
-                                border-radius: PremiumTheme.radius-small;
-                                width: 28px;
-                                height: 20px + point.value * 120px;
-                                background: @linear-gradient(200deg, PremiumTheme.semantic-stability, PremiumTheme.subtle-teal);
-                                border-width: 1px;
-                                border-color: PremiumTheme.glass-border;
-                                drop-shadow-color: PremiumTheme.accent-glow;
-                                drop-shadow-offset-y: 8px;
-                                drop-shadow-blur: 18px;
+                                border-radius: 12px;
+                                width: 22px;
+                                height: 12px + point.value * 108px;
+                                background: @linear-gradient(180deg, #5a7cff, #45d5ff);
                             }
                             Text {
                                 text: point.label;
-                                font-size: 13px;
-                                font-family: PremiumTheme.font-family;
-                                color: PremiumTheme.text-muted;
+                                font-size: 11px;
+                                color: #b8c5ff;
                                 horizontal-alignment: center;
                             }
                         }
                     }
                 }
             }
-            GlassPanel {
+            Rectangle {
+                background: @linear-gradient(160deg, #1f2548, #151a35);
+                border-radius: 20px;
+                padding: 20px;
                 width: parent.width * 0.4;
                 VerticalLayout {
-                    spacing: PremiumTheme.spacing-md;
+                    spacing: 12px;
                     Text {
                         text: "Risk Alerts";
-                        font-size: 22px;
-                        font-family: PremiumTheme.font-family;
-                        color: PremiumTheme.text-primary;
-                        font-weight: 600;
+                        font-size: 18px;
+                        color: #ffffff;
                     }
                     VerticalLayout {
-                        spacing: PremiumTheme.spacing-sm;
-                        for alert[idx] in root.alerts : GlassPanel {
-                            fill: @linear-gradient(155deg, alert.accent, PremiumTheme.glass-modal);
-                            corner-radius: PremiumTheme.radius-medium;
-                            panel-padding: PremiumTheme.spacing-md;
-                            drop-shadow-color: #00000040;
+                        spacing: 10px;
+                        for alert[idx] in root.alerts : Rectangle {
+                            background: alert.accent;
+                            border-radius: 16px;
+                            padding: 12px;
+                            opacity: 0.85;
                             VerticalLayout {
-                                spacing: PremiumTheme.spacing-xxs;
+                                spacing: 4px;
                                 Text {
                                     text: alert.label;
-                                    font-size: 16px;
-                                    font-family: PremiumTheme.font-family;
-                                    color: PremiumTheme.text-primary;
-                                    font-weight: 500;
+                                    font-size: 14px;
+                                    color: #10142a;
                                 }
                                 Text {
                                     text: alert.count;
-                                    font-size: 28px;
-                                    font-family: PremiumTheme.font-family;
-                                    color: PremiumTheme.text-primary;
+                                    font-size: 22px;
+                                    color: #020305;
                                     font-weight: 600;
                                 }
                             }
@@ -358,37 +239,30 @@ export component Dashboard inherits Window {
         }
 
         HorizontalLayout {
-            spacing: PremiumTheme.spacing-md;
-            GlassPanel {
+            spacing: 18px;
+            Rectangle {
+                background: @linear-gradient(160deg, #1b2140, #141a34);
+                border-radius: 20px;
+                padding: 20px;
                 width: parent.width * 0.6;
-                panel-padding: PremiumTheme.spacing-lg;
                 VerticalLayout {
-                    spacing: PremiumTheme.spacing-md;
+                    spacing: 12px;
                     Text {
                         text: "Live Subdomains";
-                        font-size: 22px;
-                        font-family: PremiumTheme.font-family;
-                        color: PremiumTheme.text-primary;
-                        font-weight: 600;
+                        font-size: 18px;
+                        color: #ffffff;
                     }
                     ListView {
-                        for row[idx] in root.subdomains : GlassPanel {
-                            fill: row.highlight
-                                ? @linear-gradient(135deg, PremiumTheme.accent-gradient, PremiumTheme.glass-modal)
-                                : PremiumTheme.glass-alt-surface;
-                            corner-radius: PremiumTheme.radius-medium;
-                            panel-padding: PremiumTheme.spacing-md;
-                            drop-shadow-color: row.highlight ? PremiumTheme.accent-glow : #0000002d;
-                            drop-shadow-offset-y: row.highlight ? 10px : 6px;
-                            drop-shadow-blur: row.highlight ? 26px : 16px;
+                        for row[idx] in root.subdomains : Rectangle {
+                            background: row.highlight ? @linear-gradient(90deg, #29305a, #1b203f) : #161b34;
+                            border-radius: 12px;
+                            padding: 12px;
                             HorizontalLayout {
-                                spacing: PremiumTheme.spacing-sm;
+                                spacing: 12px;
                                 Text {
                                     text: row.name;
-                                    color: PremiumTheme.text-primary;
-                                    font-size: 16px;
-                                    font-family: PremiumTheme.font-family;
-                                    font-weight: row.highlight ? 600 : 500;
+                                    color: #ffffff;
+                                    font-size: 14px;
                                 }
                                 Rectangle {
                                     horizontal-stretch: 1;
@@ -396,55 +270,74 @@ export component Dashboard inherits Window {
                                 }
                                 Text {
                                     text: row.status;
-                                    color: row.highlight ? PremiumTheme.text-primary : PremiumTheme.text-muted;
-                                    font-size: 14px;
-                                    font-family: PremiumTheme.font-family;
-                                    opacity: 0.92;
+                                    color: row.highlight ? #89f9ff : #9fb0ff;
+                                    font-size: 13px;
                                 }
                             }
                         }
                     }
                 }
             }
-            GlassPanel {
+            Rectangle {
+                background: @linear-gradient(160deg, #20264b, #151a35);
+                border-radius: 20px;
+                padding: 20px;
                 width: parent.width * 0.4;
-                panel-padding: PremiumTheme.spacing-lg;
                 VerticalLayout {
-                    spacing: PremiumTheme.spacing-md;
+                    spacing: 12px;
                     Text {
                         text: "Execution Timeline";
-                        font-size: 22px;
-                        font-family: PremiumTheme.font-family;
-                        color: PremiumTheme.text-primary;
-                        font-weight: 600;
+                        font-size: 18px;
+                        color: #ffffff;
                     }
                     Text {
                         text: root.status-text;
-                        font-size: 16px;
-                        font-family: PremiumTheme.font-family;
-                        color: PremiumTheme.text-muted;
-                        opacity: 0.95;
-                        wrap: word-wrap;
+                        font-size: 14px;
+                        color: #9fb0ff;
+                    }
+                    Rectangle {
+                        height: 1px;
+                        background: #283059;
+                        opacity: 0.8;
+                    }
+                    Text {
+                        text: "Continuous Feature Monitoring";
+                        font-size: 14px;
+                        color: #c7d3ff;
+                    }
+                    ListView {
+                        for feedback[idx] in root.feature-feedback : Rectangle {
+                            background: @linear-gradient(160deg, #232a52, #1b2142);
+                            border-radius: 14px;
+                            padding: 10px;
+                            VerticalLayout {
+                                spacing: 4px;
+                                Text {
+                                    text: feedback.title;
+                                    font-size: 13px;
+                                    color: #f5f7ff;
+                                }
+                                Text {
+                                    text: feedback.detail;
+                                    font-size: 12px;
+                                    color: #9fb0ff;
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
 
-        GlassPanel {
-            panel-padding: PremiumTheme.spacing-xxs;
-            height: 20px;
-            border-radius: PremiumTheme.radius-medium;
-            drop-shadow-color: PremiumTheme.accent-glow;
-            clip: true;
+        Rectangle {
+            height: 12px;
+            border-radius: 12px;
+            background: #12162c;
             Rectangle {
                 width: root.scan-progress * parent.width;
                 height: parent.height;
                 border-radius: parent.border-radius;
-                background: PremiumTheme.accent-gradient;
-                drop-shadow-color: PremiumTheme.accent-glow;
-                drop-shadow-offset-x: 0px;
-                drop-shadow-offset-y: 0px;
-                drop-shadow-blur: 24px;
+                background: @linear-gradient(90deg, #597dff, #43d5ff);
             }
         }
     }
