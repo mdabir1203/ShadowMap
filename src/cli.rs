@@ -1,11 +1,11 @@
+use chrono::Utc;
 use clap::{Parser, Subcommand};
 use colored::*;
+use serde_json::json;
 use std::fmt;
 use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
-use chrono::Utc;
-use serde_json::json;
 
 use crate::{run, Args, BoxError};
 
@@ -593,7 +593,6 @@ impl ShadowMapCLI {
         TerminalUI::show_progress("Querying vulnerability databases");
         TerminalUI::show_progress("Analyzing CVE matches");
 
-
         let vulnerabilities = SIMULATED_VULNERABILITIES;
         let (critical, high, medium, low) = Self::count_vulnerabilities(vulnerabilities);
 
@@ -662,7 +661,7 @@ impl ShadowMapCLI {
         if let Some(threshold) = &fail_on {
             TerminalUI::print_info(&format!("Fail threshold: {}", threshold));
         }
-      
+
         fs::create_dir_all(&output_dir).map_err(|err| -> BoxError { Box::new(err) })?;
 
         // Step 1: Generate SBOM
@@ -811,7 +810,6 @@ impl ShadowMapCLI {
     }
 
     // Helper functions
-
 
     fn should_fail(threshold: &str, critical: u32, high: u32, medium: u32, low: u32) -> bool {
         match threshold.to_lowercase().as_str() {
