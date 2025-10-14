@@ -1,13 +1,15 @@
 #![cfg(feature = "dashboard")]
 
 use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
 use chrono::Local;
-use open::that_detached;
-use shadowmap::{write_outputs, Args, AutonomousReconAgent, ReconEngine, ReconMaps, ReconReport};
+use shadowmap::{
+    generate_compliance_outputs, Args, AutonomousReconAgent, ReconEngine, ReconReport,
+};
 use slint::{Brush, Color, ModelRc, SharedString, VecModel};
 use tokio::runtime::Builder;
 
@@ -16,138 +18,122 @@ slint::include_modules!();
 pub fn main() -> Result<(), slint::PlatformError> {
     let ui = Dashboard::new()?;
     initialize_demo_state(&ui);
+    ui.set_report_available(false);
 
-    let report_directory = Arc::new(Mutex::new(None::<String>));
+    let last_report: Arc<Mutex<Option<Arc<ReconReport>>>> = Arc::new(Mutex::new(None));
     let weak = ui.as_weak();
+    let scan_report_state = last_report.clone();
+    let weak_for_scan = weak.clone();
 
-    {
-        let weak = weak.clone();
-        let report_directory = Arc::clone(&report_directory);
-        ui.on_start_scan(move |domain| {
-            let domain = domain.trim().to_string();
-            let weak_for_callback = weak.clone();
+    ui.on_start_scan(move |domain| {
+        let domain = domain.trim().to_string();
+        let weak_for_callback = weak_for_scan.clone();
+        let report_state = scan_report_state.clone();
 
-            if let Ok(mut slot) = report_directory.lock() {
-                *slot = None;
-            }
-
-            if domain.is_empty() {
-                if let Some(ui) = weak_for_callback.upgrade() {
-                    ui.set_status_text(SharedString::from("Enter a domain to start scanning."));
-                    ui.set_status_color(Brush::from(Color::from_rgb_u8(255, 122, 142)));
-                }
-                return;
-            }
-
+        if domain.is_empty() {
             if let Some(ui) = weak_for_callback.upgrade() {
-                ui.set_status_text(SharedString::from(format!("Scanning {domain}...")));
-                ui.set_status_color(Brush::from(Color::from_rgb_u8(120, 190, 255)));
-                ui.set_scan_in_progress(true);
-                ui.set_scan_progress(0.12);
-                ui.set_report_ready(false);
-                ui.set_report_path(SharedString::from(""));
+                ui.set_status_text(SharedString::from("Enter a domain to start scanning."));
+                ui.set_status_color(Brush::from(Color::from_rgb_u8(255, 122, 142)));
             }
+            return;
+        }
 
-            let weak_for_thread = weak.clone();
-            let report_directory = Arc::clone(&report_directory);
-            thread::spawn(move || {
-                let result = perform_scan(domain.clone());
-                match result {
-                    Ok(report) => {
-                        let persist_error = persist_report(&report).err();
-                        let summary = DashboardSummary::from_report(report);
-                        let export_path = summary.output_dir.clone();
-                        let persist_success = persist_error.is_none();
-                        let weak_ui = weak_for_thread.clone();
-                        let report_directory = Arc::clone(&report_directory);
-                        slint::invoke_from_event_loop(move || {
-                            if let Some(ui) = weak_ui.upgrade() {
-                                if let Some(err) = persist_error.clone() {
-                                    ui.set_status_text(SharedString::from(format!(
-                                        "Failed to save report outputs: {err}"
-                                    )));
-                                    ui.set_status_color(Brush::from(Color::from_rgb_u8(
-                                        255, 122, 142,
-                                    )));
-                                    ui.set_scan_in_progress(false);
-                                    ui.set_scan_progress(0.0);
-                                    ui.set_report_ready(false);
-                                    ui.set_report_path(SharedString::from(""));
-                                } else {
-                                    apply_summary(&ui, summary);
-                                    ui.set_status_text(SharedString::from(
-                                        "Recon complete — exports ready.",
-                                    ));
-                                    ui.set_status_color(Brush::from(Color::from_rgb_u8(
-                                        140, 225, 180,
-                                    )));
-                                }
-                            }
-                            if let Ok(mut slot) = report_directory.lock() {
-                                *slot = if persist_success {
-                                    Some(export_path)
-                                } else {
-                                    None
-                                };
-                            }
-                        })
-                        .expect("failed to update UI with scan results");
+        if let Some(ui) = weak_for_callback.upgrade() {
+            ui.set_status_text(SharedString::from(format!("Scanning {domain}...")));
+            ui.set_status_color(Brush::from(Color::from_rgb_u8(120, 190, 255)));
+            ui.set_scan_in_progress(true);
+            ui.set_scan_progress(0.12);
+            ui.set_report_available(false);
+        }
+
+        {
+            let mut guard = report_state.lock().unwrap_or_else(|err| err.into_inner());
+            *guard = None;
+        }
+
+        let weak_for_thread = weak_for_scan.clone();
+        let report_state_for_thread = scan_report_state.clone();
+        thread::spawn(move || {
+            let result = perform_scan(domain.clone());
+            match result {
+                Ok(report) => {
+                    let report_arc = Arc::new(report);
+                    {
+                        let mut guard = report_state_for_thread
+                            .lock()
+                            .unwrap_or_else(|err| err.into_inner());
+                        *guard = Some(report_arc.clone());
                     }
-                    Err(err) => {
-                        let message = format!("Scan failed: {err}");
-                        let weak_ui = weak_for_thread.clone();
-                        let report_directory = Arc::clone(&report_directory);
-                        slint::invoke_from_event_loop(move || {
-                            if let Some(ui) = weak_ui.upgrade() {
-                                ui.set_status_text(SharedString::from(message));
-                                ui.set_status_color(Brush::from(Color::from_rgb_u8(255, 122, 142)));
-                                ui.set_scan_in_progress(false);
-                                ui.set_scan_progress(0.0);
-                                ui.set_report_ready(false);
-                                ui.set_report_path(SharedString::from(""));
-                            }
-                            if let Ok(mut slot) = report_directory.lock() {
-                                *slot = None;
-                            }
-                        })
-                        .expect("failed to update UI with error state");
-                    }
-                }
-            });
-        });
-    }
-
-    {
-        let weak = weak.clone();
-        let report_directory = Arc::clone(&report_directory);
-        ui.on_open_report_folder(move || {
-            let maybe_path = report_directory.lock().ok().and_then(|guard| guard.clone());
-
-            if let Some(ui) = weak.upgrade() {
-                if let Some(path) = maybe_path {
-                    match that_detached(&path) {
-                        Ok(_) => {
-                            ui.set_status_text(SharedString::from(format!(
-                                "Opening exports folder: {path}"
-                            )));
-                            ui.set_status_color(Brush::from(Color::from_rgb_u8(120, 190, 255)));
+                    let summary = DashboardSummary::from_report(report_arc.as_ref());
+                    let weak_ui = weak_for_thread.clone();
+                    slint::invoke_from_event_loop(move || {
+                        if let Some(ui) = weak_ui.upgrade() {
+                            apply_summary(&ui, summary);
+                            ui.set_report_available(true);
                         }
-                        Err(err) => {
-                            ui.set_status_text(SharedString::from(format!(
-                                "Unable to open exports folder: {err}"
-                            )));
+                    })
+                    .expect("failed to update UI with scan results");
+                }
+                Err(err) => {
+                    let message = format!("Scan failed: {err}");
+                    let weak_ui = weak_for_thread.clone();
+                    slint::invoke_from_event_loop(move || {
+                        if let Some(ui) = weak_ui.upgrade() {
+                            ui.set_status_text(SharedString::from(message));
                             ui.set_status_color(Brush::from(Color::from_rgb_u8(255, 122, 142)));
+                            ui.set_scan_in_progress(false);
+                            ui.set_scan_progress(0.0);
+                            ui.set_report_available(false);
                         }
-                    }
-                } else {
-                    ui.set_status_text(SharedString::from(
-                        "Run a scan to generate downloadable exports first.",
-                    ));
-                    ui.set_status_color(Brush::from(Color::from_rgb_u8(255, 198, 124)));
+                    })
+                    .expect("failed to update UI with error state");
                 }
             }
         });
-    }
+    });
+
+    let weak_for_download = weak.clone();
+    let download_report_state = last_report.clone();
+    ui.on_download_compliance_report(move || {
+        let weak_now = weak_for_download.clone();
+        let maybe_report = {
+            download_report_state
+                .lock()
+                .unwrap_or_else(|err| err.into_inner())
+                .clone()
+        };
+
+        if let Some(report) = maybe_report {
+            let report_clone = report.clone();
+            let weak_for_thread = weak_now.clone();
+            thread::spawn(move || {
+                let result = generate_compliance_package(report_clone.as_ref());
+                slint::invoke_from_event_loop(move || {
+                    if let Some(ui) = weak_for_thread.upgrade() {
+                        match result {
+                            Ok(path) => {
+                                ui.set_status_text(SharedString::from(format!(
+                                    "Compliance package saved to {path}"
+                                )));
+                                ui.set_status_color(Brush::from(Color::from_rgb_u8(140, 225, 180)));
+                            }
+                            Err(err) => {
+                                ui.set_status_text(SharedString::from(err));
+                                ui.set_status_color(Brush::from(Color::from_rgb_u8(255, 122, 142)));
+                                ui.set_report_available(false);
+                            }
+                        }
+                    }
+                })
+                .expect("failed to update UI after compliance export");
+            });
+        } else if let Some(ui) = weak_now.upgrade() {
+            ui.set_status_text(SharedString::from(
+                "Run a scan to export the compliance package.",
+            ));
+            ui.set_status_color(Brush::from(Color::from_rgb_u8(255, 210, 120)));
+        }
+    });
 
     ui.run()
 }
@@ -183,22 +169,12 @@ fn perform_scan(domain: String) -> Result<ReconReport, String> {
     })
 }
 
-fn persist_report(report: &ReconReport) -> Result<(), String> {
-    write_outputs(
-        &report.live_subdomains,
-        ReconMaps {
-            header_map: &report.header_map,
-            open_ports_map: &report.open_ports_map,
-            cors_map: &report.cors_map,
-            software_map: &report.software_map,
-            takeover_map: &report.takeover_map,
-            cloud_saas_map: &report.cloud_saas_map,
-            cloud_asset_map: &report.cloud_asset_map,
-        },
-        &report.output_dir,
-        &report.domain,
-    )
-    .map_err(|err| err.to_string())
+fn generate_compliance_package(report: &ReconReport) -> Result<String, String> {
+    generate_compliance_outputs(report).map_err(|err| err.to_string())?;
+
+    let report_path = Path::new(&report.output_dir).join(format!("{}_report.json", report.domain));
+
+    Ok(report_path.to_string_lossy().into_owned())
 }
 
 fn default_args(domain: String) -> Args {
@@ -219,12 +195,11 @@ struct DashboardSummary {
     status_message: String,
     status_color: Color,
     progress: f32,
-    output_dir: String,
-    report_ready: bool,
     stats: Vec<StatCardData>,
     subdomains: Vec<SubdomainRowData>,
     activity: Vec<ActivityBarData>,
     alerts: Vec<AlertRowData>,
+    feature_feedback: Vec<FeatureFeedbackRowData>,
 }
 
 struct StatCardData {
@@ -248,6 +223,11 @@ struct AlertRowData {
     label: String,
     count: String,
     accent: Color,
+}
+
+struct FeatureFeedbackRowData {
+    title: String,
+    detail: String,
 }
 
 impl DashboardSummary {
@@ -359,6 +339,21 @@ impl DashboardSummary {
             },
         ];
 
+        let feature_feedback = vec![
+            FeatureFeedbackRowData {
+                title: "Surface Coverage".into(),
+                detail: "152 monitored features across 38 live hosts".into(),
+            },
+            FeatureFeedbackRowData {
+                title: "Alert Stream".into(),
+                detail: "26 risk signals trending upward in the last cycle".into(),
+            },
+            FeatureFeedbackRowData {
+                title: "Cloud Footprint".into(),
+                detail: "9 deep assets & 4 SaaS providers under watch".into(),
+            },
+        ];
+
         Self {
             domain: "shadowmap.io".into(),
             current_date: now.format("%A %d %B %Y").to_string(),
@@ -367,38 +362,36 @@ impl DashboardSummary {
             status_message: "Ready to launch reconnaissance.".into(),
             status_color: Color::from_rgb_u8(136, 210, 255),
             progress: 0.0,
-            output_dir: String::new(),
-            report_ready: false,
             stats,
             subdomains,
             activity,
             alerts,
+            feature_feedback,
         }
     }
 
-    fn from_report(report: ReconReport) -> Self {
-        let ReconReport {
-            domain,
-            output_dir,
-            discovered_subdomains,
-            live_subdomains,
-            open_ports_map,
-            cors_map,
-            takeover_map,
-            cloud_saas_map,
-            cloud_asset_map,
-            ..
-        } = report;
+    fn from_report(report: &ReconReport) -> Self {
+        let discovered = report.discovered_subdomains.len();
+        let live = report.live_subdomains.len();
+        let open_hosts = report.open_ports_map.len();
+        let open_ports: usize = report
+            .open_ports_map
+            .values()
+            .map(|ports| ports.len())
+            .sum();
 
-        let discovered = discovered_subdomains.len();
-        let live = live_subdomains.len();
-        let open_hosts = open_ports_map.len();
-        let open_ports: usize = open_ports_map.values().map(|ports| ports.len()).sum();
-
-        let cors_count: usize = cors_map.values().map(|items| items.len()).sum();
-        let takeover_count: usize = takeover_map.values().map(|items| items.len()).sum();
-        let saas_count: usize = cloud_saas_map.values().map(|items| items.len()).sum();
-        let cloud_asset_count: usize = cloud_asset_map.values().map(|items| items.len()).sum();
+        let cors_count: usize = report.cors_map.values().map(|items| items.len()).sum();
+        let takeover_count: usize = report.takeover_map.values().map(|items| items.len()).sum();
+        let saas_count: usize = report
+            .cloud_saas_map
+            .values()
+            .map(|items| items.len())
+            .sum();
+        let cloud_asset_count: usize = report
+            .cloud_asset_map
+            .values()
+            .map(|items| items.len())
+            .sum();
         let total_alerts = cors_count + takeover_count + saas_count + cloud_asset_count;
 
         let stats = vec![
@@ -424,7 +417,7 @@ impl DashboardSummary {
             },
         ];
 
-        let mut live_subdomains_vec: Vec<String> = live_subdomains.into_iter().collect();
+        let mut live_subdomains_vec: Vec<String> = report.live_subdomains.iter().cloned().collect();
         live_subdomains_vec.sort();
 
         let mut subdomains = Vec::new();
@@ -432,25 +425,25 @@ impl DashboardSummary {
             let mut badges = Vec::new();
             let mut highlight = false;
 
-            if let Some(ports) = open_ports_map.get(host) {
+            if let Some(ports) = report.open_ports_map.get(host) {
                 if !ports.is_empty() {
                     badges.push(format!("{} open ports", ports.len()));
                     highlight = true;
                 }
             }
-            if let Some(entries) = cors_map.get(host) {
+            if let Some(entries) = report.cors_map.get(host) {
                 if !entries.is_empty() {
                     badges.push(format!("{} CORS issues", entries.len()));
                     highlight = true;
                 }
             }
-            if let Some(entries) = takeover_map.get(host) {
+            if let Some(entries) = report.takeover_map.get(host) {
                 if !entries.is_empty() {
                     badges.push("takeover risk".into());
                     highlight = true;
                 }
             }
-            if let Some(entries) = cloud_asset_map.get(host) {
+            if let Some(entries) = report.cloud_asset_map.get(host) {
                 if !entries.is_empty() {
                     badges.push("cloud assets".into());
                     highlight = true;
@@ -475,7 +468,7 @@ impl DashboardSummary {
             });
         }
 
-        let mut activity = build_activity_data(&open_ports_map, &subdomains);
+        let mut activity = build_activity_data(&report.open_ports_map, &subdomains);
         if activity.is_empty() {
             activity.push(ActivityBarData {
                 label: "scan".into(),
@@ -506,9 +499,37 @@ impl DashboardSummary {
             },
         ];
 
+        let alert_host_count = report
+            .cors_map
+            .keys()
+            .chain(report.takeover_map.keys())
+            .chain(report.cloud_saas_map.keys())
+            .chain(report.cloud_asset_map.keys())
+            .collect::<HashSet<_>>()
+            .len();
+
+        let feature_feedback = vec![
+            FeatureFeedbackRowData {
+                title: "Surface Coverage".into(),
+                detail: format!(
+                    "{} validated • {} live hosts under watch",
+                    report.validated_subdomains.len(),
+                    live
+                ),
+            },
+            FeatureFeedbackRowData {
+                title: "Alert Stream".into(),
+                detail: format!("{total_alerts} active signals across {alert_host_count} assets"),
+            },
+            FeatureFeedbackRowData {
+                title: "Cloud Footprint".into(),
+                detail: format!("{saas_count} SaaS providers • {cloud_asset_count} deep assets"),
+            },
+        ];
+
         let now = Local::now();
         Self {
-            domain,
+            domain: report.domain.clone(),
             current_date: now.format("%A %d %B %Y").to_string(),
             current_time: now.format("%I:%M %p").to_string(),
             last_run: now.format("%d %b %Y %H:%M").to_string(),
@@ -517,12 +538,11 @@ impl DashboardSummary {
             ),
             status_color: Color::from_rgb_u8(140, 225, 180),
             progress: 1.0,
-            output_dir,
-            report_ready: true,
             stats,
             subdomains,
             activity,
             alerts,
+            feature_feedback,
         }
     }
 }
@@ -573,8 +593,6 @@ fn apply_summary(ui: &Dashboard, summary: DashboardSummary) {
     ui.set_status_color(Brush::from(summary.status_color));
     ui.set_scan_in_progress(false);
     ui.set_scan_progress(summary.progress);
-    ui.set_report_ready(summary.report_ready);
-    ui.set_report_path(SharedString::from(summary.output_dir.clone()));
 
     let stats_model = ModelRc::new(VecModel::from(
         summary
@@ -626,4 +644,16 @@ fn apply_summary(ui: &Dashboard, summary: DashboardSummary) {
             .collect::<Vec<_>>(),
     ));
     ui.set_alerts(alerts_model);
+
+    let feedback_model = ModelRc::new(VecModel::from(
+        summary
+            .feature_feedback
+            .into_iter()
+            .map(|entry| FeatureFeedbackRow {
+                title: SharedString::from(entry.title),
+                detail: SharedString::from(entry.detail),
+            })
+            .collect::<Vec<_>>(),
+    ));
+    ui.set_feature_feedback(feedback_model);
 }
