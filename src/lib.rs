@@ -15,7 +15,7 @@ mod takeover;
 pub use agent::BoxError;
 pub use agent::{AutonomousReconAgent, ReconEngine, ReconReport};
 pub use args::Args;
-use reporting::{write_outputs, ReconMaps};
+pub use reporting::{write_outputs, ReconMaps};
 
 pub fn generate_compliance_outputs(report: &ReconReport) -> Result<(), BoxError> {
     write_outputs(
