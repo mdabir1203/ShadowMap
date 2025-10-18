@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::env;
 use std::path::Path;
 
 use anyhow::anyhow;
@@ -15,6 +16,7 @@ use crate::enumeration::crtsh_enum_async;
 use crate::fingerprint::fingerprint_software;
 use crate::headers::check_headers_tls;
 use crate::ports::scan_ports;
+use crate::social::{SocialContext, SocialIntelligenceEngine, SocialIntelligenceSummary};
 use crate::takeover::check_subdomain_takeover;
 use crate::Args;
 
@@ -37,12 +39,14 @@ struct AgentExecutionState {
     takeover_map: Option<HashMap<String, Vec<String>>>,
     cloud_saas_map: Option<HashMap<String, Vec<String>>>,
     cloud_asset_map: Option<HashMap<String, Vec<CloudAssetFinding>>>,
+    social_intel: Option<SocialIntelligenceSummary>,
 }
 
 pub struct ReconEngine {
     args: Args,
     client: Client,
     output_dir: String,
+    social_engine: SocialIntelligenceEngine,
 }
 
 impl ReconEngine {
@@ -60,10 +64,18 @@ impl ReconEngine {
             .pool_idle_timeout(Some(Duration::from_secs(30)))
             .build()?;
 
+        let social_engine = match env::var("SHADOWMAP_SOCIAL_CONFIG") {
+            Ok(path) if !path.trim().is_empty() => {
+                SocialIntelligenceEngine::from_path(path.trim())?
+            }
+            _ => SocialIntelligenceEngine::from_embedded()?,
+        };
+
         Ok(Self {
             args,
             client,
             output_dir: output_dir.to_string_lossy().to_string(),
+            social_engine,
         })
     }
 
@@ -199,6 +211,63 @@ impl ReconEngine {
         check_subdomain_takeover(subs).await
     }
 
+    fn synthesize_social_from_state(
+        &self,
+        state: &AgentExecutionState,
+    ) -> Result<SocialIntelligenceSummary, BoxError> {
+        let live = state
+            .live_subdomains
+            .as_ref()
+            .ok_or_else(|| missing_step_error("live subdomains missing"))?;
+
+        let empty_ports: HashMap<String, Vec<u16>> = HashMap::new();
+        let empty_cors: HashMap<String, Vec<String>> = HashMap::new();
+        let empty_takeover: HashMap<String, Vec<String>> = HashMap::new();
+        let empty_saas: HashMap<String, Vec<String>> = HashMap::new();
+        let empty_assets: HashMap<String, Vec<CloudAssetFinding>> = HashMap::new();
+
+        let open_ports = state.open_ports_map.as_ref().unwrap_or(&empty_ports);
+        let cors = state.cors_map.as_ref().unwrap_or(&empty_cors);
+        let takeover = state.takeover_map.as_ref().unwrap_or(&empty_takeover);
+        let saas = state.cloud_saas_map.as_ref().unwrap_or(&empty_saas);
+        let assets = state.cloud_asset_map.as_ref().unwrap_or(&empty_assets);
+
+        Ok(self.analyze_social_from_parts(live, open_ports, cors, takeover, saas, assets))
+    }
+
+    fn analyze_social_from_parts(
+        &self,
+        live: &HashSet<String>,
+        open_ports: &HashMap<String, Vec<u16>>,
+        cors: &HashMap<String, Vec<String>>,
+        takeover: &HashMap<String, Vec<String>>,
+        saas: &HashMap<String, Vec<String>>,
+        assets: &HashMap<String, Vec<CloudAssetFinding>>,
+    ) -> SocialIntelligenceSummary {
+        let context = self.build_social_context(live, open_ports, cors, takeover, saas, assets);
+        self.social_engine.analyze(&context)
+    }
+
+    fn build_social_context<'a>(
+        &'a self,
+        live: &'a HashSet<String>,
+        open_ports: &'a HashMap<String, Vec<u16>>,
+        cors: &'a HashMap<String, Vec<String>>,
+        takeover: &'a HashMap<String, Vec<String>>,
+        saas: &'a HashMap<String, Vec<String>>,
+        assets: &'a HashMap<String, Vec<CloudAssetFinding>>,
+    ) -> SocialContext<'a> {
+        SocialContext {
+            domain: self.domain(),
+            live_subdomains: live,
+            open_ports,
+            cors_issues: cors,
+            takeover_risks: takeover,
+            cloud_saas: saas,
+            cloud_assets: assets,
+        }
+    }
+
     pub async fn execute_full_scan(self) -> Result<ReconReport, BoxError> {
         let enumeration = self.enumerate_subdomains().await?;
         eprintln!(
@@ -246,6 +315,15 @@ impl ReconEngine {
             takeover_map.len()
         );
 
+        let social_intel = self.analyze_social_from_parts(
+            &live_subs,
+            &open_ports_map,
+            &cors_map,
+            &takeover_map,
+            &cloud_saas_map,
+            &cloud_asset_map,
+        );
+
         Ok(ReconReport {
             domain: self.args.domain,
             output_dir: self.output_dir,
@@ -259,6 +337,7 @@ impl ReconEngine {
             takeover_map,
             cloud_saas_map,
             cloud_asset_map,
+            social_intel: Some(social_intel),
         })
     }
 }
@@ -395,6 +474,18 @@ impl AutonomousReconAgent {
                             Err(missing_step_error("live subdomains missing"))
                         }
                     }
+                    StepKind::SocialIntel => match engine.synthesize_social_from_state(&state) {
+                        Ok(summary) => {
+                            eprintln!(
+                                    "[agent]    social stream surfaced {} signals (avg confidence {:.0}%)",
+                                    summary.metrics.total_signals,
+                                    summary.metrics.average_confidence
+                                );
+                            state.social_intel = Some(summary);
+                            Ok(())
+                        }
+                        Err(err) => Err(err),
+                    },
                 };
 
                 match step_result {
@@ -428,6 +519,7 @@ impl AutonomousReconAgent {
             args,
             client: _,
             output_dir,
+            ..
         } = engine;
         let Args { domain, .. } = args;
 
@@ -444,6 +536,7 @@ impl AutonomousReconAgent {
             takeover_map: state.takeover_map.unwrap_or_default(),
             cloud_saas_map: state.cloud_saas_map.unwrap_or_default(),
             cloud_asset_map: state.cloud_asset_map.unwrap_or_default(),
+            social_intel: state.social_intel,
         })
     }
 }
@@ -476,6 +569,11 @@ fn plan(step_retries: usize) -> Vec<AgentStep> {
             max_attempts,
         ),
         AgentStep::new("Assess takeover exposure", StepKind::Takeover, max_attempts),
+        AgentStep::new(
+            "Synthesize social intelligence",
+            StepKind::SocialIntel,
+            max_attempts,
+        ),
     ]
 }
 
@@ -506,6 +604,7 @@ enum StepKind {
     CloudSaas,
     CloudAssets,
     Takeover,
+    SocialIntel,
 }
 
 pub struct ReconReport {
@@ -521,6 +620,7 @@ pub struct ReconReport {
     pub takeover_map: HashMap<String, Vec<String>>,
     pub cloud_saas_map: HashMap<String, Vec<String>>,
     pub cloud_asset_map: HashMap<String, Vec<CloudAssetFinding>>,
+    pub social_intel: Option<SocialIntelligenceSummary>,
 }
 
 fn missing_step_error(message: &str) -> BoxError {

@@ -182,7 +182,6 @@ struct StripeSession {
 }
 
 async fn create_checkout_session(
-
     State(state): State<AppState>,
 
     Json(payload): Json<CheckoutRequest>,

@@ -6,6 +6,7 @@ use csv::Writer;
 use itertools::Itertools;
 
 use crate::cloud::CloudAssetFinding;
+use crate::social::SocialIntelligenceSummary;
 
 pub struct ReconMaps<'a> {
     pub header_map: &'a HashMap<String, (u16, Option<String>)>,
@@ -15,6 +16,7 @@ pub struct ReconMaps<'a> {
     pub takeover_map: &'a HashMap<String, Vec<String>>,
     pub cloud_saas_map: &'a HashMap<String, Vec<String>>,
     pub cloud_asset_map: &'a HashMap<String, Vec<CloudAssetFinding>>,
+    pub social_intel: Option<&'a SocialIntelligenceSummary>,
 }
 
 pub fn write_outputs(
@@ -149,6 +151,30 @@ pub fn write_outputs(
         "Deep cloud assets flagged: {}",
         maps.cloud_asset_map.len()
     )?;
+
+    if let Some(intel) = maps.social_intel {
+        let social_file = format!("{}/{}_social_intelligence.json", output_dir, domain);
+        std::fs::write(&social_file, serde_json::to_string_pretty(intel)?)?;
+
+        let high_signals = intel
+            .metrics
+            .severity_breakdown
+            .get("critical")
+            .cloned()
+            .unwrap_or(0)
+            + intel
+                .metrics
+                .severity_breakdown
+                .get("high")
+                .cloned()
+                .unwrap_or(0);
+
+        writeln!(
+            findings,
+            "Social intelligence signals: {} ({} high+critical)",
+            intel.metrics.total_signals, high_signals
+        )?;
+    }
 
     let cloud_file = format!("{}/{}_cloud_saas.json", output_dir, domain);
     std::fs::write(

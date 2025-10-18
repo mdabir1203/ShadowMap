@@ -117,6 +117,19 @@ ShadowMap aligns its operational safeguards with SOC 2 Trust Services Criteria a
 [Data Security and Compliance Strategy](docs/data-security.md) describes the control owners, evidence expectations, and
 validation activities that keep reconnaissance data secure throughout its lifecycle.
 
+### Social intelligence-driven security automation
+
+Teams layering social listening on top of ShadowMap can adopt the
+[Social Intelligence Insights for Security](docs/social-intelligence-security.md) guide. It explains how the Codex
+agent configuration transforms emerging chatter into normalized signals, correlates them with known assets, and drives
+guardrailed remediation playbooks.
+
+The framework now runs those social intelligence stages natively during every autonomous scan. Normalized mentions are
+correlated with live assets, exported alongside the technical report, and surfaced in the interactive dashboard so
+teams can immediately see high-signal chatter, affected hosts, and recommended responses. Override the baked-in Codex
+plan by setting `SHADOWMAP_SOCIAL_CONFIG=/path/to/framework.yaml` before launching a run to load a custom orchestration
+file without recompiling.
+
 ### Technical report automation
 
 Run `./scripts/generate-technical-report.sh` to materialize the latest reconnaissance brief as `build/technical-report.md`.

@@ -250,9 +250,9 @@ impl DashboardSummary {
                 subtitle: "Across 18 services".into(),
             },
             StatCardData {
-                title: "Security Alerts".into(),
-                value: "26".into(),
-                subtitle: "CORS, takeover & cloud".into(),
+                title: "Social Signals".into(),
+                value: "12".into(),
+                subtitle: "5 high+critical mentions".into(),
             },
         ];
 
@@ -337,6 +337,11 @@ impl DashboardSummary {
                 count: "4".into(),
                 accent: Color::from_rgb_u8(120, 255, 214),
             },
+            AlertRowData {
+                label: "Social Mentions".into(),
+                count: "5 / 12 high".into(),
+                accent: Color::from_rgb_u8(255, 214, 94),
+            },
         ];
 
         let feature_feedback = vec![
@@ -349,8 +354,8 @@ impl DashboardSummary {
                 detail: "26 risk signals trending upward in the last cycle".into(),
             },
             FeatureFeedbackRowData {
-                title: "Cloud Footprint".into(),
-                detail: "9 deep assets & 4 SaaS providers under watch".into(),
+                title: "Social Intelligence".into(),
+                detail: "12 social mentions — focus on takeover chatter".into(),
             },
         ];
 
@@ -394,6 +399,32 @@ impl DashboardSummary {
             .sum();
         let total_alerts = cors_count + takeover_count + saas_count + cloud_asset_count;
 
+        let (social_total, social_high, social_avg_conf, social_assets) = report
+            .social_intel
+            .as_ref()
+            .map(|intel| {
+                let high = intel
+                    .metrics
+                    .severity_breakdown
+                    .get("critical")
+                    .cloned()
+                    .unwrap_or(0)
+                    + intel
+                        .metrics
+                        .severity_breakdown
+                        .get("high")
+                        .cloned()
+                        .unwrap_or(0);
+                (
+                    intel.metrics.total_signals,
+                    high,
+                    intel.metrics.average_confidence,
+                    intel.correlations.len(),
+                )
+            })
+            .unwrap_or((0, 0, 0.0, 0));
+        let combined_alerts = total_alerts + social_total;
+
         let stats = vec![
             StatCardData {
                 title: "Discovered".into(),
@@ -411,9 +442,13 @@ impl DashboardSummary {
                 subtitle: format!("Across {open_hosts} services"),
             },
             StatCardData {
-                title: "Security Alerts".into(),
-                value: total_alerts.to_string(),
-                subtitle: "CORS, takeover & cloud".into(),
+                title: "Social Signals".into(),
+                value: social_total.to_string(),
+                subtitle: if social_total > 0 {
+                    format!("{social_high} high+critical mentions")
+                } else {
+                    "Monitoring quiet channels".into()
+                },
             },
         ];
 
@@ -497,16 +532,31 @@ impl DashboardSummary {
                 count: saas_count.to_string(),
                 accent: Color::from_rgb_u8(120, 255, 214),
             },
+            AlertRowData {
+                label: "Social Mentions".into(),
+                count: if social_total > 0 {
+                    format!("{social_high} / {social_total} high")
+                } else {
+                    "0".into()
+                },
+                accent: Color::from_rgb_u8(255, 214, 94),
+            },
         ];
 
-        let alert_host_count = report
+        let mut alert_hosts: HashSet<String> = report
             .cors_map
             .keys()
             .chain(report.takeover_map.keys())
             .chain(report.cloud_saas_map.keys())
             .chain(report.cloud_asset_map.keys())
-            .collect::<HashSet<_>>()
-            .len();
+            .map(|entry| entry.clone())
+            .collect();
+        if let Some(intel) = report.social_intel.as_ref() {
+            for correlation in &intel.correlations {
+                alert_hosts.insert(correlation.asset_id.clone());
+            }
+        }
+        let alert_host_count = alert_hosts.len();
 
         let feature_feedback = vec![
             FeatureFeedbackRowData {
@@ -519,11 +569,20 @@ impl DashboardSummary {
             },
             FeatureFeedbackRowData {
                 title: "Alert Stream".into(),
-                detail: format!("{total_alerts} active signals across {alert_host_count} assets"),
+                detail: format!(
+                    "{combined_alerts} active signals across {alert_host_count} assets"
+                ),
             },
             FeatureFeedbackRowData {
-                title: "Cloud Footprint".into(),
-                detail: format!("{saas_count} SaaS providers • {cloud_asset_count} deep assets"),
+                title: "Social Intelligence".into(),
+                detail: if social_total > 0 {
+                    format!(
+                        "{social_total} mentions • {social_high} high • avg {:.0}% confidence • {social_assets} assets linked",
+                        social_avg_conf * 100.0
+                    )
+                } else {
+                    "No actionable social chatter detected".into()
+                },
             },
         ];
 
@@ -534,7 +593,7 @@ impl DashboardSummary {
             current_time: now.format("%I:%M %p").to_string(),
             last_run: now.format("%d %b %Y %H:%M").to_string(),
             status_message: format!(
-                "Recon complete — {live} live hosts and {total_alerts} alert markers"
+                "Recon complete — {live} live hosts and {combined_alerts} alert markers"
             ),
             status_color: Color::from_rgb_u8(140, 225, 180),
             progress: 1.0,
