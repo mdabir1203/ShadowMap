@@ -1,0 +1,185 @@
+version: "1.0"
+name: "ShadowMap Codex Intelligence Framework"
+description: >
+  Hybrid AI system combining social listening with cloud security asset intelligence.
+  Powered by Codex Agents orchestrated for collection, classification, correlation, remediation, and reporting.
+
+agents:
+  - id: planner
+    role: Planner
+    goal: >
+      Create an optimal plan of tool calls to gather evidence, classify risk, correlate with assets,
+      and propose mitigations.
+    prompt: |
+      You are the Planner. Given a topic or signal, plan the minimal sequence of tools to collect, classify,
+      correlate, remediate, and report. Prefer cheapest tools first. Limit plan to <= 6 steps.
+    output_schema: planner_plan_schema
+    confidence_threshold: 0.6
+
+  - id: classifier
+    role: Social Classifier
+    goal: >
+      Convert unstructured social or open-source data into normalized, machine-actionable security signals.
+    prompt: |
+      You are the Social Classifier. Given text feeds or social posts, identify type, cloud vendor,
+      services, regions, indicators, severity, and confidence.
+      Merge duplicates within 48h. Produce normalized JSON.
+    output_schema: signal_schema
+    confidence_threshold: 0.7
+
+  - id: correlator
+    role: Correlator
+    goal: >
+      Map each normalized signal to ShadowMap asset graph, compute risk scores, and
+      identify actionable matches.
+    prompt: |
+      You are the Correlator. Use ShadowMap's asset_graph and vuln_scan to match
+      assets with social signals. Compute risk_score and confidence.
+      Penalize sandbox assets and boost prod/payments/PII-tagged ones.
+    output_schema: correlation_schema
+    confidence_threshold: 0.65
+
+  - id: remediator
+    role: Remediator
+    goal: >
+      Generate stepwise, reversible, low-impact remediations with rollback and verification.
+    prompt: |
+      You are the Remediator. Build playbooks that fix issues with minimal disruption.
+      Always include rollback, verification, and respect change windows.
+    output_schema: remediation_schema
+    confidence_threshold: 0.8
+
+  - id: reporter
+    role: Reporter
+    goal: >
+      Create dual-view reports (executive and engineer) summarizing the signal, affected assets,
+      actions, and business impact.
+    prompt: |
+      You are the Reporter. Generate concise summaries in plain language for executives,
+      and detailed evidence + commands for engineers. Output both as JSON + markdown.
+    output_schema: report_schema
+
+schemas:
+  planner_plan_schema:
+    type: object
+    properties:
+      topic: { type: string }
+      intents: { type: array, items: { type: string } }
+      plan:
+        type: array
+        items:
+          type: object
+          properties:
+            step: { type: integer }
+            tool: { type: string }
+            args: { type: object }
+            why: { type: string }
+      confidence: { type: number }
+
+  signal_schema:
+    type: object
+    properties:
+      signals:
+        type: array
+        items:
+          type: object
+          properties:
+            signal_id: { type: string }
+            type: { type: string }
+            topic: { type: string }
+            vendor_cloud: { type: array, items: { type: string } }
+            services: { type: array, items: { type: string } }
+            regions: { type: array, items: { type: string } }
+            severity_guess: { type: string }
+            confidence: { type: number }
+            evidence: { type: array }
+      summary: { type: string }
+
+  correlation_schema:
+    type: object
+    properties:
+      matches:
+        type: array
+        items:
+          type: object
+          properties:
+            asset_id: { type: string }
+            reasons: { type: array, items: { type: string } }
+            risk_score: { type: number }
+            supporting_findings: { type: array }
+      coverage_stats: { type: object }
+      next_best_actions: { type: array }
+      confidence: { type: number }
+
+  remediation_schema:
+    type: object
+    properties:
+      playbook:
+        type: object
+        properties:
+          title: { type: string }
+          steps: { type: array }
+          rollback: { type: array }
+          verification: { type: array }
+          owner: { type: object }
+          change_window: { type: string }
+      ticket:
+        type: object
+        properties:
+          project: { type: string }
+          title: { type: string }
+          severity: { type: string }
+          due_days: { type: integer }
+
+  report_schema:
+    type: object
+    properties:
+      executive_brief: { type: object }
+      engineer_brief: { type: object }
+      kb_markdown: { type: string }
+
+guardrails:
+  - id: evidence_check
+    description: "Reject any claim not supported by tool output"
+  - id: rollback_required
+    description: "Ensure all remediation steps have rollback"
+  - id: schema_validation
+    description: "Validate JSON output against schema before next agent"
+  - id: duplicate_filter
+    description: "Suppress repeated findings or assets"
+
+tools:
+  - name: social_feed.fetch
+    description: "Collect public signals from X, GitHub, Reddit, etc."
+  - name: nvd_cve.search
+    description: "Search NVD for matching CVEs or CWEs."
+  - name: asset_graph.search
+    description: "Query internal ShadowMap asset graph."
+  - name: vuln_scan.query
+    description: "Get live vulnerability findings."
+  - name: cloud_cfg.check
+    description: "Verify cloud config policies."
+  - name: notify.create
+    description: "Open ticket in incident tracker."
+  - name: page.create
+    description: "Write report to knowledge base."
+
+defaults:
+  org_filters:
+    env: ["prod", "staging"]
+    regions: ["ap-south-1", "asia-south1"]
+  controls_available: ["scp", "config_rules", "security_hub"]
+  change_windows: ["Sun 02:00-04:00 BST"]
+  localization:
+    geo: "Bangladesh"
+    languages: ["en", "bn"]
+
+testing:
+  scenarios:
+    - name: redis_exploit
+      topic: "Unauthenticated Redis 6379 exploit ap-south-1"
+      expected_output: ["plan", "signals", "correlation", "remediation", "report"]
+    - name: s3_public_acl
+      topic: "Public S3 bucket misconfig leak"
+    - name: iam_mfa_fatigue
+      topic: "IAM console MFA fatigue attacks"

@@ -10,12 +10,17 @@ mod fingerprint;
 mod headers;
 mod ports;
 mod reporting;
+mod social;
 mod takeover;
 
 pub use agent::BoxError;
 pub use agent::{AutonomousReconAgent, ReconEngine, ReconReport};
 pub use args::Args;
 pub use reporting::{write_outputs, ReconMaps};
+pub use social::{
+    LocalizationSummary as SocialLocalizationSummary, SocialCorrelation, SocialIntelligenceSummary,
+    SocialMetrics, SocialReportView, SocialSignal,
+};
 
 pub fn generate_compliance_outputs(report: &ReconReport) -> Result<(), BoxError> {
     write_outputs(
@@ -28,6 +33,7 @@ pub fn generate_compliance_outputs(report: &ReconReport) -> Result<(), BoxError>
             takeover_map: &report.takeover_map,
             cloud_saas_map: &report.cloud_saas_map,
             cloud_asset_map: &report.cloud_asset_map,
+            social_intel: report.social_intel.as_ref(),
         },
         &report.output_dir,
         &report.domain,
@@ -46,6 +52,28 @@ pub async fn run(args: Args) -> Result<String, BoxError> {
     };
 
     generate_compliance_outputs(&report)?;
+
+    if let Some(intel) = &report.social_intel {
+        let high = intel
+            .metrics
+            .severity_breakdown
+            .get("critical")
+            .cloned()
+            .unwrap_or(0)
+            + intel
+                .metrics
+                .severity_breakdown
+                .get("high")
+                .cloned()
+                .unwrap_or(0);
+
+        eprintln!(
+            "[intel] {} social signals mapped ({} high+critical, avg confidence {:.0}%)",
+            intel.metrics.total_signals,
+            high,
+            intel.metrics.average_confidence * 100.0
+        );
+    }
 
     eprintln!(
         "[*] Recon complete. Outputs in: {} ({} live, {} deep cloud alerts)",
