@@ -40,9 +40,19 @@ cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
 ```
 
-### Landing page & billing checkout
+### Landing page, billing checkout & Vercel
 
-ShadowMap now ships with a minimalist marketing landing page, localized pricing, and optional Stripe Checkout integration.
+ShadowMap now includes a minimalist, luxury-inspired landing page that mirrors the in-app experience. The Rust server renders it dynamically with localized pricing and optional Stripe checkout, while a static export in `landing-page/index.html` is ready for Vercel hosting.
+
+#### Keep the static export in sync
+
+```bash
+cargo run --bin export_landing
+```
+
+The helper binary regenerates `landing-page/index.html` from the latest templates in `src/web/views.rs`. Run it after copy or styling updates so commits (and deployments) always ship the current markup.
+
+#### Optional: enable Stripe checkout
 
 1. Export your Stripe credentials and price IDs (test or live):
    ```bash
@@ -59,10 +69,7 @@ ShadowMap now ships with a minimalist marketing landing page, localized pricing,
    export STRIPE_CANCEL_URL=https://shadowmap.io/pricing
    ```
 
-
-2. (Optional) Point the lead-capture database at a custom SQLite location. The server defaults to
-   `sqlite://shadowmap.db` in the working directory and will automatically create the
-   `landing_leads` table when it starts:
+2. (Optional) Point the lead-capture database at a custom SQLite location. The server defaults to `sqlite://shadowmap.db` in the working directory and creates the `landing_leads` table automatically:
    ```bash
    export DATABASE_URL=sqlite:///var/lib/shadowmap/leads.db
    ```
@@ -72,9 +79,19 @@ ShadowMap now ships with a minimalist marketing landing page, localized pricing,
    cargo run --bin shadowmap-server
    ```
 
-4. Visit `http://localhost:8080/` for the public landing page and `http://localhost:8080/app` for the authenticated recon dashboard. Every checkout attempt stores the work email, plan, and region in
-   the `landing_leads` table for follow-up.
+4. Visit `http://localhost:8080/` for the public landing page and `http://localhost:8080/app` for the recon dashboard. Checkout attempts log the work email, plan, and region to the `landing_leads` table for follow-up.
 
+#### Deploy the static page to Vercel
+
+1. Install the [Vercel CLI](https://vercel.com/cli) and authenticate (`vercel login`).
+2. From the repository root, deploy the static export:
+   ```bash
+   vercel --prod
+   ```
+   The included `vercel.json` registers `landing-page/index.html` as the build artifact and rewrites all routes to it.
+3. Future updates only require re-running `cargo run --bin export_landing`, committing the refreshed HTML, and redeploying with `vercel --prod`.
+
+> **Note:** Checkout buttons remain disabled in the static export until the server exposes Stripe keys, keeping the hosted page aligned with production capabilities.
 
 ### Supply Chain Security
 

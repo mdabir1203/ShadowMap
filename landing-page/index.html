@@ -1,110 +1,4 @@
-use chrono::DateTime;
-use chrono::Utc;
-use v_htmlescape::escape;
-
-#[derive(Clone, Debug)]
-pub struct PricingPlan {
-    pub id: &'static str,
-    pub name: &'static str,
-    pub summary: &'static str,
-    pub ideal_for: &'static str,
-    pub highlight: bool,
-    pub usd_cents: u32,
-    pub eur_cents: u32,
-    pub features: &'static [&'static str],
-    pub checkout_ready_us: bool,
-    pub checkout_ready_eu: bool,
-}
-
-#[derive(Clone, Debug)]
-pub struct LandingPageContext {
-    pub publishable_key: Option<String>,
-    pub plans: Vec<PricingPlan>,
-}
-
-pub fn render_landing_page(context: &LandingPageContext) -> String {
-    fn format_money(amount_cents: u32, currency: &str) -> String {
-        let major = amount_cents / 100;
-        let minor = amount_cents % 100;
-        if minor == 0 {
-            format!("{}{}", currency, major)
-        } else {
-            format!("{}{}.{:02}", currency, major, minor)
-        }
-    }
-
-    let mut plan_cards = String::new();
-    for plan in &context.plans {
-        let mut feature_list = String::new();
-        for feature in plan.features {
-            feature_list.push_str(&format!(
-                r#"<li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>{}</span>
-                        </li>"#,
-                escape(feature)
-            ));
-        }
-
-        let us_price = format_money(plan.usd_cents, "$ ");
-        let eu_price = format_money(plan.eur_cents, "€ ");
-        let highlight_class = if plan.highlight {
-            " plan-card--highlight"
-        } else {
-            ""
-        };
-        let badge = if plan.highlight {
-            r#"<span class="plan-badge">Preferred</span>"#
-        } else {
-            ""
-        };
-        let cta_state = if plan.checkout_ready_us || plan.checkout_ready_eu {
-            ""
-        } else {
-            " data-disabled-copy=\"Email us to activate payments\""
-        };
-
-        plan_cards.push_str(&format!(
-            r#"                <article class="plan-card{highlight_class}" data-plan-card data-plan-id="{id}" data-us-available="{us}" data-eu-available="{eu}">
-                    {badge}
-                    <header class="plan-card__header">
-                        <span class="plan-card__eyebrow">For {ideal}</span>
-                        <h3>{name}</h3>
-                        <p>{summary}</p>
-                    </header>
-                    <div class="plan-card__price" data-plan-price data-us-price="{us_price}" data-eu-price="{eu_price}">
-                        <span class="plan-card__amount price-amount"></span>
-                        <span class="plan-card__period">per seat / month</span>
-                    </div>
-                    <ul class="plan-card__features">
-                        {features}
-                    </ul>
-                    <button class="plan-card__cta" data-plan-cta data-plan-id="{id}"{cta_state}>Start free trial</button>
-                </article>"#,
-            highlight_class = highlight_class,
-            id = escape(plan.id),
-            name = escape(plan.name),
-            summary = escape(plan.summary),
-            ideal = escape(plan.ideal_for),
-            us = if plan.checkout_ready_us { "true" } else { "false" },
-            eu = if plan.checkout_ready_eu { "true" } else { "false" },
-            us_price = escape(&us_price),
-            eu_price = escape(&eu_price),
-            features = feature_list,
-            cta_state = cta_state,
-            badge = badge,
-        ));
-    }
-
-    let publishable_key = context
-        .publishable_key
-        .as_ref()
-        .map(|key| escape(key))
-        .unwrap_or_else(|| escape(""));
-    let year = Utc::now().format("%Y").to_string();
-
-    format!(
-        r##"<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -115,7 +9,7 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
     <script src="https://js.stripe.com/v3/"></script>
     <style>
-        :root {{
+        :root {
             color-scheme: dark;
             --bg: #05050c;
             --surface: rgba(18, 20, 28, 0.68);
@@ -125,44 +19,44 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             --text: #f3f4f7;
             --muted: #b8bac8;
             --line: rgba(245, 194, 107, 0.22);
-        }}
-        * {{ box-sizing: border-box; }}
-        body {{
+        }
+        * { box-sizing: border-box; }
+        body {
             margin: 0;
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: radial-gradient(circle at top, #151624, var(--bg) 58%);
             color: var(--text);
             -webkit-font-smoothing: antialiased;
-        }}
-        h1, h2, h3 {{
+        }
+        h1, h2, h3 {
             font-family: 'Playfair Display', 'Inter', serif;
             letter-spacing: -0.01em;
-        }}
-        .page {{
+        }
+        .page {
             width: min(1080px, 92vw);
             margin: 0 auto;
             padding: 3.5rem 0 4rem;
-        }}
-        header.hero {{
+        }
+        header.hero {
             padding: 4.5rem 0 2rem;
             display: grid;
             gap: 2.5rem;
-        }}
-        .hero-content {{
+        }
+        .hero-content {
             max-width: 720px;
-        }}
-        .hero h1 {{
+        }
+        .hero h1 {
             font-size: clamp(2.5rem, 5vw, 3.6rem);
             margin: 0.6rem 0 0;
-        }}
-        .hero p {{
+        }
+        .hero p {
             margin: 1.1rem 0 0;
             max-width: 560px;
             color: var(--muted);
             font-size: 1.05rem;
             line-height: 1.7;
-        }}
-        .eyebrow {{
+        }
+        .eyebrow {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -174,14 +68,14 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             font-size: 0.75rem;
             letter-spacing: 0.16em;
             text-transform: uppercase;
-        }}
-        .hero-ctas {{
+        }
+        .hero-ctas {
             margin-top: 2rem;
             display: flex;
             flex-wrap: wrap;
             gap: 1rem;
-        }}
-        .hero-cta {{
+        }
+        .hero-cta {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -192,18 +86,18 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             font-weight: 600;
             text-decoration: none;
             cursor: pointer;
-        }}
-        .hero-cta.primary {{
+        }
+        .hero-cta.primary {
             background: linear-gradient(135deg, var(--accent), #d49b3b);
             color: #1b1c24;
             box-shadow: 0 22px 38px rgba(212, 155, 59, 0.3);
-        }}
-        .hero-cta.secondary {{
+        }
+        .hero-cta.secondary {
             background: transparent;
             border: 1px solid var(--line);
             color: var(--text);
-        }}
-        .hero-proof {{
+        }
+        .hero-proof {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
@@ -212,13 +106,13 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             border-radius: 1.25rem;
             background: var(--surface);
             border: 1px solid var(--line);
-        }}
-        .hero-proof p {{
+        }
+        .hero-proof p {
             margin: 0;
             font-size: 0.9rem;
             color: var(--muted);
-        }}
-        .proof-logos {{
+        }
+        .proof-logos {
             display: flex;
             gap: 1.8rem;
             flex-wrap: wrap;
@@ -226,47 +120,47 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             text-transform: uppercase;
             letter-spacing: 0.18em;
             color: rgba(243, 244, 247, 0.55);
-        }}
-        .stats-grid {{
+        }
+        .stats-grid {
             margin-top: 2.5rem;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 1.25rem;
-        }}
-        .stat {{
+        }
+        .stat {
             padding: 1.5rem 1.6rem;
             border-radius: 1.1rem;
             background: var(--surface);
             border: 1px solid var(--line);
             backdrop-filter: blur(12px);
-        }}
-        .stat h3 {{
+        }
+        .stat h3 {
             margin: 0;
             font-size: 1.9rem;
-        }}
-        .stat p {{
+        }
+        .stat p {
             margin: 0.55rem 0 0;
             color: var(--muted);
-        }}
-        section {{
+        }
+        section {
             margin-top: 4.5rem;
-        }}
-        .section-heading {{
+        }
+        .section-heading {
             font-size: clamp(2rem, 3vw, 2.6rem);
             margin-bottom: 0.75rem;
-        }}
-        .section-subhead {{
+        }
+        .section-subhead {
             max-width: 560px;
             color: var(--muted);
             margin: 0;
             line-height: 1.7;
-        }}
-        .feature-grid {{
+        }
+        .feature-grid {
             display: grid;
             gap: 1.6rem;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        }}
-        .feature-card {{
+        }
+        .feature-card {
             padding: 1.7rem;
             border-radius: 1.2rem;
             background: var(--surface);
@@ -274,50 +168,50 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
-        }}
-        .feature-card strong {{
+        }
+        .feature-card strong {
             font-size: 0.85rem;
             letter-spacing: 0.18em;
             color: var(--accent);
             text-transform: uppercase;
-        }}
-        .feature-card h3 {{
+        }
+        .feature-card h3 {
             margin: 0;
             font-size: 1.2rem;
-        }}
-        .feature-card p {{
+        }
+        .feature-card p {
             margin: 0;
             color: var(--muted);
-        }}
-        .process-grid {{
+        }
+        .process-grid {
             margin-top: 2rem;
             display: grid;
             gap: 1.5rem;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        }}
-        .process-card {{
+        }
+        .process-card {
             padding: 1.8rem;
             border-radius: 1.2rem;
             background: var(--surface-soft);
             border: 1px solid rgba(245, 194, 107, 0.12);
-        }}
-        .process-card span {{
+        }
+        .process-card span {
             display: inline-block;
             font-size: 0.8rem;
             letter-spacing: 0.22em;
             text-transform: uppercase;
             color: rgba(245, 194, 107, 0.65);
             margin-bottom: 0.9rem;
-        }}
-        .process-card h3 {{
+        }
+        .process-card h3 {
             margin: 0 0 0.7rem;
             font-size: 1.1rem;
-        }}
-        .process-card p {{
+        }
+        .process-card p {
             margin: 0;
             color: var(--muted);
-        }}
-        .testimonial {{
+        }
+        .testimonial {
             margin-top: 2.5rem;
             padding: 2.2rem;
             border-radius: 1.4rem;
@@ -325,40 +219,40 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             border: 1px solid var(--line);
             display: grid;
             gap: 1.2rem;
-        }}
-        .testimonial blockquote {{
+        }
+        .testimonial blockquote {
             margin: 0;
             font-size: 1.15rem;
             line-height: 1.75;
-        }}
-        .testimonial cite {{
+        }
+        .testimonial cite {
             font-style: normal;
             color: var(--muted);
-        }}
-        .pricing {{
+        }
+        .pricing {
             margin-top: 5rem;
-        }}
-        .pricing-header {{
+        }
+        .pricing-header {
             display: flex;
             flex-direction: column;
             gap: 1rem;
-        }}
-        .pricing-topline {{
+        }
+        .pricing-topline {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
             gap: 1.2rem;
-        }}
-        .region-toggle {{
+        }
+        .region-toggle {
             background: var(--surface);
             border-radius: 999px;
             border: 1px solid var(--line);
             padding: 0.35rem;
             display: inline-flex;
             gap: 0.35rem;
-        }}
-        .region-toggle button {{
+        }
+        .region-toggle button {
             border: none;
             padding: 0.5rem 1rem;
             border-radius: 999px;
@@ -366,18 +260,18 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             color: var(--muted);
             font-weight: 600;
             cursor: pointer;
-        }}
-        .region-toggle button[data-active="true"] {{
+        }
+        .region-toggle button[data-active="true"] {
             background: var(--accent);
             color: #1b1c24;
-        }}
-        .plan-grid {{
+        }
+        .plan-grid {
             margin-top: 3rem;
             display: grid;
             gap: 1.5rem;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        }}
-        .plan-card {{
+        }
+        .plan-card {
             background: var(--surface);
             border-radius: 1.4rem;
             border: 1px solid var(--line);
@@ -386,8 +280,8 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             flex-direction: column;
             gap: 1.6rem;
             position: relative;
-        }}
-        .plan-badge {{
+        }
+        .plan-badge {
             position: absolute;
             top: 1.6rem;
             right: 1.6rem;
@@ -399,57 +293,57 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             text-transform: uppercase;
             padding: 0.35rem 0.8rem;
             border-radius: 999px;
-        }}
-        .plan-card--highlight {{
+        }
+        .plan-card--highlight {
             border-color: rgba(245, 194, 107, 0.6);
             box-shadow: 0 28px 60px rgba(245, 194, 107, 0.18);
-        }}
-        .plan-card__header {{
+        }
+        .plan-card__header {
             display: flex;
             flex-direction: column;
             gap: 0.65rem;
-        }}
-        .plan-card__eyebrow {{
+        }
+        .plan-card__eyebrow {
             font-size: 0.8rem;
             letter-spacing: 0.2em;
             text-transform: uppercase;
             color: rgba(245, 194, 107, 0.75);
-        }}
-        .plan-card__header h3 {{
+        }
+        .plan-card__header h3 {
             margin: 0;
             font-size: 1.45rem;
-        }}
-        .plan-card__header p {{
+        }
+        .plan-card__header p {
             margin: 0;
             color: var(--muted);
-        }}
-        .plan-card__price {{
+        }
+        .plan-card__price {
             display: flex;
             align-items: baseline;
             gap: 0.65rem;
             font-size: 2.35rem;
             font-weight: 700;
-        }}
-        .plan-card__period {{
+        }
+        .plan-card__period {
             font-size: 0.9rem;
             color: var(--muted);
             letter-spacing: 0.05em;
-        }}
-        .plan-card__features {{
+        }
+        .plan-card__features {
             list-style: none;
             margin: 0;
             padding: 0;
             display: grid;
             gap: 0.7rem;
-        }}
-        .plan-card__features li {{
+        }
+        .plan-card__features li {
             display: grid;
             grid-template-columns: auto 1fr;
             align-items: start;
             gap: 0.8rem;
             color: var(--muted);
-        }}
-        .feature-icon {{
+        }
+        .feature-icon {
             width: 22px;
             height: 22px;
             border-radius: 50%;
@@ -458,8 +352,8 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             background: var(--accent-soft);
             color: var(--accent);
             font-size: 0.8rem;
-        }}
-        .plan-card__cta {{
+        }
+        .plan-card__cta {
             border: none;
             border-radius: 999px;
             padding: 0.85rem 1.5rem;
@@ -468,18 +362,18 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             color: #1b1c24;
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }}
-        .plan-card__cta:hover {{
+        }
+        .plan-card__cta:hover {
             transform: translateY(-1px);
             box-shadow: 0 18px 34px rgba(212, 155, 59, 0.3);
-        }}
-        .plan-card__cta[disabled] {{
+        }
+        .plan-card__cta[disabled] {
             background: rgba(184, 186, 200, 0.35);
             color: rgba(27, 28, 36, 0.6);
             cursor: not-allowed;
             box-shadow: none;
-        }}
-        .checkout-panel {{
+        }
+        .checkout-panel {
             margin-top: 2.5rem;
             padding: 1.8rem 2rem;
             background: var(--surface-soft);
@@ -487,34 +381,34 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             border-radius: 1.35rem;
             display: grid;
             gap: 1.1rem;
-        }}
-        .checkout-panel h4 {{
+        }
+        .checkout-panel h4 {
             margin: 0;
             font-size: 1.1rem;
-        }}
-        .checkout-panel label {{
+        }
+        .checkout-panel label {
             display: grid;
             gap: 0.45rem;
             color: var(--muted);
             font-size: 0.95rem;
-        }}
-        .checkout-panel input {{
+        }
+        .checkout-panel input {
             border-radius: 0.85rem;
             border: 1px solid rgba(245, 194, 107, 0.25);
             padding: 0.75rem 0.9rem;
             background: rgba(15, 16, 24, 0.65);
             color: var(--text);
-        }}
-        .checkout-panel small {{
+        }
+        .checkout-panel small {
             color: rgba(245, 194, 107, 0.75);
             font-size: 0.8rem;
-        }}
-        .status-line {{
+        }
+        .status-line {
             min-height: 1.1rem;
             font-size: 0.9rem;
             color: var(--accent);
-        }}
-        .closing {{
+        }
+        .closing {
             margin-top: 5rem;
             padding: 3rem 3.2rem;
             border-radius: 1.6rem;
@@ -523,52 +417,52 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             display: grid;
             gap: 1.2rem;
             text-align: center;
-        }}
-        .closing p {{
+        }
+        .closing p {
             margin: 0;
             color: var(--muted);
             font-size: 1rem;
-        }}
-        footer {{
+        }
+        footer {
             margin-top: 5rem;
             padding: 3rem 0 1.5rem;
             color: var(--muted);
             text-align: center;
             font-size: 0.9rem;
-        }}
-        a.inline-link {{
+        }
+        a.inline-link {
             color: var(--accent);
             text-decoration: none;
             font-weight: 600;
-        }}
-        a.inline-link:hover {{
+        }
+        a.inline-link:hover {
             text-decoration: underline;
-        }}
-        @media (max-width: 720px) {{
-            header.hero {{
+        }
+        @media (max-width: 720px) {
+            header.hero {
                 padding-top: 3.5rem;
-            }}
-            .hero-ctas {{
+            }
+            .hero-ctas {
                 flex-direction: column;
                 align-items: stretch;
-            }}
-            .hero-cta {{
+            }
+            .hero-cta {
                 width: 100%;
-            }}
-            .hero-proof {{
+            }
+            .hero-proof {
                 flex-direction: column;
                 align-items: flex-start;
-            }}
-            .plan-card {{
+            }
+            .plan-card {
                 padding: 1.8rem;
-            }}
-            .closing {{
+            }
+            .closing {
                 padding: 2.2rem 1.8rem;
-            }}
-        }}
+            }
+        }
     </style>
 </head>
-<body data-stripe-key="{publishable_key}">
+<body data-stripe-key="">
     <div class="page">
         <header class="hero">
             <div class="hero-content">
@@ -670,7 +564,88 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
                 <p class="section-subhead">Every plan includes concierge onboarding, guided workflows, and premium reporting templates. Upgrade or pause anytime.</p>
             </div>
             <div class="plan-grid">
-{plan_cards}
+                <article class="plan-card" data-plan-card data-plan-id="starter" data-us-available="false" data-eu-available="false">
+                    
+                    <header class="plan-card__header">
+                        <span class="plan-card__eyebrow">For Solo operators</span>
+                        <h3>Starter</h3>
+                        <p>Launch automation-grade recon for boutique agencies and red teams.</p>
+                    </header>
+                    <div class="plan-card__price" data-plan-price data-us-price="$ 79" data-eu-price="€ 75">
+                        <span class="plan-card__amount price-amount"></span>
+                        <span class="plan-card__period">per seat / month</span>
+                    </div>
+                    <ul class="plan-card__features">
+                        <li>
+                            <span class="feature-icon">&#10003;</span>
+                            <span>Unlimited on-demand reconnaissance jobs</span>
+                        </li><li>
+                            <span class="feature-icon">&#10003;</span>
+                            <span>Live subdomain, DNS, and takeover detection</span>
+                        </li><li>
+                            <span class="feature-icon">&#10003;</span>
+                            <span>Automated PDF &amp; JSON reporting exports</span>
+                        </li><li>
+                            <span class="feature-icon">&#10003;</span>
+                            <span>Email support with 1-business-day SLA</span>
+                        </li>
+                    </ul>
+                    <button class="plan-card__cta" data-plan-cta data-plan-id="starter" data-disabled-copy="Email us to activate payments">Start free trial</button>
+                </article>                <article class="plan-card plan-card--highlight" data-plan-card data-plan-id="growth" data-us-available="false" data-eu-available="false">
+                    <span class="plan-badge">Preferred</span>
+                    <header class="plan-card__header">
+                        <span class="plan-card__eyebrow">For Agencies &amp; MSSPs</span>
+                        <h3>Growth</h3>
+                        <p>Scale your practice with team workspaces, automations, and real-time monitoring.</p>
+                    </header>
+                    <div class="plan-card__price" data-plan-price data-us-price="$ 159" data-eu-price="€ 149">
+                        <span class="plan-card__amount price-amount"></span>
+                        <span class="plan-card__period">per seat / month</span>
+                    </div>
+                    <ul class="plan-card__features">
+                        <li>
+                            <span class="feature-icon">&#10003;</span>
+                            <span>Everything in Starter plus scheduled monitoring</span>
+                        </li><li>
+                            <span class="feature-icon">&#10003;</span>
+                            <span>Team workspaces with role-based access control</span>
+                        </li><li>
+                            <span class="feature-icon">&#10003;</span>
+                            <span>Slack and webhook alerting for high-risk findings</span>
+                        </li><li>
+                            <span class="feature-icon">&#10003;</span>
+                            <span>Dedicated success engineer and quarterly playbooks</span>
+                        </li>
+                    </ul>
+                    <button class="plan-card__cta" data-plan-cta data-plan-id="growth" data-disabled-copy="Email us to activate payments">Start free trial</button>
+                </article>                <article class="plan-card" data-plan-card data-plan-id="enterprise" data-us-available="false" data-eu-available="false">
+                    
+                    <header class="plan-card__header">
+                        <span class="plan-card__eyebrow">For Global teams</span>
+                        <h3>Enterprise</h3>
+                        <p>For global security organizations that need private deployments and custom workflows.</p>
+                    </header>
+                    <div class="plan-card__price" data-plan-price data-us-price="$ 349" data-eu-price="€ 329">
+                        <span class="plan-card__amount price-amount"></span>
+                        <span class="plan-card__period">per seat / month</span>
+                    </div>
+                    <ul class="plan-card__features">
+                        <li>
+                            <span class="feature-icon">&#10003;</span>
+                            <span>Private cloud or on-premise deployment options</span>
+                        </li><li>
+                            <span class="feature-icon">&#10003;</span>
+                            <span>Custom modules and API surface for internal tooling</span>
+                        </li><li>
+                            <span class="feature-icon">&#10003;</span>
+                            <span>Advanced compliance reporting &amp; SOC2 documentation</span>
+                        </li><li>
+                            <span class="feature-icon">&#10003;</span>
+                            <span>24&#x2f;7 incident response with named TAM</span>
+                        </li>
+                    </ul>
+                    <button class="plan-card__cta" data-plan-cta data-plan-id="enterprise" data-disabled-copy="Email us to activate payments">Start free trial</button>
+                </article>
             </div>
             <aside class="checkout-panel">
                 <h4>Ready when you are</h4>
@@ -693,12 +668,12 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
         </section>
 
         <footer>
-            © {year} ShadowMap. Crafted for discerning operators. <a class="inline-link" href="mailto:hello@shadowmap.io">hello@shadowmap.io</a>
+            © 2025 ShadowMap. Crafted for discerning operators. <a class="inline-link" href="mailto:hello@shadowmap.io">hello@shadowmap.io</a>
         </footer>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {{
+        document.addEventListener('DOMContentLoaded', () => {
             const body = document.body;
             const publishableKey = body.dataset.stripeKey;
             const stripe = publishableKey ? Stripe(publishableKey) : null;
@@ -709,405 +684,95 @@ pub fn render_landing_page(context: &LandingPageContext) -> String {
             const emailInput = document.querySelector('[data-email-input]');
             let activeRegion = 'us';
 
-            function updateRegionButtons() {{
-                regionButtons.forEach(button => {{
+            function updateRegionButtons() {
+                regionButtons.forEach(button => {
                     const isActive = button.dataset.region === activeRegion;
                     button.dataset.active = isActive ? 'true' : 'false';
-                }});
-            }}
+                });
+            }
 
-            function updatePlanCards() {{
-                planPrices.forEach(node => {{
+            function updatePlanCards() {
+                planPrices.forEach(node => {
                     const price = node.dataset[activeRegion + 'Price'];
-                    if (price) {{
+                    if (price) {
                         const amount = node.querySelector('.price-amount');
-                        if (amount) {{
+                        if (amount) {
                             amount.textContent = price;
-                        }}
-                    }}
-                }});
+                        }
+                    }
+                });
 
-                planButtons.forEach(button => {{
-                    const planCard = document.querySelector(`[data-plan-card][data-plan-id="${{button.dataset.planId}}"]`);
-                    if (!planCard) {{
+                planButtons.forEach(button => {
+                    const planCard = document.querySelector(`[data-plan-card][data-plan-id="${button.dataset.planId}"]`);
+                    if (!planCard) {
                         return;
-                    }}
+                    }
                     const available = planCard.dataset[activeRegion + 'Available'] === 'true';
-                    if (!stripe || !available) {{
+                    if (!stripe || !available) {
                         button.disabled = true;
                         const disabledCopy = button.dataset.disabledCopy;
                         button.textContent = disabledCopy || 'Talk to sales';
-                    }} else {{
+                    } else {
                         button.disabled = false;
                         button.textContent = 'Start free trial';
-                    }}
-                }});
-            }}
+                    }
+                });
+            }
 
-            regionButtons.forEach(button => {{
-                button.addEventListener('click', () => {{
+            regionButtons.forEach(button => {
+                button.addEventListener('click', () => {
                     activeRegion = button.dataset.region;
                     updateRegionButtons();
                     updatePlanCards();
-                }});
-            }});
+                });
+            });
 
-            planButtons.forEach(button => {{
-                button.addEventListener('click', async () => {{
-                    if (!stripe) {{
+            planButtons.forEach(button => {
+                button.addEventListener('click', async () => {
+                    if (!stripe) {
                         statusLine.textContent = 'Payments are not configured yet. Email hello@shadowmap.io and we will get you set up.';
                         return;
-                    }}
+                    }
                     const planId = button.dataset.planId;
-                    const payload = {{
+                    const payload = {
                         plan_id: planId,
                         region: activeRegion,
                         email: emailInput && emailInput.value ? emailInput.value : undefined,
-                    }};
+                    };
                     button.disabled = true;
                     button.textContent = 'Redirecting...';
                     statusLine.textContent = '';
-                    try {{
-                        const response = await fetch('/create-checkout-session', {{
+                    try {
+                        const response = await fetch('/create-checkout-session', {
                             method: 'POST',
-                            headers: {{ 'Content-Type': 'application/json' }},
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload),
-                        }});
-                        if (!response.ok) {{
+                        });
+                        if (!response.ok) {
                             const errorText = await response.text();
                             throw new Error(errorText || 'Unable to start checkout');
-                        }}
+                        }
                         const data = await response.json();
-                        if (data.session_id) {{
-                            const result = await stripe.redirectToCheckout({{ sessionId: data.session_id }});
-                            if (result.error) {{
+                        if (data.session_id) {
+                            const result = await stripe.redirectToCheckout({ sessionId: data.session_id });
+                            if (result.error) {
                                 throw result.error;
-                            }}
-                        }} else {{
+                            }
+                        } else {
                             throw new Error('Invalid response from payment processor.');
-                        }}
-                    }} catch (err) {{
+                        }
+                    } catch (err) {
                         console.error(err);
                         statusLine.textContent = err.message || 'We were unable to start the checkout session. Please try again or email hello@shadowmap.io.';
                         button.disabled = false;
                         button.textContent = 'Start free trial';
-                    }}
-                }});
-            }});
+                    }
+                });
+            });
 
             updateRegionButtons();
             updatePlanCards();
-        }});
+        });
     </script>
 </body>
 </html>
-"##,
-        plan_cards = plan_cards,
-        publishable_key = publishable_key,
-        year = escape(&year),
-    )
-}
-
-use super::state::{Job, JobConfig, JobStatus};
-
-pub fn render_index_page(jobs: &[Job]) -> String {
-    let defaults = JobConfig::default();
-    format!(
-        r##"<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ShadowMap Recon Dashboard</title>
-    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
-    <style>
-        :root {{
-            color-scheme: dark;
-        }}
-        body {{
-            margin: 0;
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: radial-gradient(circle at top, #0f172a, #020617 60%);
-            color: #e2e8f0;
-        }}
-        main {{
-            width: min(960px, 94vw);
-            margin: 3rem auto;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(18px);
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            border-radius: 18px;
-            padding: 2.5rem 2.75rem;
-            box-shadow: 0 40px 70px rgba(15, 23, 42, 0.45);
-        }}
-        header h1 {{
-            margin: 0;
-            font-size: clamp(1.8rem, 3vw, 2.4rem);
-            font-weight: 600;
-        }}
-        header p {{
-            margin: 0.35rem 0 0;
-            color: #94a3b8;
-        }}
-        form {{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-            align-items: end;
-        }}
-        label {{
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            font-size: 0.95rem;
-            color: #cbd5f5;
-            letter-spacing: 0.01em;
-        }}
-        input[type="text"],
-        input[type="number"] {{
-            border-radius: 12px;
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            background: rgba(15, 23, 42, 0.6);
-            color: #e2e8f0;
-            padding: 0.75rem 0.9rem;
-            font-size: 1rem;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }}
-        input:focus {{
-            outline: none;
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
-        }}
-        button {{
-            border-radius: 12px;
-            border: none;
-            padding: 0.85rem 1.6rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            background: linear-gradient(135deg, #38bdf8, #2563eb);
-            color: #0f172a;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }}
-        button:hover {{
-            transform: translateY(-1px);
-            box-shadow: 0 18px 30px rgba(56, 189, 248, 0.35);
-        }}
-        section {{
-            margin-top: 2.5rem;
-        }}
-        table {{
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1.25rem;
-        }}
-        thead th {{
-            text-align: left;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #94a3b8;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            padding: 0.75rem 1rem;
-        }}
-        tbody td {{
-            padding: 0.9rem 1rem;
-            border-top: 1px solid rgba(148, 163, 184, 0.12);
-            vertical-align: top;
-        }}
-        tbody tr:hover {{
-            background: rgba(56, 189, 248, 0.07);
-        }}
-        .status {{
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.3rem 0.9rem;
-            border-radius: 999px;
-            font-size: 0.85rem;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }}
-        .status::before {{
-            content: '';
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }}
-        .status-Queued {{
-            background: rgba(251, 191, 36, 0.15);
-            color: #fbbf24;
-        }}
-        .status-Queued::before {{
-            background: #fbbf24;
-        }}
-        .status-Running {{
-            background: rgba(96, 165, 250, 0.18);
-            color: #60a5fa;
-        }}
-        .status-Running::before {{
-            background: #38bdf8;
-        }}
-        .status-Completed {{
-            background: rgba(134, 239, 172, 0.2);
-            color: #86efac;
-        }}
-        .status-Completed::before {{
-            background: #4ade80;
-        }}
-        .status-Failed {{
-            background: rgba(248, 113, 113, 0.2);
-            color: #f87171;
-        }}
-        .status-Failed::before {{
-            background: #f87171;
-        }}
-        .job-actions a {{
-            color: #38bdf8;
-            text-decoration: none;
-            font-weight: 600;
-        }}
-        .job-actions a:hover {{
-            text-decoration: underline;
-        }}
-        .status-note {{
-            margin-top: 0.45rem;
-            font-size: 0.85rem;
-            color: rgba(248, 113, 113, 0.9);
-        }}
-        .config-pill {{
-            display: inline-flex;
-            gap: 0.4rem;
-            align-items: center;
-            padding: 0.3rem 0.75rem;
-            border-radius: 999px;
-            background: rgba(148, 163, 184, 0.15);
-            color: #cbd5f5;
-            font-size: 0.85rem;
-        }}
-        .table-empty {{
-            padding: 2.5rem 1rem;
-            text-align: center;
-            color: #64748b;
-            font-size: 0.95rem;
-        }}
-    </style>
-</head>
-<body>
-<main>
-    <header>
-        <h1>ShadowMap Recon Dashboard</h1>
-        <p>Launch reconnaissance jobs, monitor progress, and retrieve structured reports in seconds.</p>
-    </header>
-    <form hx-post="/jobs" hx-target="#jobs-body" hx-swap="afterbegin">
-        <label>
-            Domain
-            <input type="text" name="domain" required placeholder="example.com" autocomplete="off">
-        </label>
-        <label>
-            Concurrency
-            <input type="number" name="concurrency" min="1" max="500" value="{concurrency}">
-        </label>
-        <label>
-            Timeout (s)
-            <input type="number" name="timeout" min="1" max="120" value="{timeout}">
-        </label>
-        <label>
-            Retries
-            <input type="number" name="retries" min="0" max="10" value="{retries}">
-        </label>
-        <button type="submit">Launch recon</button>
-    </form>
-    <section>
-        <h2>Recent jobs</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Domain</th>
-                    <th>Status</th>
-                    <th>Last update</th>
-                    <th>Config</th>
-                    <th>Output</th>
-                </tr>
-            </thead>
-            <tbody id="jobs-body"
-                   hx-get="/jobs"
-                   hx-trigger="load, every 5s"
-                   hx-target="#jobs-body"
-                   hx-swap="innerHTML">
-                {rows}
-            </tbody>
-        </table>
-    </section>
-</main>
-</body>
-</html>"##,
-        concurrency = defaults.concurrency,
-        timeout = defaults.timeout,
-        retries = defaults.retries,
-        rows = if jobs.is_empty() {
-            String::from(
-                r#"<tr><td colspan="5" class="table-empty">No jobs yet. Launch a scan to populate the dashboard.</td></tr>"#,
-            )
-        } else {
-            render_job_rows(jobs)
-        },
-    )
-}
-
-pub fn render_job_rows(jobs: &[Job]) -> String {
-    jobs.iter().map(render_job_row).collect()
-}
-
-pub fn render_job_row(job: &Job) -> String {
-    let domain = escape(&job.domain);
-    let status_class = match job.status {
-        JobStatus::Queued => "Queued",
-        JobStatus::Running => "Running",
-        JobStatus::Completed => "Completed",
-        JobStatus::Failed => "Failed",
-    };
-    let status_label = match job.status {
-        JobStatus::Queued => "Queued",
-        JobStatus::Running => "Running",
-        JobStatus::Completed => "Completed",
-        JobStatus::Failed => "Failed",
-    };
-    let updated = humanize_timestamp(job.updated_at);
-    let config = format!(
-        r#"<span class="config-pill"><strong>{}</strong> workers • {}s timeout • {} retries</span>"#,
-        job.config.concurrency, job.config.timeout, job.config.retries
-    );
-    let output = match (&job.status, &job.output_path) {
-        (JobStatus::Completed, Some(_)) => format!(
-            r#"<div class="job-actions"><a href="/jobs/{id}/report" hx-boost="false" target="_blank">Download JSON</a></div>"#,
-            id = job.id
-        ),
-        _ => String::from(r#"<span style="color:#475569;">Pending</span>"#),
-    };
-    let note = match (&job.status, &job.error) {
-        (JobStatus::Failed, Some(err)) => {
-            format!(r#"<div class="status-note">{}</div>"#, escape(err))
-        }
-        _ => String::new(),
-    };
-
-    format!(
-        r#"<tr id="job-{id}"><td>{domain}</td><td><span class="status status-{class}">{label}</span>{note}</td><td>{updated}</td><td>{config}</td><td>{output}</td></tr>"#,
-        id = job.id,
-        domain = domain,
-        class = status_class,
-        label = status_label,
-        updated = escape(&updated),
-        config = config,
-        output = output,
-        note = note,
-    )
-}
-
-fn humanize_timestamp(ts: DateTime<Utc>) -> String {
-    ts.with_timezone(&chrono::Local)
-        .format("%Y-%m-%d %H:%M:%S %Z")
-        .to_string()
-}
