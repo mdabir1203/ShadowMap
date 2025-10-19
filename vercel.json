@@ -1,0 +1,8 @@
+{
+  "builds": [
+    { "src": "landing-page/index.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "landing-page/index.html" }
+  ]
+}

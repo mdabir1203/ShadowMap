@@ -12,6 +12,7 @@ mod ports;
 mod reporting;
 mod social;
 mod takeover;
+pub mod web;
 
 pub use agent::BoxError;
 pub use agent::{AutonomousReconAgent, ReconEngine, ReconReport};
