@@ -7,6 +7,13 @@ use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
+use crate::compliance::{
+    AccessControl, AccessControlExport, ComplianceVisualizerData, Criticality, DeploymentNode,
+    EntropyFinding, EntropyMonitor, GeoFenceDecision, GeoFencePolicy, IncidentInput,
+    IncidentReport, IncidentReporter, MfaFactor, MfaPolicy, PrivacyController, PrivacySnapshot,
+    SandboxScanResult, SandboxScanner, SbomComponent, TrustGraph, TrustGraphExport,
+    TrustGraphSummary, TrustRelation, TrustService,
+};
 use crate::{run, Args, BoxError};
 
 // ============================================================================
@@ -706,6 +713,104 @@ impl ShadowMapCLI {
         Self::write_stub_file(&report_path, &report_payload)?;
         TerminalUI::print_success(&format!("Report saved: {}", report_path.display()));
 
+        // Regulatory & trust controls
+        let (geo_decision, geo_payload) = Self::render_geo_fence_stub();
+        let geo_path = output_dir.join("geo-fence.json");
+        Self::write_stub_file(&geo_path, &geo_payload)?;
+        TerminalUI::print_success(&format!(
+            "Geo-fence policy exported: {}",
+            geo_path.display()
+        ));
+
+        let (tamper_finding, tamper_payload) = Self::render_entropy_monitor_stub();
+        let tamper_path = output_dir.join("api-tamper-monitoring.json");
+        Self::write_stub_file(&tamper_path, &tamper_payload)?;
+        TerminalUI::print_success(&format!(
+            "Entropy monitor baseline saved: {}",
+            tamper_path.display()
+        ));
+        TerminalUI::print_info(&format!(
+            "Entropy delta {:.2} • tamper suspected: {}",
+            tamper_finding.delta,
+            if tamper_finding.tamper_suspected {
+                "yes"
+            } else {
+                "no"
+            }
+        ));
+
+        let (sandbox_result, sandbox_payload) = Self::render_sandbox_stub();
+        let sandbox_path = output_dir.join("sandbox-scan.json");
+        Self::write_stub_file(&sandbox_path, &sandbox_payload)?;
+        TerminalUI::print_success(&format!(
+            "Sandbox verification archived: {}",
+            sandbox_path.display()
+        ));
+
+        let (trust_export, trust_summary) = Self::build_trust_graph_stub();
+        let trust_path = output_dir.join("trust-graph.json");
+        let trust_payload =
+            serde_json::to_string_pretty(&trust_export).unwrap_or_else(|_| "{}".to_string());
+        Self::write_stub_file(&trust_path, &trust_payload)?;
+        TerminalUI::print_success(&format!("Trust graph generated: {}", trust_path.display()));
+
+        let trust_summary_path = output_dir.join("trust-graph-summary.json");
+        let trust_summary_payload =
+            serde_json::to_string_pretty(&trust_summary).unwrap_or_else(|_| "{}".to_string());
+        Self::write_stub_file(&trust_summary_path, &trust_summary_payload)?;
+        TerminalUI::print_info(&format!(
+            "Trust graph summary: {}",
+            trust_summary_path.display()
+        ));
+
+        let (privacy_snapshot, privacy_payload) = Self::render_privacy_stub();
+        let privacy_path = output_dir.join("privacy-controls.json");
+        Self::write_stub_file(&privacy_path, &privacy_payload)?;
+        TerminalUI::print_success(&format!(
+            "Privacy journal produced: {}",
+            privacy_path.display()
+        ));
+
+        let (incident_report, incident_payload) = Self::render_incident_stub();
+        let incident_path = output_dir.join("incident-workflow.json");
+        Self::write_stub_file(&incident_path, &incident_payload)?;
+        TerminalUI::print_success(&format!(
+            "Incident workflow templated: {}",
+            incident_path.display()
+        ));
+
+        let (access_export, access_payload) = Self::render_access_policy_stub();
+        let access_path = output_dir.join("access-policy.json");
+        Self::write_stub_file(&access_path, &access_payload)?;
+        TerminalUI::print_success(&format!(
+            "Access control map saved: {}",
+            access_path.display()
+        ));
+
+        let visualizer_payload =
+            Self::render_visualizer_stub(&geo_decision, &trust_summary, &incident_report);
+        let visualizer_path = output_dir.join("compliance-visualizer.json");
+        Self::write_stub_file(&visualizer_path, &visualizer_payload)?;
+        TerminalUI::print_info(&format!(
+            "Visualizer data prepared: {}",
+            visualizer_path.display()
+        ));
+
+        let trust_service_payload = Self::render_trust_service_stub(
+            &trust_export,
+            &geo_decision,
+            &privacy_snapshot,
+            &incident_report,
+            &access_export,
+            Some(&sandbox_result),
+        );
+        let trust_service_path = output_dir.join("trust-service.json");
+        Self::write_stub_file(&trust_service_path, &trust_service_payload)?;
+        TerminalUI::print_success(&format!(
+            "Trust service bundle issued: {}",
+            trust_service_path.display()
+        ));
+
         println!();
         println!("{}", "═".repeat(70).bright_green());
         println!(
@@ -716,7 +821,12 @@ impl ShadowMapCLI {
         println!();
 
         TerminalUI::print_info(&format!("📁 Output: {}/", output_dir.display()));
-        TerminalUI::print_info("📄 Files: sbom.json, scan-results.json, report.json");
+        TerminalUI::print_info(
+            "📄 Files: sbom.json, scan-results.json, report.json, geo-fence.json, trust-graph.json",
+        );
+        TerminalUI::print_info(
+            "📄 Extras: privacy-controls.json, incident-workflow.json, access-policy.json, trust-service.json",
+        );
 
         Ok(())
     }
@@ -948,6 +1058,274 @@ impl ShadowMapCLI {
                 )
             }
         }
+    }
+
+    fn render_geo_fence_stub() -> (GeoFenceDecision, String) {
+        let nodes = vec![
+            DeploymentNode::new(
+                "dubai-core-1",
+                "UAE",
+                "Dubai",
+                ["ISO 27001", "NESA"],
+                ["NCA National Cloud Framework", "GDPR"],
+                ["sovereign-key", "geo-fenced"],
+                14,
+            ),
+            DeploymentNode::new(
+                "riyadh-edge-2",
+                "KSA",
+                "Riyadh",
+                ["ISO 27701"],
+                ["NCA National Cloud Framework"],
+                ["geo-fenced"],
+                28,
+            ),
+            DeploymentNode::new(
+                "frankfurt-eu-1",
+                "EU",
+                "Frankfurt",
+                ["ISO 27017"],
+                ["GDPR"],
+                ["geo-fenced"],
+                42,
+            ),
+        ];
+
+        let policy = GeoFencePolicy::new(["UAE", "EU"], ["NCA National Cloud Framework", "GDPR"])
+            .with_required_controls(["sovereign-key", "geo-fenced"]);
+        let decision = policy.enforce(&nodes);
+        let payload = serde_json::to_string_pretty(&decision).unwrap_or_else(|_| "{}".to_string());
+        (decision, payload)
+    }
+
+    fn render_entropy_monitor_stub() -> (EntropyFinding, String) {
+        let baseline = EntropyMonitor::baseline_from(
+            b"GET /api/v1/health HTTP/1.1\r\nHost: api.shadowmap.ai\r\n\r\n",
+        );
+        let mut monitor = EntropyMonitor::new(baseline, 0.75);
+        let suspicious_payload = b"POST /api/v1/config HTTP/2\r\nHost: api.shadowmap.ai\r\nX-Trace: e7d12af0aa88\r\n\r\n\x7f\x8e\xa3\xf1\x9b\x1d\x02\xff\xee\xdb";
+        let finding = monitor.analyze(suspicious_payload);
+        let payload = serde_json::to_string_pretty(&finding).unwrap_or_else(|_| "{}".to_string());
+        (finding, payload)
+    }
+
+    fn render_sandbox_stub() -> (SandboxScanResult, String) {
+        let baseline =
+            EntropyMonitor::baseline_from(b"GET / HTTP/1.1\r\nHost: sandbox.shadowmap.ai\r\n\r\n");
+        let mut monitor = EntropyMonitor::new(baseline, 0.6);
+        let scanner = SandboxScanner::new("shadowmap-rust-sandbox");
+        let payload: Vec<u8> = vec![
+            0x7f, 0x45, 0x4c, 0x46, 0x02, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00,
+            0x3e, 0x00, 0x01, 0x00, 0x00, 0x00, 0x78, 0x56, 0x34, 0x12,
+        ];
+        let result = scanner.scan(&payload, &mut monitor);
+        let payload = serde_json::to_string_pretty(&result).unwrap_or_else(|_| "{}".to_string());
+        (result, payload)
+    }
+
+    fn build_trust_graph_stub() -> (TrustGraphExport, TrustGraphSummary) {
+        let components = vec![
+            SbomComponent::new(
+                "shadowmap-core",
+                VERSION,
+                "ShadowMap",
+                Criticality::Core,
+                "sha256:core",
+                ["Apache-2.0"],
+                0.98,
+            ),
+            SbomComponent::new(
+                "openssl",
+                "3.2.1",
+                "OpenSSL Foundation",
+                Criticality::Core,
+                "sha256:openssl",
+                ["Apache-2.0"],
+                0.82,
+            ),
+            SbomComponent::new(
+                "tokio",
+                "1.40.0",
+                "Tokio Project",
+                Criticality::Core,
+                "sha256:tokio",
+                ["MIT"],
+                0.88,
+            ),
+            SbomComponent::new(
+                "slint",
+                "1.5.0",
+                "Slint Labs",
+                Criticality::Supporting,
+                "sha256:slint",
+                ["GPL-3.0", "Commercial"],
+                0.73,
+            ),
+        ];
+
+        let mut graph = TrustGraph::from_components(components);
+        graph.relate(
+            "shadowmap-core",
+            "openssl",
+            TrustRelation::Runtime,
+            0.21,
+            "TLS stack",
+        );
+        graph.relate(
+            "shadowmap-core",
+            "tokio",
+            TrustRelation::Runtime,
+            0.18,
+            "Async runtime",
+        );
+        graph.relate(
+            "shadowmap-core",
+            "slint",
+            TrustRelation::Optional,
+            0.35,
+            "Dashboard visualizer",
+        );
+
+        let export = graph.export();
+        let summary = export.summary.clone();
+        (export, summary)
+    }
+
+    fn render_privacy_stub() -> (PrivacySnapshot, String) {
+        let mut controller =
+            PrivacyController::new(["subject_id", "purpose", "expires_at", "lawful_basis"]);
+        let record = json!({
+            "subject_id": "uae-44321",
+            "email": "analyst@shadowmap.ai",
+            "purpose": "threat-intel",
+            "expires_at": "2025-01-01",
+            "lawful_basis": "legitimate_interest",
+            "raw_payload": "social graph correlations",
+        });
+        let minimized = controller.minimize_record(&record);
+        controller.request_erasure("uae-44321");
+        let snapshot = controller.snapshot(minimized);
+        let payload = serde_json::to_string_pretty(&snapshot).unwrap_or_else(|_| "{}".to_string());
+        (snapshot, payload)
+    }
+
+    fn render_incident_stub() -> (IncidentReport, String) {
+        let reporter =
+            IncidentReporter::new("soc@shadowmap.ai", ["NCA", "DEWA", "GDPR", "NIS2", "ENISA"]);
+        let incident = IncidentInput {
+            incident_id: "INC-2024-0925".to_string(),
+            severity: "high".to_string(),
+            detected_at: Utc::now(),
+            description: "Entropy deviation detected on supply chain webhook".to_string(),
+            impacted_assets: vec!["api.shadowmap.ai".to_string(), "audit-bus".to_string()],
+            containment_actions: vec![
+                "revoked api token".to_string(),
+                "isolated geo-fence segment".to_string(),
+            ],
+            status: "contained".to_string(),
+        };
+        let report = reporter.create_report(incident);
+        let payload = serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string());
+        (report, payload)
+    }
+
+    fn render_access_policy_stub() -> (AccessControlExport, String) {
+        let mut access = AccessControl::new(MfaPolicy {
+            min_validated: 2,
+            allowed_methods: vec![
+                "totp".to_string(),
+                "webauthn".to_string(),
+                "hardware-key".to_string(),
+            ],
+        });
+        access.define_role("analyst", ["view:reports", "download:evidence"]);
+        access.define_role(
+            "admin",
+            [
+                "view:reports",
+                "download:evidence",
+                "manage:users",
+                "configure:policies",
+            ],
+        );
+        access.define_role("auditor", ["view:reports", "request:evidence"]);
+        access.assign("amira.al-farsi", "analyst");
+        access.assign("yousef.al-nuaimi", "admin");
+        access.assign("salma.hassan", "auditor");
+
+        let evaluations = vec![
+            access.evaluate(
+                "amira.al-farsi",
+                "download:evidence",
+                &[
+                    MfaFactor {
+                        method: "totp".to_string(),
+                        validated: true,
+                    },
+                    MfaFactor {
+                        method: "webauthn".to_string(),
+                        validated: true,
+                    },
+                ],
+            ),
+            access.evaluate(
+                "yousef.al-nuaimi",
+                "configure:policies",
+                &[
+                    MfaFactor {
+                        method: "totp".to_string(),
+                        validated: true,
+                    },
+                    MfaFactor {
+                        method: "hardware-key".to_string(),
+                        validated: true,
+                    },
+                ],
+            ),
+            access.evaluate(
+                "salma.hassan",
+                "download:evidence",
+                &[MfaFactor {
+                    method: "totp".to_string(),
+                    validated: true,
+                }],
+            ),
+        ];
+
+        let export = access.export_model(&evaluations);
+        let payload = serde_json::to_string_pretty(&export).unwrap_or_else(|_| "{}".to_string());
+        (export, payload)
+    }
+
+    fn render_visualizer_stub(
+        geo: &GeoFenceDecision,
+        trust: &TrustGraphSummary,
+        incident: &IncidentReport,
+    ) -> String {
+        let visualizer = ComplianceVisualizerData::from_context(geo, trust, incident);
+        serde_json::to_string_pretty(&visualizer).unwrap_or_else(|_| "{}".to_string())
+    }
+
+    fn render_trust_service_stub(
+        trust_export: &TrustGraphExport,
+        geo: &GeoFenceDecision,
+        privacy: &PrivacySnapshot,
+        incident: &IncidentReport,
+        access: &AccessControlExport,
+        sandbox: Option<&SandboxScanResult>,
+    ) -> String {
+        let mut service = TrustService::new(
+            trust_export.clone(),
+            geo.clone(),
+            privacy.clone(),
+            incident.clone(),
+            access.clone(),
+        );
+        if let Some(sandbox_result) = sandbox {
+            service = service.with_sandbox(sandbox_result.clone());
+        }
+        let payload = service.export();
+        serde_json::to_string_pretty(&payload).unwrap_or_else(|_| "{}".to_string())
     }
 
     fn write_stub_file(path: &Path, contents: &str) -> Result<(), BoxError> {
