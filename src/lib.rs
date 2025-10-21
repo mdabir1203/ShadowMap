@@ -2,6 +2,7 @@ mod agent;
 pub mod args;
 pub mod cli;
 mod cloud;
+pub mod compliance;
 mod constants;
 mod cors;
 mod dns;
