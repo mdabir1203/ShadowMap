@@ -1,4 +1,44 @@
-import { Button, ProgressIndicator, LineEdit, ListView } from "std-widgets.slint";
+import { ProgressIndicator, LineEdit, ListView } from "std-widgets.slint";
+
+component GlassButton inherits Rectangle {
+    in property <string> label;
+    in property <bool> enabled: true;
+    in property <brush> fill := @linear-gradient(120deg, #5d80ff, #41d3ff);
+    in property <brush> label-color := #0b1124;
+    in property <brush> outline-color := #00000000;
+    in property <length> outline-width: 0px;
+    in property <length> corner-radius: 20px;
+    in property <brush> shadow-color := #04112f99;
+    in property <length> shadow-blur: 24px;
+    in property <int> font-weight: 600;
+    callback clicked;
+
+    width: 170px;
+    height: 44px;
+    border-radius: root.corner-radius;
+    border-width: root.outline-width;
+    border-color: root.outline-color;
+    background: root.fill;
+    drop-shadow-color: root.shadow-color;
+    drop-shadow-blur: root.shadow-blur;
+    opacity: root.enabled ? 1.0 : 0.5;
+
+    Text {
+        text: root.label;
+        color: root.label-color;
+        font-size: 14px;
+        font-weight: root.font-weight;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    TouchArea {
+        width: parent.width;
+        height: parent.height;
+        enabled: root.enabled;
+        clicked => { root.clicked(); }
+    }
+}
 
 export struct StatCard {
     title: string,
@@ -32,7 +72,7 @@ export component Dashboard inherits Window {
     width: 1024px;
     height: 640px;
     title: "ShadowMap Dashboard";
-    background: @linear-gradient(180deg, #101323, #1b1f38);
+    background: @linear-gradient(200deg, #080b1d, #121735);
 
     in property <string> current-date;
     in property <string> current-time;
@@ -52,9 +92,42 @@ export component Dashboard inherits Window {
     callback start-scan(string);
     callback download-compliance-report();
 
-    VerticalLayout {
-        padding: 28px;
-        spacing: 20px;
+    Rectangle {
+        width: parent.width;
+        height: parent.height;
+        x: -parent.width * 0.25;
+        y: -parent.height * 0.2;
+        background: @radial-gradient(circle, #5d7cff2e, #080b1d00);
+        z: -1;
+    }
+
+    Rectangle {
+        width: parent.width;
+        height: parent.height;
+        x: parent.width * 0.25;
+        y: -parent.height * 0.15;
+        background: @radial-gradient(circle, #43d3ff21, #080b1d00);
+        z: -1;
+    }
+
+    Rectangle {
+        width: parent.width;
+        height: parent.height;
+        padding: 32px;
+        background: @linear-gradient(155deg, #111731aa, #0c1226a0);
+        border-radius: 36px;
+        border-width: 1px;
+        border-color: #ffffff1a;
+        drop-shadow-color: #050916a6;
+        drop-shadow-blur: 48px;
+        clip: true;
+        z: 1;
+
+        VerticalLayout {
+            width: parent.width;
+            height: parent.height;
+            padding: 28px;
+            spacing: 20px;
         HorizontalLayout {
             Text {
                 text: root.current-date;
@@ -73,11 +146,23 @@ export component Dashboard inherits Window {
         }
 
         Rectangle {
-            background: @linear-gradient(120deg, #20264a, #181d3a);
-            border-radius: 24px;
-            padding: 24px;
+            background: @linear-gradient(130deg, #1f2646cc, #10162fd8);
+            border-radius: 28px;
+            border-width: 1px;
+            border-color: #ffffff1a;
+            padding: 26px;
+            drop-shadow-color: #0307128f;
+            drop-shadow-blur: 36px;
+            clip: true;
             VerticalLayout {
                 spacing: 14px;
+                Rectangle {
+                    horizontal-stretch: 1;
+                    height: 2px;
+                    border-radius: 2px;
+                    background: @linear-gradient(90deg, #ffffff33, #ffffff05);
+                    opacity: 0.6;
+                }
                 Text {
                     text: "Recon Orchestrator";
                     font-size: 26px;
@@ -85,15 +170,33 @@ export component Dashboard inherits Window {
                 }
                 HorizontalLayout {
                     spacing: 18px;
-                    LineEdit {
+                    Rectangle {
                         width: 360px;
-                        text <=> root.domain-input;
-                        placeholder-text: "Enter a target domain";
-                        enabled: !root.scan-in-progress;
+                        height: 44px;
+                        background: @linear-gradient(135deg, #ffffff1a, #ffffff08);
+                        border-width: 1px;
+                        border-color: #ffffff2a;
+                        border-radius: 18px;
+                        drop-shadow-color: #060b1f55;
+                        drop-shadow-blur: 20px;
+                        clip: true;
+
+                        LineEdit {
+                            width: parent.width;
+                            height: parent.height;
+                            text <=> root.domain-input;
+                            placeholder-text: "Enter a target domain";
+                            enabled: !root.scan-in-progress;
+                            font-size: 14px;
+                        }
                     }
-                    Button {
-                        text: root.scan-in-progress ? "Scanning..." : "Launch Scan";
+                    GlassButton {
+                        label: root.scan-in-progress ? "Scanning..." : "Launch Scan";
                         enabled: !root.scan-in-progress;
+                        fill: @linear-gradient(120deg, #5d80ff, #41d3ff);
+                        label-color: #0b1124;
+                        shadow-color: #04112f99;
+                        shadow-blur: 24px;
                         clicked => { root.start-scan(root.domain-input); }
                     }
                     ProgressIndicator {
@@ -101,9 +204,15 @@ export component Dashboard inherits Window {
                         indeterminate: root.scan-in-progress;
                         progress: root.scan-progress;
                     }
-                    Button {
-                        text: "Download Compliance Report";
+                    GlassButton {
+                        label: "Download Compliance Report";
                         enabled: root.report-available && !root.scan-in-progress;
+                        fill: @linear-gradient(130deg, #ffffff2e, #ffffff08);
+                        label-color: #e2e9ff;
+                        outline-width: 1px;
+                        outline-color: #ffffff3a;
+                        shadow-color: #04081466;
+                        shadow-blur: 20px;
                         clicked => { root.download-compliance-report(); }
                     }
                     Rectangle {
@@ -138,9 +247,14 @@ export component Dashboard inherits Window {
             width: parent.width;
             for card[idx] in root.stats : Rectangle {
                 width: parent.width / 4;
-                background: @linear-gradient(160deg, #1c2242, #0f1327);
-                border-radius: 20px;
-                padding: 18px;
+                background: @linear-gradient(155deg, #20284acc, #0f1327c8);
+                border-radius: 22px;
+                border-width: 1px;
+                border-color: #ffffff14;
+                padding: 20px;
+                drop-shadow-color: #04081470;
+                drop-shadow-blur: 28px;
+                clip: true;
                 VerticalLayout {
                     spacing: 6px;
                     Text {
@@ -166,9 +280,14 @@ export component Dashboard inherits Window {
         HorizontalLayout {
             spacing: 18px;
             Rectangle {
-                background: @linear-gradient(160deg, #1d2344, #141a34);
-                border-radius: 20px;
-                padding: 20px;
+                background: @linear-gradient(160deg, #1d2445cc, #111731c5);
+                border-radius: 24px;
+                border-width: 1px;
+                border-color: #ffffff14;
+                padding: 24px;
+                drop-shadow-color: #0409156a;
+                drop-shadow-blur: 34px;
+                clip: true;
                 width: parent.width * 0.6;
                 VerticalLayout {
                     spacing: 12px;
@@ -200,9 +319,14 @@ export component Dashboard inherits Window {
                 }
             }
             Rectangle {
-                background: @linear-gradient(160deg, #1f2548, #151a35);
-                border-radius: 20px;
-                padding: 20px;
+                background: @linear-gradient(160deg, #1f264acc, #0f152fc8);
+                border-radius: 24px;
+                border-width: 1px;
+                border-color: #ffffff1a;
+                padding: 24px;
+                drop-shadow-color: #04081470;
+                drop-shadow-blur: 34px;
+                clip: true;
                 width: parent.width * 0.4;
                 VerticalLayout {
                     spacing: 12px;
@@ -214,10 +338,15 @@ export component Dashboard inherits Window {
                     VerticalLayout {
                         spacing: 10px;
                         for alert[idx] in root.alerts : Rectangle {
-                            background: alert.accent;
-                            border-radius: 16px;
-                            padding: 12px;
-                            opacity: 0.85;
+                            background: @linear-gradient(140deg, alert.accent, #ffffff26);
+                            border-radius: 18px;
+                            border-width: 1px;
+                            border-color: #ffffff36;
+                            padding: 14px;
+                            opacity: 0.82;
+                            drop-shadow-color: #04081460;
+                            drop-shadow-blur: 26px;
+                            clip: true;
                             VerticalLayout {
                                 spacing: 4px;
                                 Text {
@@ -241,9 +370,14 @@ export component Dashboard inherits Window {
         HorizontalLayout {
             spacing: 18px;
             Rectangle {
-                background: @linear-gradient(160deg, #1b2140, #141a34);
-                border-radius: 20px;
-                padding: 20px;
+                background: @linear-gradient(160deg, #1b2242cc, #101630c8);
+                border-radius: 24px;
+                border-width: 1px;
+                border-color: #ffffff14;
+                padding: 24px;
+                drop-shadow-color: #04091568;
+                drop-shadow-blur: 34px;
+                clip: true;
                 width: parent.width * 0.6;
                 VerticalLayout {
                     spacing: 12px;
@@ -254,9 +388,14 @@ export component Dashboard inherits Window {
                     }
                     ListView {
                         for row[idx] in root.subdomains : Rectangle {
-                            background: row.highlight ? @linear-gradient(90deg, #29305a, #1b203f) : #161b34;
-                            border-radius: 12px;
-                            padding: 12px;
+                            background: row.highlight ? @linear-gradient(110deg, #2d3b6fd0, #18213dcf) : #101730c2;
+                            border-radius: 16px;
+                            border-width: 1px;
+                            border-color: row.highlight ? #74f3ff40 : #ffffff12;
+                            padding: 14px;
+                            drop-shadow-color: row.highlight ? #1a2d5a7a : #05091555;
+                            drop-shadow-blur: 22px;
+                            clip: true;
                             HorizontalLayout {
                                 spacing: 12px;
                                 Text {
@@ -279,9 +418,14 @@ export component Dashboard inherits Window {
                 }
             }
             Rectangle {
-                background: @linear-gradient(160deg, #20264b, #151a35);
-                border-radius: 20px;
-                padding: 20px;
+                background: @linear-gradient(160deg, #20274dcc, #101630c8);
+                border-radius: 24px;
+                border-width: 1px;
+                border-color: #ffffff18;
+                padding: 24px;
+                drop-shadow-color: #0409156f;
+                drop-shadow-blur: 34px;
+                clip: true;
                 width: parent.width * 0.4;
                 VerticalLayout {
                     spacing: 12px;
@@ -307,9 +451,14 @@ export component Dashboard inherits Window {
                     }
                     ListView {
                         for feedback[idx] in root.feature-feedback : Rectangle {
-                            background: @linear-gradient(160deg, #232a52, #1b2142);
-                            border-radius: 14px;
-                            padding: 10px;
+                            background: @linear-gradient(150deg, #242c52cc, #151c3ac7);
+                            border-radius: 16px;
+                            border-width: 1px;
+                            border-color: #ffffff12;
+                            padding: 12px;
+                            drop-shadow-color: #04091555;
+                            drop-shadow-blur: 22px;
+                            clip: true;
                             VerticalLayout {
                                 spacing: 4px;
                                 Text {
@@ -331,14 +480,19 @@ export component Dashboard inherits Window {
 
         Rectangle {
             height: 12px;
-            border-radius: 12px;
-            background: #12162c;
+            border-radius: 14px;
+            background: #0d1328cc;
+            border-width: 1px;
+            border-color: #ffffff18;
+            drop-shadow-color: #03071280;
+            drop-shadow-blur: 30px;
             Rectangle {
                 width: root.scan-progress * parent.width;
                 height: parent.height;
                 border-radius: parent.border-radius;
-                background: @linear-gradient(90deg, #597dff, #43d5ff);
+                background: @linear-gradient(90deg, #6c85ff, #42d9ff);
             }
         }
     }
+}
 }
