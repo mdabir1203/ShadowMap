@@ -95,18 +95,14 @@ export component Dashboard inherits Window {
     Rectangle {
         width: parent.width;
         height: parent.height;
-        x: -parent.width * 0.25;
-        y: -parent.height * 0.2;
-        background: @radial-gradient(circle, #5d7cff2e, #080b1d00);
+        background: @radial-gradient(circle at 16% 12%, #5d7cff2e, #080b1d00);
         z: -1;
     }
 
     Rectangle {
         width: parent.width;
         height: parent.height;
-        x: parent.width * 0.25;
-        y: -parent.height * 0.15;
-        background: @radial-gradient(circle, #43d3ff21, #080b1d00);
+        background: @radial-gradient(circle at 78% 8%, #43d3ff21, #080b1d00);
         z: -1;
     }
 
@@ -120,6 +116,7 @@ export component Dashboard inherits Window {
         border-color: #ffffff1a;
         drop-shadow-color: #050916a6;
         drop-shadow-blur: 48px;
+        drop-shadow-offset: 0px;
         clip: true;
         z: 1;
 
@@ -153,6 +150,7 @@ export component Dashboard inherits Window {
             padding: 26px;
             drop-shadow-color: #0307128f;
             drop-shadow-blur: 36px;
+            drop-shadow-offset: 0px;
             clip: true;
             VerticalLayout {
                 spacing: 14px;
@@ -172,31 +170,28 @@ export component Dashboard inherits Window {
                     spacing: 18px;
                     Rectangle {
                         width: 360px;
-                        height: 44px;
-                        background: @linear-gradient(135deg, #ffffff1a, #ffffff08);
+                        text <=> root.domain-input;
+                        placeholder-text: "Enter a target domain";
+                        enabled: !root.scan-in-progress;
+                        background: #ffffff12;
                         border-width: 1px;
                         border-color: #ffffff2a;
                         border-radius: 18px;
-                        drop-shadow-color: #060b1f55;
-                        drop-shadow-blur: 20px;
-                        clip: true;
-
-                        LineEdit {
-                            width: parent.width;
-                            height: parent.height;
-                            text <=> root.domain-input;
-                            placeholder-text: "Enter a target domain";
-                            enabled: !root.scan-in-progress;
-                            font-size: 14px;
-                        }
+                        placeholder-text-color: #9aa7ff;
+                        text-color: #f5f7ff;
+                        font-size: 14px;
                     }
                     GlassButton {
                         label: root.scan-in-progress ? "Scanning..." : "Launch Scan";
                         enabled: !root.scan-in-progress;
-                        fill: @linear-gradient(120deg, #5d80ff, #41d3ff);
-                        label-color: #0b1124;
-                        shadow-color: #04112f99;
-                        shadow-blur: 24px;
+                        background: @linear-gradient(120deg, #5d80ff, #41d3ff);
+                        border-width: 0px;
+                        border-radius: 20px;
+                        text-color: #0b1124;
+                        font-weight: 600;
+                        drop-shadow-color: #04112f99;
+                        drop-shadow-blur: 24px;
+                        drop-shadow-offset: 0px;
                         clicked => { root.start-scan(root.domain-input); }
                     }
                     ProgressIndicator {
@@ -207,12 +202,14 @@ export component Dashboard inherits Window {
                     GlassButton {
                         label: "Download Compliance Report";
                         enabled: root.report-available && !root.scan-in-progress;
-                        fill: @linear-gradient(130deg, #ffffff2e, #ffffff08);
-                        label-color: #e2e9ff;
-                        outline-width: 1px;
-                        outline-color: #ffffff3a;
-                        shadow-color: #04081466;
-                        shadow-blur: 20px;
+                        background: @linear-gradient(130deg, #ffffff2e, #ffffff08);
+                        border-width: 1px;
+                        border-color: #ffffff3a;
+                        border-radius: 20px;
+                        text-color: #e2e9ff;
+                        drop-shadow-color: #04081466;
+                        drop-shadow-blur: 20px;
+                        drop-shadow-offset: 0px;
                         clicked => { root.download-compliance-report(); }
                     }
                     Rectangle {
@@ -254,6 +251,7 @@ export component Dashboard inherits Window {
                 padding: 20px;
                 drop-shadow-color: #04081470;
                 drop-shadow-blur: 28px;
+                drop-shadow-offset: 0px;
                 clip: true;
                 VerticalLayout {
                     spacing: 6px;
@@ -287,6 +285,7 @@ export component Dashboard inherits Window {
                 padding: 24px;
                 drop-shadow-color: #0409156a;
                 drop-shadow-blur: 34px;
+                drop-shadow-offset: 0px;
                 clip: true;
                 width: parent.width * 0.6;
                 VerticalLayout {
@@ -326,6 +325,7 @@ export component Dashboard inherits Window {
                 padding: 24px;
                 drop-shadow-color: #04081470;
                 drop-shadow-blur: 34px;
+                drop-shadow-offset: 0px;
                 clip: true;
                 width: parent.width * 0.4;
                 VerticalLayout {
@@ -346,6 +346,7 @@ export component Dashboard inherits Window {
                             opacity: 0.82;
                             drop-shadow-color: #04081460;
                             drop-shadow-blur: 26px;
+                            drop-shadow-offset: 0px;
                             clip: true;
                             VerticalLayout {
                                 spacing: 4px;
@@ -377,6 +378,7 @@ export component Dashboard inherits Window {
                 padding: 24px;
                 drop-shadow-color: #04091568;
                 drop-shadow-blur: 34px;
+                drop-shadow-offset: 0px;
                 clip: true;
                 width: parent.width * 0.6;
                 VerticalLayout {
@@ -395,6 +397,7 @@ export component Dashboard inherits Window {
                             padding: 14px;
                             drop-shadow-color: row.highlight ? #1a2d5a7a : #05091555;
                             drop-shadow-blur: 22px;
+                            drop-shadow-offset: 0px;
                             clip: true;
                             HorizontalLayout {
                                 spacing: 12px;
@@ -425,6 +428,7 @@ export component Dashboard inherits Window {
                 padding: 24px;
                 drop-shadow-color: #0409156f;
                 drop-shadow-blur: 34px;
+                drop-shadow-offset: 0px;
                 clip: true;
                 width: parent.width * 0.4;
                 VerticalLayout {
@@ -458,6 +462,7 @@ export component Dashboard inherits Window {
                             padding: 12px;
                             drop-shadow-color: #04091555;
                             drop-shadow-blur: 22px;
+                            drop-shadow-offset: 0px;
                             clip: true;
                             VerticalLayout {
                                 spacing: 4px;
@@ -486,6 +491,7 @@ export component Dashboard inherits Window {
             border-color: #ffffff18;
             drop-shadow-color: #03071280;
             drop-shadow-blur: 30px;
+            drop-shadow-offset: 0px;
             Rectangle {
                 width: root.scan-progress * parent.width;
                 height: parent.height;
