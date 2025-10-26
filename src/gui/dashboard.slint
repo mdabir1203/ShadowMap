@@ -48,9 +48,15 @@ export component Dashboard inherits Window {
     in property <[AlertRow]> alerts;
     in property <[FeatureFeedbackRow]> feature-feedback;
     in-out property <bool> report-available;
+    in property <bool> authenticated;
+    in property <bool> auth-in-progress;
+    in property <bool> passkey-ready;
+    in property <string> auth-status;
+    in property <string> passkey-label;
 
     callback start-scan(string);
     callback download-compliance-report();
+    callback request-passkey();
 
     Rectangle {
         width: parent.width;
@@ -132,7 +138,7 @@ export component Dashboard inherits Window {
                         width: 360px;
                         text <=> root.domain-input;
                         placeholder-text: "Enter a target domain";
-                        enabled: !root.scan-in-progress;
+                        enabled: root.authenticated && !root.scan-in-progress;
                         background: #ffffff12;
                         border-width: 1px;
                         border-color: #ffffff2a;
@@ -143,7 +149,7 @@ export component Dashboard inherits Window {
                     }
                     Button {
                         text: root.scan-in-progress ? "Scanning..." : "Launch Scan";
-                        enabled: !root.scan-in-progress;
+                        enabled: root.authenticated && !root.scan-in-progress;
                         background: @linear-gradient(120deg, #5d80ff, #41d3ff);
                         border-width: 0px;
                         border-radius: 20px;
@@ -155,13 +161,13 @@ export component Dashboard inherits Window {
                         clicked => { root.start-scan(root.domain-input); }
                     }
                     ProgressIndicator {
-                        visible: root.scan-in-progress;
+                        visible: root.authenticated && root.scan-in-progress;
                         indeterminate: root.scan-in-progress;
                         progress: root.scan-progress;
                     }
                     Button {
                         text: "Download Compliance Report";
-                        enabled: root.report-available && !root.scan-in-progress;
+                        enabled: root.authenticated && root.report-available && !root.scan-in-progress;
                         background: @linear-gradient(130deg, #ffffff2e, #ffffff08);
                         border-width: 1px;
                         border-color: #ffffff3a;
@@ -195,6 +201,7 @@ export component Dashboard inherits Window {
                     text: root.status-text;
                     color: root.status-color;
                     font-size: 16px;
+                    visible: root.authenticated;
                 }
             }
         }
@@ -460,5 +467,72 @@ export component Dashboard inherits Window {
             }
         }
     }
-}
+    Rectangle {
+        width: parent.width;
+        height: parent.height;
+        visible: !root.authenticated;
+        z: 10;
+        background: #050915e6;
+
+        VerticalLayout {
+            width: parent.width;
+            height: parent.height;
+            alignment: center;
+
+            Rectangle {
+                width: 420px;
+                padding: 28px;
+                border-radius: 28px;
+                border-width: 1px;
+                border-color: #ffffff22;
+                background: @linear-gradient(150deg, #121b36f0, #0b1026f0);
+                drop-shadow-color: #020512aa;
+                drop-shadow-blur: 36px;
+                drop-shadow-offset: 0px;
+
+                VerticalLayout {
+                    spacing: 18px;
+                    Text {
+                        text: "ShadowMap Dashboard";
+                        font-size: 20px;
+                        color: #f4f6ff;
+                        horizontal-alignment: center;
+                    }
+                    Text {
+                        text: "Passkey authentication required";
+                        font-size: 16px;
+                        color: #9aa8ff;
+                        horizontal-alignment: center;
+                    }
+                    Text {
+                        text: root.auth-status;
+                        font-size: 14px;
+                        color: #d4dcff;
+                        wrap: word;
+                        horizontal-alignment: center;
+                    }
+                    Button {
+                        text: root.auth-in-progress ? "Authenticating..." : root.passkey-label;
+                        enabled: root.passkey-ready && !root.auth-in-progress;
+                        background: @linear-gradient(130deg, #5d80ff, #41d3ff);
+                        border-width: 0px;
+                        border-radius: 18px;
+                        text-color: #0b1124;
+                        font-weight: 600;
+                        drop-shadow-color: #04112f99;
+                        drop-shadow-blur: 24px;
+                        drop-shadow-offset: 0px;
+                        clicked => { root.request-passkey(); }
+                    }
+                    Text {
+                        text: root.passkey-ready ? "Touch your security key or confirm the system prompt." : "Configure a local passkey in configs/passkeys.json";
+                        font-size: 12px;
+                        color: #93a2ff;
+                        wrap: word;
+                        horizontal-alignment: center;
+                    }
+                }
+            }
+        }
+    }
 }
