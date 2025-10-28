@@ -3,10 +3,14 @@
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::sync::{
+    atomic::{AtomicBool, Ordering as AtomicOrdering},
+    Arc, Mutex,
+};
 use std::thread;
 
 use chrono::Local;
+use shadowmap::passkeys::{PasskeyAuthenticator, PasskeyLogin, PasskeyMetadata};
 use shadowmap::{
     generate_compliance_outputs, Args, AutonomousReconAgent, ReconEngine, ReconReport,
 };
@@ -19,16 +23,67 @@ pub fn main() -> Result<(), slint::PlatformError> {
     let ui = Dashboard::new()?;
     initialize_demo_state(&ui);
     ui.set_report_available(false);
+    ui.set_authenticated(false);
+    ui.set_auth_in_progress(false);
+    ui.set_passkey_ready(false);
+    ui.set_auth_status(SharedString::from(
+        "Authenticate with your passkey to unlock live reconnaissance tooling.",
+    ));
+    ui.set_passkey_label(SharedString::from("Verify local passkey"));
+
+    let passkey_controller = Arc::new(PasskeyController::new());
+    ui.set_passkey_ready(passkey_controller.is_ready());
+    if let Some(meta) = passkey_controller.metadata() {
+        let display_name = passkey_display_name(&meta);
+        let created = meta
+            .created_at
+            .with_timezone(&Local)
+            .format("%Y-%m-%d %H:%M:%S");
+        ui.set_passkey_label(SharedString::from(format!("Verify {display_name}")));
+        ui.set_auth_status(SharedString::from(format!(
+            "{display_name} provisioned on {created}. Authenticate to continue.",
+        )));
+    } else if let Some(err) = passkey_controller.last_error() {
+        ui.set_auth_status(SharedString::from(format!(
+            "Passkey initialization failed: {err}. Configure configs/passkeys.json and retry.",
+        )));
+        ui.set_status_text(SharedString::from(
+            "Passkey setup required before launching ShadowMap scans.",
+        ));
+        ui.set_status_color(Brush::from(Color::from_rgb_u8(255, 122, 142)));
+    }
 
     let last_report: Arc<Mutex<Option<Arc<ReconReport>>>> = Arc::new(Mutex::new(None));
     let weak = ui.as_weak();
     let scan_report_state = last_report.clone();
     let weak_for_scan = weak.clone();
+    let passkey_for_scan = passkey_controller.clone();
 
     ui.on_start_scan(move |domain| {
         let domain = domain.trim().to_string();
         let weak_for_callback = weak_for_scan.clone();
         let report_state = scan_report_state.clone();
+        let passkey_state = passkey_for_scan.clone();
+
+        if !passkey_state.is_ready() {
+            if let Some(ui) = weak_for_callback.upgrade() {
+                ui.set_status_text(SharedString::from(
+                    "Configure a passkey before launching scans.",
+                ));
+                ui.set_status_color(Brush::from(Color::from_rgb_u8(255, 122, 142)));
+            }
+            return;
+        }
+
+        if !passkey_state.is_authenticated() {
+            if let Some(ui) = weak_for_callback.upgrade() {
+                ui.set_status_text(SharedString::from(
+                    "Authenticate with your passkey before launching scans.",
+                ));
+                ui.set_status_color(Brush::from(Color::from_rgb_u8(255, 210, 120)));
+            }
+            return;
+        }
 
         if domain.is_empty() {
             if let Some(ui) = weak_for_callback.upgrade() {
@@ -92,6 +147,72 @@ pub fn main() -> Result<(), slint::PlatformError> {
         });
     });
 
+    let weak_for_auth = weak.clone();
+    let passkey_for_auth = passkey_controller.clone();
+    ui.on_request_passkey(move || {
+        let controller = passkey_for_auth.clone();
+        if !controller.is_ready() {
+            if let Some(ui) = weak_for_auth.upgrade() {
+                ui.set_auth_status(SharedString::from(
+                    "No passkey configured. Edit configs/passkeys.json to provision one.",
+                ));
+                ui.set_passkey_ready(false);
+                ui.set_status_text(SharedString::from(
+                    "Passkey setup required before launching ShadowMap scans.",
+                ));
+                ui.set_status_color(Brush::from(Color::from_rgb_u8(255, 122, 142)));
+            }
+            return;
+        }
+
+        if let Some(ui) = weak_for_auth.upgrade() {
+            ui.set_auth_in_progress(true);
+            ui.set_auth_status(SharedString::from(
+                "Waiting for passkey confirmation. Complete the system prompt.",
+            ));
+        }
+
+        let weak_after = weak_for_auth.clone();
+        thread::spawn(move || {
+            let outcome = controller.authenticate();
+            slint::invoke_from_event_loop(move || {
+                if let Some(ui) = weak_after.upgrade() {
+                    ui.set_auth_in_progress(false);
+                    match outcome {
+                        Ok(login) => {
+                            let display_name = passkey_login_display_name(&login);
+                            let verified_at = login
+                                .authenticated_at
+                                .with_timezone(&Local)
+                                .format("%Y-%m-%d %H:%M:%S");
+                            ui.set_authenticated(true);
+                            ui.set_passkey_ready(true);
+                            ui.set_passkey_label(SharedString::from(format!(
+                                "{display_name} verified",
+                            )));
+                            ui.set_auth_status(SharedString::from(format!(
+                                "{display_name} verified at {verified_at}.",
+                            )));
+                            ui.set_status_text(SharedString::from(
+                                "Passkey verified. Ready to launch scans.",
+                            ));
+                            ui.set_status_color(Brush::from(Color::from_rgb_u8(140, 225, 180)));
+                        }
+                        Err(err) => {
+                            let message = SharedString::from(err.clone());
+                            ui.set_auth_status(message);
+                            ui.set_status_text(SharedString::from(format!(
+                                "Passkey authentication failed: {err}",
+                            )));
+                            ui.set_status_color(Brush::from(Color::from_rgb_u8(255, 122, 142)));
+                        }
+                    }
+                }
+            })
+            .expect("failed to update UI after passkey authentication");
+        });
+    });
+
     let weak_for_download = weak.clone();
     let download_report_state = last_report.clone();
     ui.on_download_compliance_report(move || {
@@ -141,6 +262,96 @@ pub fn main() -> Result<(), slint::PlatformError> {
 fn initialize_demo_state(ui: &Dashboard) {
     let summary = DashboardSummary::demo();
     apply_summary(ui, summary);
+}
+
+struct PasskeyController {
+    authenticator: Option<PasskeyAuthenticator>,
+    authenticated: AtomicBool,
+    error: Mutex<Option<String>>,
+}
+
+impl PasskeyController {
+    fn new() -> Self {
+        match PasskeyAuthenticator::open_default() {
+            Ok(authenticator) => Self {
+                authenticator: Some(authenticator),
+                authenticated: AtomicBool::new(false),
+                error: Mutex::new(None),
+            },
+            Err(err) => Self {
+                authenticator: None,
+                authenticated: AtomicBool::new(false),
+                error: Mutex::new(Some(err.to_string())),
+            },
+        }
+    }
+
+    fn is_ready(&self) -> bool {
+        self.authenticator.is_some()
+    }
+
+    fn metadata(&self) -> Option<PasskeyMetadata> {
+        self.authenticator
+            .as_ref()
+            .and_then(|auth| auth.primary_passkey())
+    }
+
+    fn authenticate(&self) -> Result<PasskeyLogin, String> {
+        let Some(authenticator) = self.authenticator.as_ref() else {
+            return Err(self
+                .last_error()
+                .unwrap_or_else(|| "Passkey authenticator unavailable".to_string()));
+        };
+
+        match authenticator.authenticate_with_local() {
+            Ok(login) => {
+                self.authenticated.store(true, AtomicOrdering::SeqCst);
+                if let Ok(mut guard) = self.error.lock() {
+                    *guard = None;
+                }
+                Ok(login)
+            }
+            Err(err) => {
+                let message = err.to_string();
+                if let Ok(mut guard) = self.error.lock() {
+                    *guard = Some(message.clone());
+                }
+                Err(message)
+            }
+        }
+    }
+
+    fn is_authenticated(&self) -> bool {
+        self.authenticated.load(AtomicOrdering::SeqCst)
+    }
+
+    fn last_error(&self) -> Option<String> {
+        match self.error.lock() {
+            Ok(guard) => guard.clone(),
+            Err(_) => None,
+        }
+    }
+}
+
+fn passkey_display_name(meta: &PasskeyMetadata) -> String {
+    meta.label
+        .clone()
+        .unwrap_or_else(|| format!("passkey {}", abbreviate_credential_id(&meta.credential_id)))
+}
+
+fn passkey_login_display_name(login: &PasskeyLogin) -> String {
+    login
+        .label
+        .clone()
+        .unwrap_or_else(|| format!("passkey {}", abbreviate_credential_id(&login.credential_id)))
+}
+
+fn abbreviate_credential_id(value: &str) -> String {
+    let mut shortened: String = value.chars().take(8).collect();
+    if value.chars().count() > 8 {
+        shortened.push('…');
+    }
+    shortened
 }
 
 fn perform_scan(domain: String) -> Result<ReconReport, String> {
