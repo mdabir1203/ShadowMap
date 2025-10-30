@@ -9,6 +9,7 @@ mod dns;
 mod enumeration;
 mod fingerprint;
 mod headers;
+pub mod passkeys;
 mod ports;
 mod reporting;
 mod social;
