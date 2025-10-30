@@ -90,6 +90,7 @@ gui = ["iced"]
 dashboard = ["slint"]
 
 hotpath = ["dep:hotpath", "hotpath/hotpath"]
+hotpath-ci = ["hotpath", "hotpath/hotpath-ci"]
 hotpath-alloc-bytes-total = ["hotpath/hotpath-alloc-bytes-total"]
 hotpath-alloc-count-total = ["hotpath/hotpath-alloc-count-total"]
 hotpath-alloc-self = ["hotpath/hotpath-alloc-self"]
