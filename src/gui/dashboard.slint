@@ -1,4 +1,44 @@
-import { Button, ProgressIndicator, LineEdit, ListView } from "std-widgets.slint";
+import { ProgressIndicator, LineEdit, ListView } from "std-widgets.slint";
+
+component GlassButton inherits Rectangle {
+    in property <string> label;
+    in property <bool> enabled: true;
+    in property <brush> fill := @linear-gradient(120deg, #5d80ff, #41d3ff);
+    in property <brush> label-color := #0b1124;
+    in property <brush> outline-color := #00000000;
+    in property <length> outline-width: 0px;
+    in property <length> corner-radius: 20px;
+    in property <brush> shadow-color := #04112f99;
+    in property <length> shadow-blur: 24px;
+    in property <int> font-weight: 600;
+    callback clicked;
+
+    width: 170px;
+    height: 44px;
+    border-radius: root.corner-radius;
+    border-width: root.outline-width;
+    border-color: root.outline-color;
+    background: root.fill;
+    drop-shadow-color: root.shadow-color;
+    drop-shadow-blur: root.shadow-blur;
+    opacity: root.enabled ? 1.0 : 0.5;
+
+    Text {
+        text: root.label;
+        color: root.label-color;
+        font-size: 14px;
+        font-weight: root.font-weight;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    TouchArea {
+        width: parent.width;
+        height: parent.height;
+        enabled: root.enabled;
+        clicked => { root.clicked(); }
+    }
+}
 
 export struct StatCard {
     title: string,
@@ -134,7 +174,7 @@ export component Dashboard inherits Window {
                 }
                 HorizontalLayout {
                     spacing: 18px;
-                    LineEdit {
+                    Rectangle {
                         width: 360px;
                         text <=> root.domain-input;
                         placeholder-text: "Enter a target domain";
@@ -147,6 +187,7 @@ export component Dashboard inherits Window {
                         text-color: #f5f7ff;
                         font-size: 14px;
                     }
+
                     Button {
                         text: root.scan-in-progress ? "Scanning..." : "Launch Scan";
                         enabled: root.authenticated && !root.scan-in-progress;
