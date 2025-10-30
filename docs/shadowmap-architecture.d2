@@ -1,0 +1,178 @@
+# ShadowMap Architecture
+
+layout: elk
+
+global: {
+  direction: right
+}
+
+ShadowMap: {
+  label: "ShadowMap Reconnaissance Platform"
+
+  Operators: {
+    label: "Operator Surfaces"
+    CLI: {
+      label: "CLI Runner\n(shadowmap::cli::ShadowMapCLI)"
+    }
+    Dashboard: {
+      label: "HTMX Dashboard\n(/app)"
+    }
+    LandingExport: {
+      label: "Static Landing Export\n(landing-page/index.html)"
+    }
+  }
+
+  WebPlatform: {
+    label: "Axum Web Platform"
+    Router: {
+      label: "Router & Views\n(src/server.rs, web::views)"
+    }
+    AppState: {
+      label: "AppState"
+      Jobs: {
+        label: "In-memory Job Store\n(tokio::RwLock<HashMap>)"
+      }
+      LeadStore: {
+        label: "Lead Capture Store\n(sqlx SQLite pool)"
+      }
+    }
+    JobRunner: {
+      label: "Async Job Runner\n(tokio::spawn run_job)"
+    }
+  }
+
+  Recon: {
+    label: "Recon Execution"
+    Entry: {
+      label: "shadowmap::run(args)"
+    }
+    Autonomous: {
+      label: "AutonomousReconAgent\n(Rig-style orchestration)"
+    }
+    Sequential: {
+      label: "ReconEngine::execute_full_scan"
+    }
+    Modules: {
+      label: "Recon Modules"
+      Enumeration: {
+        label: "crt.sh Enumeration\n(enumeration.rs)"
+      }
+      DNS: {
+        label: "DNS Validation\n(dns.rs)"
+      }
+      Ports: {
+        label: "Port Scanning\n(ports.rs)"
+      }
+      Headers: {
+        label: "Headers & TLS\n(headers.rs)"
+      }
+      CORS: {
+        label: "CORS Analysis\n(cors.rs)"
+      }
+      Fingerprint: {
+        label: "Software Fingerprinting\n(fingerprint.rs)"
+      }
+      Takeover: {
+        label: "Takeover Checks\n(takeover.rs)"
+      }
+      Cloud: {
+        label: "Cloud & SaaS Exposure\n(cloud.rs)"
+      }
+      Social: {
+        label: "Social Intelligence Engine\n(social.rs)"
+      }
+      Reporting: {
+        label: "Reporting Pipeline\n(reporting.rs)"
+      }
+    }
+  }
+
+  Data: {
+    label: "Data & Artifacts"
+    ReconResults: {
+      label: "Recon Results\n(recon_results/<domain>/)"
+    }
+    Reports: {
+      label: "Compliance Exports\n(CSV, JSON, TXT)"
+    }
+    LeadsDB: {
+      label: "Landing Leads DB\n(landing_leads table)"
+    }
+  }
+
+  Observability: {
+    label: "Security & Compliance Tooling"
+    SBOM: {
+      label: "SBOM Generation\n(cargo-cyclonedx)"
+    }
+    VulnerabilityScan: {
+      label: "Vulnerability Scan\n(Grype / osv)"
+    }
+    Compliance: {
+      label: "Compliance Visualizer\n(compliance.rs)"
+    }
+  }
+}
+
+External: {
+  label: "External Systems"
+  CRT: {
+    label: "Certificate Transparency Logs"
+  }
+  DNSResolvers: {
+    label: "DNS Resolvers"
+  }
+  CloudAPIs: {
+    label: "Cloud Provider APIs"
+  }
+  SaaS: {
+    label: "Third-party Recon APIs"
+  }
+  SocialFeeds: {
+    label: "Social Intelligence Sources"
+  }
+  Stripe: {
+    label: "Stripe Billing"
+  }
+  Tooling: {
+    label: "Security Tooling\n(cargo, grype)"
+  }
+}
+
+Operators.CLI -> Recon.Entry: "executes scans"
+Operators.Dashboard -> WebPlatform.Router: "manage jobs"
+Operators.LandingExport -> WebPlatform.Router: "HTTP requests"
+
+WebPlatform.Router -> WebPlatform.AppState.Jobs: "create/list jobs"
+WebPlatform.Router -> WebPlatform.AppState.LeadStore: "record leads"
+WebPlatform.Router -> WebPlatform.JobRunner: "spawn scan"
+WebPlatform.JobRunner -> Recon.Entry: "run(args)"
+
+Recon.Entry -> Recon.Autonomous: "if args.autonomous"
+Recon.Entry -> Recon.Sequential: "if manual run"
+Recon.Autonomous -> Recon.Modules: "coordinate modules"
+Recon.Sequential -> Recon.Modules: "invoke modules"
+
+Recon.Modules.Enumeration -> External.CRT: "fetch certs"
+Recon.Modules.Enumeration -> External.SaaS: "supplemental APIs"
+Recon.Modules.DNS -> External.DNSResolvers: "resolve records"
+Recon.Modules.Cloud -> External.CloudAPIs: "asset metadata"
+Recon.Modules.Social -> External.SocialFeeds: "ingest chatter"
+
+Recon.Modules -> Data.ReconResults: "persist findings"
+Recon.Modules.Reporting -> Data.Reports: "export reports"
+
+Data.ReconResults -> WebPlatform.Router: "serve downloads"
+Data.Reports -> Operators.CLI: "display/export"
+WebPlatform.AppState.LeadStore -> Data.LeadsDB: "persist leads"
+
+Observability.SBOM -> External.Tooling: "cargo-cyclonedx"
+Observability.VulnerabilityScan -> External.Tooling: "grype / osv"
+Observability.Compliance -> Data.Reports: "visualize"
+
+Operators.CLI -> Observability.SBOM: "shadowmap generate"
+Operators.CLI -> Observability.VulnerabilityScan: "shadowmap scan"
+Operators.CLI -> Observability.Compliance: "shadowmap report"
+
+Stripe -> WebPlatform.Router: "checkout webhooks"
+External.SaaS -> Observability.VulnerabilityScan: "rate limits"
