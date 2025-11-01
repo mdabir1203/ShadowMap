@@ -122,7 +122,7 @@ fi
 
 printf "[5/5] Inspecting SBOM integrity metadata...\n"
 ARTIFACT_DIGEST=$("${SHA_CMD[@]}" "$ARTIFACT" | awk '{print $1}')
-SBOM_DIGEST=$(jq -r '.metadata.component.hashes[]? | select((.alg // .algorithm | ascii_uppercase) == "SHA-256") | .content' "$SBOM" | head -n 1)
+SBOM_DIGEST=$(jq -r '.metadata.component.hashes[]? | select((.alg // .algorithm | ascii_upcase) == "SHA-256") | .content' "$SBOM" | head -n 1)
 if [[ -n "$SBOM_DIGEST" ]]; then
   if [[ "$ARTIFACT_DIGEST" != "$SBOM_DIGEST" ]]; then
     echo "warning: SBOM embedded digest ($SBOM_DIGEST) does not match artifact digest ($ARTIFACT_DIGEST)" >&2
