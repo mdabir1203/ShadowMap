@@ -95,9 +95,19 @@ The helper binary regenerates `landing-page/index.html` from the latest template
 
 ### Supply Chain Security
 
-ShadowMap includes a lightweight workflow for generating a Software Bill of Materials (SBOM) and scanning it for known vulnerab
-ilities. The steps below follow the [cargo-cyclonedx + Grype quickstart](https://gitlab.com/-/snippets/4892073) from the securi
-ty guide referenced in this task.
+ShadowMap now ships a SLSA-ready, reproducible release system that elevates the earlier SBOM scan into an end-to-end provenance chain. The architecture, mission, and operational guardrails are captured in [`docs/security/slsa-ready-pipeline.md`](docs/security/slsa-ready-pipeline.md), while [`docs/security/verify.md`](docs/security/verify.md) teaches consumers how to validate each release.
+
+#### Step-by-step secure release flow
+
+1. **Signed commits & tags** – Developers sign commits, cut an annotated tag, and push to GitHub. The [`slsa-release`](.github/workflows/slsa-release.yml) workflow starts automatically for `v*` tags.
+2. **Primary hermetic build** – The `primary-build` job pins toolchains, fetches dependencies with `--locked`, disables outbound networking, compiles the binaries, and produces SBOM + checksum manifests.
+3. **Independent rebuild** – `reproducibility-build` repeats the process on a separate runner to generate a second checksum manifest.
+4. **Determinism check** – `compare-builds` downloads both manifests and performs a byte-for-byte diff. Any mismatch fails the release.
+5. **Provenance generation** – Once the checksums match, the reusable `slsa-github-generator` workflow emits a DSSE attestation that records the workflow run, materials, and artifact digest.
+6. **Keyless signing & publishing** – The `publish` job signs the attestation with cosign keyless OIDC credentials, bundles the `.intoto.jsonl` + `.sig` + SBOM + binaries, and uploads everything to the GitHub Release.
+7. **Consumer verification** – Operators download the release bundle and run `./scripts/verify_release.sh` to validate the signature, provenance, checksum, and SBOM in one command.
+
+For day-to-day SBOM inspection or CI gating you can still run the lightweight scan locally:
 
 1. **Install cargo-cyclonedx** (once per machine):
    ```bash
@@ -126,7 +136,8 @@ ty guide referenced in this task.
    grype sbom:./bom.json -o json --file vulnerability-report.json
    ```
 
-For repeatability you can run `./scripts/security-scan.sh` which wraps the SBOM generation and Grype scan with sensible defaults.
+For repeatability you can run `./scripts/security-scan.sh` which wraps the SBOM generation and Grype scan with sensible defaults,
+while `./scripts/verify_release.sh` handles the full attestation verification for published releases.
 
 ### Data Security & Compliance
 
