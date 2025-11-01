@@ -99,11 +99,15 @@ The full architecture, controls, and reasoning live in [`docs/security/slsa-read
 For repeatability you can run `./scripts/security-scan.sh` which wraps the SBOM generation and Grype scan with sensible defaults,
 while `./scripts/verify_release.sh` handles the full attestation verification for published releases.
 
+---
+
 ### Data Security & Compliance
 
 ShadowMap aligns its operational safeguards with SOC 2 Trust Services Criteria and GDPR privacy requirements. The
 [Data Security and Compliance Strategy](docs/data-security.md) describes the control owners, evidence expectations, and
 validation activities that keep reconnaissance data secure throughout its lifecycle.
+
+---
 
 ### Social intelligence-driven security automation
 
@@ -118,12 +122,16 @@ teams can immediately see high-signal chatter, affected hosts, and recommended r
 plan by setting `SHADOWMAP_SOCIAL_CONFIG=/path/to/framework.yaml` before launching a run to load a custom orchestration
 file without recompiling.
 
+---
+
 ### Technical report automation
 
 Run `./scripts/generate-technical-report.sh` to materialize the latest reconnaissance brief as `build/technical-report.md`.
 The [Generate technical report PDF workflow](.github/workflows/generate-technical-report-pdf.yml) wires this script into the
 CI pipeline and uses Pandoc to emit a downloadable artifact—trigger it manually from the **Actions** tab whenever you need a
 fresh PDF without committing binaries.
+
+---
 
 ### Application Governance & Resilience
 
@@ -132,15 +140,21 @@ discoveries into governance and reliability workflows using the
 [Application Governance Integration guide](docs/app-governance-integration.md). It outlines how to fuse ShadowMap outputs
 with CMDBs, data lineage tools, and observability platforms to close monitoring gaps.
 
+---
+
 ### Organizational Adoption Playbook
 
 Security programs that want to operationalize ShadowMap across large enterprises can follow the
 [Organizational Adoption Playbook](docs/org-adaptation.md). It lays out governance structures, stakeholder roles, and
 business metrics that translate reconnaissance coverage into measurable risk reduction and executive-aligned value.
 
+---
+
 ### Automated security workflow
 
 The repository ships with a dedicated GitHub Action located at [`.github/workflows/security-scan.yml`](.github/workflows/security-scan.yml). It installs `cargo-cyclonedx` and `grype`, generates `shadowmap-bom.json`, scans it for vulnerabilities, and uploads the SBOM plus a JSON report as build artifacts. The workflow runs automatically for pull requests and pushes to `main`, and can also be started manually from the **Actions** tab via the **Run workflow** button.
+
+---
 
 ### Desktop GUI (optional)
 ```bash
@@ -148,11 +162,15 @@ cargo run --features gui --bin shadowmap-gui
 ```
 Enter a target domain in the GUI and select **Run Scan**; results are written to the output directory displayed on completion. The interface is implemented entirely in Rust via [`iced`](https://github.com/iced-rs/iced).
 
+---
+
 ### Slint dashboard preview (experimental)
 ```bash
 cargo run --features dashboard --bin shadowmap-dashboard
 ```
 Use the Slint-powered dashboard to launch scans, review live status messages, and visualize summaries of subdomain activity and alert categories.
+
+---
 
 ## Additional documentation
 - [`docs/data-security.md`](docs/data-security.md) – Data security controls and compliance notes.
