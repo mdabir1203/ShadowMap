@@ -1,0 +1,250 @@
+name: SLSA Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  actions: read
+
+concurrency:
+  group: slsa-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  primary-build:
+    name: Primary Hermetic Build
+    runs-on: ubuntu-22.04
+    env:
+      CARGO_TERM_COLOR: always
+      RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
+    outputs:
+      subjects: ${{ steps.manifest.outputs.subjects }}
+      artifact_name: ${{ steps.manifest.outputs.artifact_name }}
+      checksum_name: ${{ steps.manifest.outputs.checksum_name }}
+      sbom_name: ${{ steps.manifest.outputs.sbom_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab0bcb5c3c07cc53d5af34d2f6
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Verify tag signature
+        run: |
+          git verify-tag "${GITHUB_REF_NAME}" || echo "warning: unsigned tag"
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@1f953844bd68bc033fb4a6a4c9bb6c3eb2edaa0b
+        with:
+          toolchain: stable
+          targets: x86_64-unknown-linux-gnu
+          components: clippy
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@dd52aa9d3c7dcb9108118975d56edb4cedc0977f
+        with:
+          cache-on-failure: true
+
+      - name: Fetch dependencies (locked)
+        run: cargo fetch --locked
+
+      - name: Disable outbound network for hermetic build
+        run: |
+          sudo iptables -P OUTPUT DROP
+          sudo iptables -A OUTPUT -d 127.0.0.1 -j ACCEPT
+          sudo iptables -A OUTPUT -d ::1 -j ACCEPT
+
+      - name: Build release artifacts
+        run: cargo build --locked --release
+
+      - name: Re-enable network for artifact publication
+        if: always()
+        run: |
+          sudo iptables -F OUTPUT
+          sudo iptables -P OUTPUT ACCEPT
+
+      - name: Package binaries
+        run: |
+          mkdir -p dist
+          tar -czf dist/shadowmap-${GITHUB_REF_NAME}.tar.gz -C target/release shadowmap
+          sha256sum dist/* > dist/shadowmap-${GITHUB_REF_NAME}.sha256
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@e812a0fdf0d83f33cd9ba7f8c4ce3e9e2f8d2c9d
+        with:
+          path: target/release/shadowmap
+          output-file: dist/shadowmap-${GITHUB_REF_NAME}.sbom.json
+          format: cyclonedx-json
+
+      - name: Record manifest outputs
+        id: manifest
+        run: |
+          subjects=$(base64 -w0 dist/shadowmap-${GITHUB_REF_NAME}.sha256)
+          echo "subjects=${subjects}" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=shadowmap-${GITHUB_REF_NAME}.tar.gz" >> "$GITHUB_OUTPUT"
+          echo "checksum_name=shadowmap-${GITHUB_REF_NAME}.sha256" >> "$GITHUB_OUTPUT"
+          echo "sbom_name=shadowmap-${GITHUB_REF_NAME}.sbom.json" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build outputs
+        uses: actions/upload-artifact@c7d6c3d5c0f8b7b2e07c5e6c5a9a7d1e2b9db4c4
+        with:
+          name: primary-build-${{ github.ref_name }}
+          retention-days: 7
+          path: |
+            dist/shadowmap-${GITHUB_REF_NAME}.tar.gz
+            dist/shadowmap-${GITHUB_REF_NAME}.sha256
+            dist/shadowmap-${GITHUB_REF_NAME}.sbom.json
+
+  reproducibility-build:
+    name: Independent Rebuild
+    runs-on: ubuntu-22.04
+    needs: primary-build
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab0bcb5c3c07cc53d5af34d2f6
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@1f953844bd68bc033fb4a6a4c9bb6c3eb2edaa0b
+        with:
+          toolchain: stable
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Fetch dependencies (locked)
+        run: cargo fetch --locked
+
+      - name: Disable outbound network
+        run: |
+          sudo iptables -P OUTPUT DROP
+          sudo iptables -A OUTPUT -d 127.0.0.1 -j ACCEPT
+          sudo iptables -A OUTPUT -d ::1 -j ACCEPT
+
+      - name: Rebuild release artifact
+        run: cargo build --locked --release
+
+      - name: Re-enable network
+        if: always()
+        run: |
+          sudo iptables -F OUTPUT
+          sudo iptables -P OUTPUT ACCEPT
+
+      - name: Package reproducibility outputs
+        run: |
+          mkdir -p dist
+          tar -czf dist/shadowmap-${GITHUB_REF_NAME}.tar.gz -C target/release shadowmap
+          sha256sum dist/* > dist/shadowmap-${GITHUB_REF_NAME}.sha256
+
+      - name: Upload rebuild artifacts
+        uses: actions/upload-artifact@c7d6c3d5c0f8b7b2e07c5e6c5a9a7d1e2b9db4c4
+        with:
+          name: repro-build-${{ github.ref_name }}
+          retention-days: 7
+          path: |
+            dist/shadowmap-${GITHUB_REF_NAME}.tar.gz
+            dist/shadowmap-${GITHUB_REF_NAME}.sha256
+
+  compare-builds:
+    name: Compare Checksums
+    runs-on: ubuntu-22.04
+    needs:
+      - primary-build
+      - reproducibility-build
+    steps:
+      - name: Download primary artifacts
+        uses: actions/download-artifact@9bc0dce9d5e9f505d8d5d7b121837f1dc1d7c9f7
+        with:
+          name: primary-build-${{ github.ref_name }}
+          path: primary
+
+      - name: Download reproducibility artifacts
+        uses: actions/download-artifact@9bc0dce9d5e9f505d8d5d7b121837f1dc1d7c9f7
+        with:
+          name: repro-build-${{ github.ref_name }}
+          path: repro
+
+      - name: Diff checksum manifests
+        run: |
+          diff -u primary/${{ needs.primary-build.outputs.checksum_name }} repro/${{ needs.primary-build.outputs.checksum_name }}
+
+  provenance:
+    name: Generate Provenance
+    needs:
+      - primary-build
+      - compare-builds
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.1
+    with:
+      base64-subjects: ${{ needs.primary-build.outputs.subjects }}
+      provenance-name: ${{ needs.primary-build.outputs.artifact_name }}.intoto.jsonl
+      upload-assets: false
+    secrets: inherit
+
+  publish:
+    name: Sign & Publish Release
+    runs-on: ubuntu-22.04
+    needs:
+      - primary-build
+      - reproducibility-build
+      - compare-builds
+      - provenance
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+      actions: read
+    steps:
+      - name: Download primary artifacts
+        uses: actions/download-artifact@9bc0dce9d5e9f505d8d5d7b121837f1dc1d7c9f7
+        with:
+          name: primary-build-${{ github.ref_name }}
+          path: primary
+
+      - name: Download provenance artifact
+        uses: actions/download-artifact@9bc0dce9d5e9f505d8d5d7b121837f1dc1d7c9f7
+        with:
+          name: ${{ needs.provenance.outputs.provenance-name }}
+          path: provenance
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@0f3205e552a14c897d44d91bf1a7033ff7d0ad0c
+
+      - name: Produce signature bundle
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          cosign sign-blob \
+            --yes \
+            --bundle provenance/${{ needs.provenance.outputs.provenance-name }}.sig \
+            provenance/${{ needs.provenance.outputs.provenance-name }}
+
+      - name: Upload release bundle artifacts
+        uses: actions/upload-artifact@c7d6c3d5c0f8b7b2e07c5e6c5a9a7d1e2b9db4c4
+        with:
+          name: release-bundle-${{ github.ref_name }}
+          retention-days: 7
+          path: |
+            primary/${{ needs.primary-build.outputs.artifact_name }}
+            primary/${{ needs.primary-build.outputs.checksum_name }}
+            primary/${{ needs.primary-build.outputs.sbom_name }}
+            provenance/${{ needs.provenance.outputs.provenance-name }}
+            provenance/${{ needs.provenance.outputs.provenance-name }}.sig
+
+      - name: Publish GitHub release assets
+        run: |
+          gh release upload "${GITHUB_REF_NAME}" \
+            primary/${{ needs.primary-build.outputs.artifact_name }} \
+            primary/${{ needs.primary-build.outputs.checksum_name }} \
+            primary/${{ needs.primary-build.outputs.sbom_name }} \
+            provenance/${{ needs.provenance.outputs.provenance-name }} \
+            provenance/${{ needs.provenance.outputs.provenance-name }}.sig
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
