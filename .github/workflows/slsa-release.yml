@@ -186,6 +186,7 @@ jobs:
       base64-subjects: ${{ needs.primary-build.outputs.subjects }}
       provenance-name: ${{ needs.primary-build.outputs.artifact_name }}.intoto.jsonl
       upload-assets: true
+
     secrets: inherit
 
   publish:

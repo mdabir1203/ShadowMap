@@ -2,7 +2,6 @@
 
 ShadowMap is a Rust toolkit for mapping exposed assets, confirming risky services, and exporting clear recon results.
 
----
 
 ## Quick start
 
@@ -28,7 +27,31 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 ```
 
----
+### Performance Profiling & Hotpath CI
+
+**Issue tree (why the `hotpath-profile` workflow failed):**
+
+- GitHub Action error: `no example target named 'benchmark'`
+  - Workflow command: `cargo run --example benchmark --features='hotpath,hotpath-ci'`
+    - Repository state: no `examples/benchmark.rs` instrumented for Hotpath
+      - Outcome: profiling metrics were never emitted, so the workflow aborted before collecting JSON baselines
+
+With the new `examples/benchmark.rs` workload in place the workflow can build deterministic profiling metrics again. You can replay the job locally with the same steps the Action runs:
+
+1. **Timing profile**
+   ```bash
+   cargo run --example benchmark --features='hotpath,hotpath-ci' | grep '^{"hotpath_profiling_mode"'
+   ```
+2. **Allocation profile** (mirrors the CI's second check)
+   ```bash
+   cargo run --example benchmark --features='hotpath,hotpath-ci,hotpath-alloc-count-total' \
+     | grep '^{"hotpath_profiling_mode"'
+   ```
+3. **Interpret the JSON output** – Each run prints a DS-like payload keyed by `hotpath_profiling_mode`, listing function metrics captured from the synthetic ShadowMap pipeline (enumeration, TLS parsing, fingerprint normalization, etc.). The workflow artifacts stash both the head and base JSON blobs so regressions are easy to spot.
+
+### Landing page, billing checkout & Vercel
+
+ShadowMap now includes a minimalist, luxury-inspired landing page that mirrors the in-app experience. The Rust server renders it dynamically with localized pricing and optional Stripe checkout, while a static export in `landing-page/index.html` is ready for Vercel hosting.
 
 ## Profiling benchmark
 The Hotpath CI workflow expects an example benchmark. You can replay the same workload locally to confirm profiling data is produced:
@@ -41,8 +64,19 @@ Add `hotpath-alloc-count-total` to the feature list if you also need allocation 
 
 ---
 
-## Secure release pipeline (step by step)
-ShadowMap ships with a reproducible release pipeline that follows the SLSA guidance. Each release tag runs the jobs below in order:
+ShadowMap now ships a SLSA-ready, reproducible release system that elevates the earlier SBOM scan into an end-to-end provenance chain. The architecture, mission, and operational guardrails are captured in [`docs/security/slsa-ready-pipeline.md`](docs/security/slsa-ready-pipeline.md), while [`docs/security/verify.md`](docs/security/verify.md) teaches consumers how to validate each release.
+
+#### Step-by-step secure release flow
+
+1. **Signed commits & tags** – Developers sign commits, cut an annotated tag, and push to GitHub. The [`slsa-release`](.github/workflows/slsa-release.yml) workflow starts automatically for `v*` tags.
+2. **Primary hermetic build** – The `primary-build` job pins toolchains, fetches dependencies with `--locked`, disables outbound networking, compiles the binaries, and produces SBOM + checksum manifests.
+3. **Independent rebuild** – `reproducibility-build` repeats the process on a separate runner to generate a second checksum manifest.
+4. **Determinism check** – `compare-builds` downloads both manifests and performs a byte-for-byte diff. Any mismatch fails the release.
+5. **Provenance generation** – Once the checksums match, the reusable `slsa-github-generator` workflow emits a DSSE attestation that records the workflow run, materials, and artifact digest.
+6. **Keyless signing & publishing** – The `publish` job signs the attestation with cosign keyless OIDC credentials, bundles the `.intoto.jsonl` + `.sig` + SBOM + binaries, and uploads everything to the GitHub Release.
+7. **Consumer verification** – Operators download the release bundle and run `./scripts/verify_release.sh` to validate the signature, provenance, checksum, and SBOM in one command.
+
+For day-to-day SBOM inspection or CI gating you can still run the lightweight scan locally:
 
 1. **Primary hermetic build** – Pin the toolchain, fetch locked dependencies, disable outbound network access, and build the release binaries plus SBOM and checksums.
 2. **Independent rebuild** – Run the same steps on a second runner to generate another checksum set.
@@ -62,9 +96,63 @@ The full architecture, controls, and reasoning live in [`docs/security/slsa-read
    ```
 3. The script performs signature, provenance, checksum, and SBOM validation. Any failure exits with a non-zero status so it can be wired into automation.
 
-Consumers who prefer manual checks can review [`docs/security/verify.md`](docs/security/verify.md).
+For repeatability you can run `./scripts/security-scan.sh` which wraps the SBOM generation and Grype scan with sensible defaults,
+while `./scripts/verify_release.sh` handles the full attestation verification for published releases.
 
----
+### Data Security & Compliance
+
+ShadowMap aligns its operational safeguards with SOC 2 Trust Services Criteria and GDPR privacy requirements. The
+[Data Security and Compliance Strategy](docs/data-security.md) describes the control owners, evidence expectations, and
+validation activities that keep reconnaissance data secure throughout its lifecycle.
+
+### Social intelligence-driven security automation
+
+Teams layering social listening on top of ShadowMap can adopt the
+[Social Intelligence Insights for Security](docs/social-intelligence-security.md) guide. It explains how the Codex
+agent configuration transforms emerging chatter into normalized signals, correlates them with known assets, and drives
+guardrailed remediation playbooks.
+
+The framework now runs those social intelligence stages natively during every autonomous scan. Normalized mentions are
+correlated with live assets, exported alongside the technical report, and surfaced in the interactive dashboard so
+teams can immediately see high-signal chatter, affected hosts, and recommended responses. Override the baked-in Codex
+plan by setting `SHADOWMAP_SOCIAL_CONFIG=/path/to/framework.yaml` before launching a run to load a custom orchestration
+file without recompiling.
+
+### Technical report automation
+
+Run `./scripts/generate-technical-report.sh` to materialize the latest reconnaissance brief as `build/technical-report.md`.
+The [Generate technical report PDF workflow](.github/workflows/generate-technical-report-pdf.yml) wires this script into the
+CI pipeline and uses Pandoc to emit a downloadable artifact—trigger it manually from the **Actions** tab whenever you need a
+fresh PDF without committing binaries.
+
+### Application Governance & Resilience
+
+Teams that need to spot unapproved apps, fragmented data flows, or silent system failures can extend ShadowMap's
+discoveries into governance and reliability workflows using the
+[Application Governance Integration guide](docs/app-governance-integration.md). It outlines how to fuse ShadowMap outputs
+with CMDBs, data lineage tools, and observability platforms to close monitoring gaps.
+
+### Organizational Adoption Playbook
+
+Security programs that want to operationalize ShadowMap across large enterprises can follow the
+[Organizational Adoption Playbook](docs/org-adaptation.md). It lays out governance structures, stakeholder roles, and
+business metrics that translate reconnaissance coverage into measurable risk reduction and executive-aligned value.
+
+### Automated security workflow
+
+The repository ships with a dedicated GitHub Action located at [`.github/workflows/security-scan.yml`](.github/workflows/security-scan.yml). It installs `cargo-cyclonedx` and `grype`, generates `shadowmap-bom.json`, scans it for vulnerabilities, and uploads the SBOM plus a JSON report as build artifacts. The workflow runs automatically for pull requests and pushes to `main`, and can also be started manually from the **Actions** tab via the **Run workflow** button.
+
+### Desktop GUI (optional)
+```bash
+cargo run --features gui --bin shadowmap-gui
+```
+Enter a target domain in the GUI and select **Run Scan**; results are written to the output directory displayed on completion. The interface is implemented entirely in Rust via [`iced`](https://github.com/iced-rs/iced).
+
+### Slint dashboard preview (experimental)
+```bash
+cargo run --features dashboard --bin shadowmap-dashboard
+```
+Use the Slint-powered dashboard to launch scans, review live status messages, and visualize summaries of subdomain activity and alert categories.
 
 ## Additional documentation
 - [`docs/data-security.md`](docs/data-security.md) – Data security controls and compliance notes.
