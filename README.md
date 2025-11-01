@@ -1,43 +1,30 @@
 # ShadowMap
 
-<img width="512" alt="ShadowMap logo" src="https://github.com/user-attachments/assets/95d39e5e-d51c-4eb4-9053-2db1e1042410" />
+ShadowMap is a Rust toolkit for mapping exposed assets, confirming risky services, and exporting clear recon results.
 
-ShadowMap is a Rust framework Vibe coded for disciplined subdomain enumeration, vulnerability detection, and attack-surface mapping at scale.
 
----
+## Quick start
 
-## Key Features
+### Requirements
+- Rust 1.70 or newer (Cargo included)
 
-- **Comprehensive discovery**: Aggregates subdomains from CRT.sh and complementary sources with IDN normalization and wildcard handling.
-- **Built-in validation**: Resolves DNS, inspects headers and TLS, and flags CORS or takeover risks with heuristic de-duplication.
-- **Performance-first engine**: Async Rust core with configurable concurrency to cover large scopes quickly.
-- **Actionable exports**: Ships clean CSV, JSON, and TXT outputs for reporting or downstream automation.
-- **Extensible recon modules**: Plug-in architecture for port scanning, fingerprinting, and cloud exposure checks.
-- **Rig-style autonomy**: Optional agent orchestrator that sequences every recon module, retries failures, and flags deep cloud assets automatically.
-
----
-
-## Getting Started
-
-### Prerequisites
-- Rust 1.70 or newer (includes Cargo)
-
-### Build & Install
+### Build the binaries
 ```bash
 git clone https://github.com/YOUR-ORG/ShadowMap.git
 cd ShadowMap
 cargo build --release
 ```
 
-### First Scan
+### Run your first scan
 ```bash
 ./target/release/shadowmap -d example.com -o results.csv
 ```
 
-### Quality Checks
+### Routine quality checks
 ```bash
 cargo fmt --all
 cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
 ```
 
 ### Performance Profiling & Hotpath CI
@@ -66,56 +53,16 @@ With the new `examples/benchmark.rs` workload in place the workflow can build de
 
 ShadowMap now includes a minimalist, luxury-inspired landing page that mirrors the in-app experience. The Rust server renders it dynamically with localized pricing and optional Stripe checkout, while a static export in `landing-page/index.html` is ready for Vercel hosting.
 
-#### Keep the static export in sync
+## Profiling benchmark
+The Hotpath CI workflow expects an example benchmark. You can replay the same workload locally to confirm profiling data is produced:
 
 ```bash
-cargo run --bin export_landing
+cargo run --example benchmark --features='hotpath,hotpath-ci'
 ```
 
-The helper binary regenerates `landing-page/index.html` from the latest templates in `src/web/views.rs`. Run it after copy or styling updates so commits (and deployments) always ship the current markup.
+Add `hotpath-alloc-count-total` to the feature list if you also need allocation metrics.
 
-#### Optional: enable Stripe checkout
-
-1. Export your Stripe credentials and price IDs (test or live):
-   ```bash
-   export STRIPE_PUBLISHABLE_KEY=pk_test_...
-   export STRIPE_SECRET_KEY=sk_test_...
-   export STRIPE_PRICE_STARTER_USD=price_123
-   export STRIPE_PRICE_STARTER_EUR=price_456
-   export STRIPE_PRICE_GROWTH_USD=price_789
-   export STRIPE_PRICE_GROWTH_EUR=price_abc
-   export STRIPE_PRICE_ENTERPRISE_USD=price_def
-   export STRIPE_PRICE_ENTERPRISE_EUR=price_ghi
-   # Optional overrides for post-checkout navigation
-   export STRIPE_SUCCESS_URL=https://shadowmap.io/app?checkout=success
-   export STRIPE_CANCEL_URL=https://shadowmap.io/pricing
-   ```
-
-2. (Optional) Point the lead-capture database at a custom SQLite location. The server defaults to `sqlite://shadowmap.db` in the working directory and creates the `landing_leads` table automatically:
-   ```bash
-   export DATABASE_URL=sqlite:///var/lib/shadowmap/leads.db
-   ```
-
-3. Launch the server:
-   ```bash
-   cargo run --bin shadowmap-server
-   ```
-
-4. Visit `http://localhost:8080/` for the public landing page and `http://localhost:8080/app` for the recon dashboard. Checkout attempts log the work email, plan, and region to the `landing_leads` table for follow-up.
-
-#### Deploy the static page to Vercel
-
-1. Install the [Vercel CLI](https://vercel.com/cli) and authenticate (`vercel login`).
-2. From the repository root, deploy the static export:
-   ```bash
-   vercel --prod
-   ```
-   The included `vercel.json` registers `landing-page/index.html` as the build artifact and rewrites all routes to it.
-3. Future updates only require re-running `cargo run --bin export_landing`, committing the refreshed HTML, and redeploying with `vercel --prod`.
-
-> **Note:** Checkout buttons remain disabled in the static export until the server exposes Stripe keys, keeping the hosted page aligned with production capabilities.
-
-### Supply Chain Security
+---
 
 ShadowMap now ships a SLSA-ready, reproducible release system that elevates the earlier SBOM scan into an end-to-end provenance chain. The architecture, mission, and operational guardrails are captured in [`docs/security/slsa-ready-pipeline.md`](docs/security/slsa-ready-pipeline.md), while [`docs/security/verify.md`](docs/security/verify.md) teaches consumers how to validate each release.
 
@@ -131,32 +78,23 @@ ShadowMap now ships a SLSA-ready, reproducible release system that elevates the 
 
 For day-to-day SBOM inspection or CI gating you can still run the lightweight scan locally:
 
-1. **Install cargo-cyclonedx** (once per machine):
-   ```bash
-   cargo install cargo-cyclonedx
-   ```
+1. **Primary hermetic build** – Pin the toolchain, fetch locked dependencies, disable outbound network access, and build the release binaries plus SBOM and checksums.
+2. **Independent rebuild** – Run the same steps on a second runner to generate another checksum set.
+3. **Determinism check** – Compare both checksum files; any mismatch stops the release.
+4. **Provenance generation** – Call the `slsa-github-generator` workflow to create a DSSE attestation that records the build run and artifact digests.
+5. **Signing & publish** – Use cosign keyless signing, bundle the binaries, SBOM, provenance, and signature, and upload the bundle to the GitHub release.
 
-2. **Install Grype** (Linux/WSL example):
-   ```bash
-   curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sudo sh -s -- -b /usr/local/bin
-   ```
-   Refer to the [Grype README](https://github.com/anchore/grype) for macOS and Windows alternatives.
+The full architecture, controls, and reasoning live in [`docs/security/slsa-ready-pipeline.md`](docs/security/slsa-ready-pipeline.md).
 
-3. **Generate the SBOM** in CycloneDX JSON format with all ShadowMap features enabled. Overriding the filename causes `cargo-cyclonedx` to place the SBOM in the current working directory, making it easy to move or archive:
-   ```bash
-   cargo cyclonedx --format json --spec-version 1.5 --all-features --override-filename bom
-   # cargo-cyclonedx writes bom.json into the current working directory; move it if you prefer a different location
-   ```
+---
 
-4. **Scan the SBOM with Grype** (pointing at whichever location you chose above):
+## Verify a downloaded release
+1. Download the release artifact, its `.intoto.jsonl` provenance file, the `.sig` signature, and the SBOM.
+2. Run the helper script:
    ```bash
-   grype sbom:./bom.json
+   ./scripts/verify_release.sh shadowmap-vX.Y.Z.tar.gz
    ```
-
-5. (Optional) Export detailed findings:
-   ```bash
-   grype sbom:./bom.json -o json --file vulnerability-report.json
-   ```
+3. The script performs signature, provenance, checksum, and SBOM validation. Any failure exits with a non-zero status so it can be wired into automation.
 
 For repeatability you can run `./scripts/security-scan.sh` which wraps the SBOM generation and Grype scan with sensible defaults,
 while `./scripts/verify_release.sh` handles the full attestation verification for published releases.
@@ -216,67 +154,9 @@ cargo run --features dashboard --bin shadowmap-dashboard
 ```
 Use the Slint-powered dashboard to launch scans, review live status messages, and visualize summaries of subdomain activity and alert categories.
 
----
+## Additional documentation
+- [`docs/data-security.md`](docs/data-security.md) – Data security controls and compliance notes.
+- [`docs/app-governance-integration.md`](docs/app-governance-integration.md) – Extending results into governance workflows.
+- [`docs/org-adaptation.md`](docs/org-adaptation.md) – Roll-out guidance for large teams.
+- [`landing-page/`](landing-page/) – Static marketing page and Vercel deployment metadata.
 
-## Usage
-
-Run a default reconnaissance scan and export CSV output:
-```bash
-shadowmap -d example.com -o results.csv
-```
-
-Adjust concurrency to tune throughput for large scopes:
-```bash
-shadowmap -d example.com -c 50 -o results.json
-```
-
-Pipe JSON output for downstream automation:
-```bash
-shadowmap -d target.com --json > report.json
-```
-
-Enable the autonomous Rig-inspired orchestrator with deep cloud discovery:
-```bash
-shadowmap -d target.com --autonomous
-```
-The agent executes each reconnaissance stage with retry-aware control flow, surfaces SaaS predictors, and produces `cloud_assets.json` alongside traditional reports for deep storage/bucket exposure review.
-
----
-
-## Output
-
-```csv
-subdomain,http_status,server_header,open_ports,cors_issues,fingerprints,takeover_risks
-api.example.com,200,nginx,"80,443","Wildcard CORS allowed","{server: nginx, framework: react}","None"
-cdn.example.com,0,,,"","",Potential AWS S3 takeover
-```
-
-## Roadmap
-
-- Passive and active DNS integrations (SecurityTrails, Shodan, etc.)
-- Advanced port fingerprinting through Nmap integration
-- Plugin system for bespoke reconnaissance modules
-- Cloud asset exposure detection (GCP Buckets, Azure Blobs, etc.)
-- Continuous recon mode for persistent monitoring
-
-## Acknowledgements
-
-ShadowMap's SBOM generation and vulnerability scanning workflows rely on the
-[CycloneDX](https://cyclonedx.org/) standard and the [Grype](https://github.com/anchore/grype)
-scanner maintained by Anchore. If you redistribute ShadowMap guidance or reuse the automation
-scripts, please keep those upstream attributions (or submodule references) intact so the
-maintainers receive credit for their work.
-
-## Disclaimer
-This tool is for educational and authorized security testing only.
-Do not use ShadowMap against systems you don’t own or have explicit permission to test.
-
-## Contributing
-Pull requests are welcome! Please open an issue to discuss improvements, new modules, or bug fixes.
-
-## Project Principles
-ShadowMap is built on the idea that defenders need fast, global, reliable, and open tooling to match adversary velocity.
-
-## Contributions 
-
-![Alt](https://repobeats.axiom.co/api/embed/09cd32b3e91b58e3094e7592a33604c397c96f40.svg "Repobeats analytics image")
