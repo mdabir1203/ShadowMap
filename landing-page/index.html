@@ -3,55 +3,51 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ShadowMap – Luxury Reconnaissance for Revenue Teams</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
-    <script src="https://js.stripe.com/v3/"></script>
+    <title>ShadowMap Enterprise Recon & Supply Chain Assurance</title>
     <style>
         :root {
-            color-scheme: dark;
-            --bg: #05050c;
-            --surface: rgba(18, 20, 28, 0.68);
-            --surface-soft: rgba(40, 42, 54, 0.4);
-            --accent: #f5c26b;
-            --accent-soft: rgba(245, 194, 107, 0.18);
-            --text: #f3f4f7;
-            --muted: #b8bac8;
-            --line: rgba(245, 194, 107, 0.22);
+            color-scheme: light dark;
+            --bg: #0f172a;
+            --card: rgba(15, 23, 42, 0.72);
+            --card-border: rgba(148, 163, 184, 0.28);
+            --text: #e2e8f0;
+            --muted: #cbd5f5;
+            --accent: #38bdf8;
+            --accent-dark: #0284c7;
         }
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
         body {
             margin: 0;
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: radial-gradient(circle at top, #151624, var(--bg) 58%);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #172554, #0f172a 60%);
             color: var(--text);
-            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
         }
-        h1, h2, h3 {
-            font-family: 'Playfair Display', 'Inter', serif;
-            letter-spacing: -0.01em;
+        a {
+            color: inherit;
         }
         .page {
-            width: min(1080px, 92vw);
+            width: min(1100px, 94vw);
             margin: 0 auto;
-            padding: 3.5rem 0 4rem;
+            padding: 3rem 0 4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 3.5rem;
         }
-        header.hero {
-            padding: 4.5rem 0 2rem;
+        header {
             display: grid;
-            gap: 2.5rem;
+            gap: 1.75rem;
         }
-        .hero-content {
-            max-width: 720px;
+        header h1 {
+            margin: 0;
+            font-size: clamp(2.4rem, 4vw, 3.3rem);
+            line-height: 1.1;
         }
-        .hero h1 {
-            font-size: clamp(2.5rem, 5vw, 3.6rem);
-            margin: 0.6rem 0 0;
-        }
-        .hero p {
-            margin: 1.1rem 0 0;
-            max-width: 560px;
+        header p {
+            margin: 0;
+            max-width: 640px;
             color: var(--muted);
             font-size: 1.05rem;
             line-height: 1.7;
@@ -59,720 +55,235 @@
         .eyebrow {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            padding: 0.4rem 0.9rem;
+            gap: 0.6rem;
+            padding: 0.4rem 0.85rem;
             border-radius: 999px;
-            background: var(--accent-soft);
+            background: rgba(56, 189, 248, 0.16);
             color: var(--accent);
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.78rem;
             letter-spacing: 0.16em;
             text-transform: uppercase;
         }
-        .hero-ctas {
-            margin-top: 2rem;
+        .cta-row {
             display: flex;
             flex-wrap: wrap;
             gap: 1rem;
+            margin-top: 1rem;
         }
-        .hero-cta {
+        .cta-row a {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0.95rem 1.9rem;
-            border-radius: 999px;
-            border: none;
-            font-size: 1rem;
+            padding: 0.9rem 1.8rem;
+            border-radius: 0.9rem;
             font-weight: 600;
             text-decoration: none;
-            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
-        .hero-cta.primary {
-            background: linear-gradient(135deg, var(--accent), #d49b3b);
-            color: #1b1c24;
-            box-shadow: 0 22px 38px rgba(212, 155, 59, 0.3);
+        .cta-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #0f172a;
+            box-shadow: 0 18px 32px rgba(56, 189, 248, 0.35);
         }
-        .hero-cta.secondary {
+        .cta-primary:hover {
+            transform: translateY(-1px);
+        }
+        .cta-secondary {
+            border: 1px solid var(--card-border);
             background: transparent;
-            border: 1px solid var(--line);
             color: var(--text);
         }
-        .hero-proof {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 1rem 2.5rem;
-            padding: 1.2rem 1.6rem;
-            border-radius: 1.25rem;
-            background: var(--surface);
-            border: 1px solid var(--line);
-        }
-        .hero-proof p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: var(--muted);
-        }
-        .proof-logos {
-            display: flex;
-            gap: 1.8rem;
-            flex-wrap: wrap;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.18em;
-            color: rgba(243, 244, 247, 0.55);
-        }
-        .stats-grid {
-            margin-top: 2.5rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1.25rem;
-        }
-        .stat {
-            padding: 1.5rem 1.6rem;
-            border-radius: 1.1rem;
-            background: var(--surface);
-            border: 1px solid var(--line);
-            backdrop-filter: blur(12px);
-        }
-        .stat h3 {
-            margin: 0;
-            font-size: 1.9rem;
-        }
-        .stat p {
-            margin: 0.55rem 0 0;
-            color: var(--muted);
-        }
         section {
-            margin-top: 4.5rem;
+            display: grid;
+            gap: 1.2rem;
         }
-        .section-heading {
-            font-size: clamp(2rem, 3vw, 2.6rem);
-            margin-bottom: 0.75rem;
+        .section-title {
+            margin: 0;
+            font-size: clamp(1.9rem, 3vw, 2.4rem);
         }
         .section-subhead {
-            max-width: 560px;
-            color: var(--muted);
             margin: 0;
+            max-width: 680px;
             line-height: 1.7;
+            color: var(--muted);
         }
-        .feature-grid {
+        .card-grid {
             display: grid;
-            gap: 1.6rem;
+            gap: 1.3rem;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         }
-        .feature-card {
-            padding: 1.7rem;
-            border-radius: 1.2rem;
-            background: var(--surface);
-            border: 1px solid var(--line);
-            display: flex;
-            flex-direction: column;
+        .card {
+            padding: 1.6rem;
+            border-radius: 1.05rem;
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(12px);
+            display: grid;
             gap: 0.75rem;
         }
-        .feature-card strong {
-            font-size: 0.85rem;
-            letter-spacing: 0.18em;
-            color: var(--accent);
-            text-transform: uppercase;
-        }
-        .feature-card h3 {
+        .card h3 {
             margin: 0;
             font-size: 1.2rem;
         }
-        .feature-card p {
+        .card p {
             margin: 0;
             color: var(--muted);
+            line-height: 1.6;
         }
-        .process-grid {
-            margin-top: 2rem;
+        .metrics {
             display: grid;
-            gap: 1.5rem;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        }
-        .process-card {
-            padding: 1.8rem;
-            border-radius: 1.2rem;
-            background: var(--surface-soft);
-            border: 1px solid rgba(245, 194, 107, 0.12);
-        }
-        .process-card span {
-            display: inline-block;
-            font-size: 0.8rem;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            color: rgba(245, 194, 107, 0.65);
-            margin-bottom: 0.9rem;
-        }
-        .process-card h3 {
-            margin: 0 0 0.7rem;
-            font-size: 1.1rem;
-        }
-        .process-card p {
-            margin: 0;
-            color: var(--muted);
-        }
-        .testimonial {
-            margin-top: 2.5rem;
-            padding: 2.2rem;
-            border-radius: 1.4rem;
-            background: var(--surface);
-            border: 1px solid var(--line);
-            display: grid;
-            gap: 1.2rem;
-        }
-        .testimonial blockquote {
-            margin: 0;
-            font-size: 1.15rem;
-            line-height: 1.75;
-        }
-        .testimonial cite {
-            font-style: normal;
-            color: var(--muted);
-        }
-        .pricing {
-            margin-top: 5rem;
-        }
-        .pricing-header {
-            display: flex;
-            flex-direction: column;
             gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         }
-        .pricing-topline {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1.2rem;
+        .metric {
+            padding: 1.4rem;
+            border-radius: 1rem;
+            border: 1px solid var(--card-border);
+            background: rgba(15, 23, 42, 0.55);
         }
-        .region-toggle {
-            background: var(--surface);
-            border-radius: 999px;
-            border: 1px solid var(--line);
-            padding: 0.35rem;
-            display: inline-flex;
-            gap: 0.35rem;
-        }
-        .region-toggle button {
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 999px;
-            background: transparent;
-            color: var(--muted);
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .region-toggle button[data-active="true"] {
-            background: var(--accent);
-            color: #1b1c24;
-        }
-        .plan-grid {
-            margin-top: 3rem;
-            display: grid;
-            gap: 1.5rem;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        }
-        .plan-card {
-            background: var(--surface);
-            border-radius: 1.4rem;
-            border: 1px solid var(--line);
-            padding: 2.2rem 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.6rem;
-            position: relative;
-        }
-        .plan-badge {
-            position: absolute;
-            top: 1.6rem;
-            right: 1.6rem;
-            background: var(--accent);
-            color: #1b1c24;
-            font-weight: 700;
-            font-size: 0.7rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            padding: 0.35rem 0.8rem;
-            border-radius: 999px;
-        }
-        .plan-card--highlight {
-            border-color: rgba(245, 194, 107, 0.6);
-            box-shadow: 0 28px 60px rgba(245, 194, 107, 0.18);
-        }
-        .plan-card__header {
-            display: flex;
-            flex-direction: column;
-            gap: 0.65rem;
-        }
-        .plan-card__eyebrow {
-            font-size: 0.8rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: rgba(245, 194, 107, 0.75);
-        }
-        .plan-card__header h3 {
-            margin: 0;
-            font-size: 1.45rem;
-        }
-        .plan-card__header p {
-            margin: 0;
-            color: var(--muted);
-        }
-        .plan-card__price {
-            display: flex;
-            align-items: baseline;
-            gap: 0.65rem;
-            font-size: 2.35rem;
-            font-weight: 700;
-        }
-        .plan-card__period {
-            font-size: 0.9rem;
-            color: var(--muted);
-            letter-spacing: 0.05em;
-        }
-        .plan-card__features {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: grid;
-            gap: 0.7rem;
-        }
-        .plan-card__features li {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            align-items: start;
-            gap: 0.8rem;
-            color: var(--muted);
-        }
-        .feature-icon {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            background: var(--accent-soft);
-            color: var(--accent);
-            font-size: 0.8rem;
-        }
-        .plan-card__cta {
-            border: none;
-            border-radius: 999px;
-            padding: 0.85rem 1.5rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, var(--accent), #d49b3b);
-            color: #1b1c24;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .plan-card__cta:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 18px 34px rgba(212, 155, 59, 0.3);
-        }
-        .plan-card__cta[disabled] {
-            background: rgba(184, 186, 200, 0.35);
-            color: rgba(27, 28, 36, 0.6);
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-        .checkout-panel {
-            margin-top: 2.5rem;
-            padding: 1.8rem 2rem;
-            background: var(--surface-soft);
-            border: 1px solid rgba(245, 194, 107, 0.18);
-            border-radius: 1.35rem;
-            display: grid;
-            gap: 1.1rem;
-        }
-        .checkout-panel h4 {
-            margin: 0;
-            font-size: 1.1rem;
-        }
-        .checkout-panel label {
-            display: grid;
-            gap: 0.45rem;
-            color: var(--muted);
-            font-size: 0.95rem;
-        }
-        .checkout-panel input {
-            border-radius: 0.85rem;
-            border: 1px solid rgba(245, 194, 107, 0.25);
-            padding: 0.75rem 0.9rem;
-            background: rgba(15, 16, 24, 0.65);
-            color: var(--text);
-        }
-        .checkout-panel small {
-            color: rgba(245, 194, 107, 0.75);
-            font-size: 0.8rem;
-        }
-        .status-line {
-            min-height: 1.1rem;
-            font-size: 0.9rem;
-            color: var(--accent);
-        }
-        .closing {
-            margin-top: 5rem;
-            padding: 3rem 3.2rem;
-            border-radius: 1.6rem;
-            background: var(--surface);
-            border: 1px solid var(--line);
-            display: grid;
-            gap: 1.2rem;
-            text-align: center;
-        }
-        .closing p {
-            margin: 0;
-            color: var(--muted);
-            font-size: 1rem;
+        .metric strong {
+            display: block;
+            font-size: 2rem;
         }
         footer {
-            margin-top: 5rem;
-            padding: 3rem 0 1.5rem;
-            color: var(--muted);
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            color: rgba(226, 232, 240, 0.6);
             text-align: center;
-            font-size: 0.9rem;
         }
-        a.inline-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        a.inline-link:hover {
-            text-decoration: underline;
-        }
-        @media (max-width: 720px) {
-            header.hero {
-                padding-top: 3.5rem;
+        @media (prefers-color-scheme: light) {
+            body {
+                background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+                color: #0f172a;
             }
-            .hero-ctas {
-                flex-direction: column;
-                align-items: stretch;
+            .card, .metric {
+                background: #ffffff;
+                color: #0f172a;
             }
-            .hero-cta {
-                width: 100%;
+            .section-subhead {
+                color: #475569;
             }
-            .hero-proof {
-                flex-direction: column;
-                align-items: flex-start;
+            .cta-primary {
+                color: #0f172a;
             }
-            .plan-card {
-                padding: 1.8rem;
-            }
-            .closing {
-                padding: 2.2rem 1.8rem;
+            footer {
+                color: #475569;
             }
         }
     </style>
 </head>
-<body data-stripe-key="">
-    <div class="page">
-        <header class="hero">
-            <div class="hero-content">
-                <p class="eyebrow">ShadowMap Intelligence Suite</p>
-                <h1>Precision reconnaissance without the cognitive overhead.</h1>
-                <p>ShadowMap condenses thousands of signals into a curated dossier so your revenue team can respond with conviction. Luxury-grade reporting, tuned for fast-moving sellers and operators who can’t afford noise.</p>
-                <div class="hero-ctas">
-                    <a class="hero-cta primary" href="#pricing">Start free trial</a>
-                    <a class="hero-cta secondary" href="mailto:hello@shadowmap.io">Arrange a private walkthrough</a>
-                </div>
-            </div>
-            <div class="hero-proof">
-                <p>Trusted by boutique security firms and elite GTM teams.</p>
-                <div class="proof-logos">
-                    <span>Helios</span>
-                    <span>Blackshore</span>
-                    <span>SignalForge</span>
-                    <span>Quietline</span>
-                </div>
+<body>
+    <main class="page">
+        <header>
+            <span class="eyebrow">Enterprise supply chain integrity</span>
+            <h1>ShadowMap proves every release from commit to customer.</h1>
+            <p>
+                Automate attack surface discovery while shipping artifacts your security, compliance, and audit teams can trust.
+                Our reproducible SLSA-ready pipeline delivers cryptographic provenance, double-built binaries, and transparent
+                verification for every tagged release.
+            </p>
+            <div class="cta-row">
+                <a class="cta-primary" href="https://github.com/YOUR-ORG/ShadowMap/releases">Download secure release</a>
+                <a class="cta-secondary" href="https://github.com/YOUR-ORG/ShadowMap/blob/main/docs/security/slsa-whitepaper.md">Read the supply chain whitepaper</a>
             </div>
         </header>
 
-        <section class="stats-grid">
-            <div class="stat">
-                <h3>14x</h3>
-                <p>Average increase in qualified pipeline sourced from recon insights.</p>
-            </div>
-            <div class="stat">
-                <h3>92%</h3>
-                <p>Reduction in analyst hours spent triaging low-signal data.</p>
-            </div>
-            <div class="stat">
-                <h3>&lt;48 hrs</h3>
-                <p>Time to first actionable dossier for new customer targets.</p>
-            </div>
-        </section>
-
         <section>
-            <h2 class="section-heading">Designed for decisive teams</h2>
-            <p class="section-subhead">Every interaction with ShadowMap is engineered to lower cognitive load and amplify urgency. Surface only the signals that help you secure the meeting and close the deal.</p>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <strong>01</strong>
-                    <h3>Command-center clarity</h3>
-                    <p>Unified view across attack surface, misconfigurations, and business risk with context-rich summaries your clients actually understand.</p>
-                </div>
-                <div class="feature-card">
-                    <strong>02</strong>
-                    <h3>Executive-grade collateral</h3>
-                    <p>Presentations, talking points, and proposals generated automatically so your team can move from recon to revenue without rework.</p>
-                </div>
-                <div class="feature-card">
-                    <strong>03</strong>
-                    <h3>Concierge insight layering</h3>
-                    <p>Our operators fine-tune automations with human analysis to deliver luxury-level polish on every engagement.</p>
-                </div>
-            </div>
-        </section>
-
-        <section>
-            <h2 class="section-heading">The ShadowMap experience</h2>
-            <p class="section-subhead">From the first scan to final briefing, each step is choreographed to reinforce confidence and accelerate close rates.</p>
-            <div class="process-grid">
-                <div class="process-card">
-                    <span>Scope</span>
-                    <h3>Curated intake</h3>
-                    <p>Drop in a domain or account name and apply bespoke guardrails. We tailor the crawl to your opportunity.</p>
-                </div>
-                <div class="process-card">
-                    <span>Signal</span>
-                    <h3>Adaptive intelligence</h3>
-                    <p>Machine precision blended with expert review eliminates noise and distills the angles that win conversations.</p>
-                </div>
-                <div class="process-card">
-                    <span>Stage</span>
-                    <h3>Concierge delivery</h3>
-                    <p>Receive beautifully composed dossiers, ready-to-send outreach, and live enablement support on demand.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="testimonial">
-            <blockquote>“ShadowMap reinvented our reconnaissance motion. Meetings that used to take weeks of manual research now book within days because every insight is packaged for executive consumption.”</blockquote>
-            <cite>— Ava Collins, Managing Director, Blackshore Advisory</cite>
-        </section>
-
-        <section class="pricing" id="pricing">
-            <div class="pricing-header">
-                <div class="pricing-topline">
-                    <div>
-                        <p class="eyebrow">Pricing</p>
-                        <h2 class="section-heading">Choose the cadence that suits your firm</h2>
-                    </div>
-                    <div class="region-toggle" data-region-toggle>
-                        <button type="button" data-region="us" data-active="true">USD</button>
-                        <button type="button" data-region="eu" data-active="false">EUR</button>
-                    </div>
-                </div>
-                <p class="section-subhead">Every plan includes concierge onboarding, guided workflows, and premium reporting templates. Upgrade or pause anytime.</p>
-            </div>
-            <div class="plan-grid">
-                <article class="plan-card" data-plan-card data-plan-id="starter" data-us-available="false" data-eu-available="false">
-                    
-                    <header class="plan-card__header">
-                        <span class="plan-card__eyebrow">For Solo operators</span>
-                        <h3>Starter</h3>
-                        <p>Launch automation-grade recon for boutique agencies and red teams.</p>
-                    </header>
-                    <div class="plan-card__price" data-plan-price data-us-price="$ 79" data-eu-price="€ 75">
-                        <span class="plan-card__amount price-amount"></span>
-                        <span class="plan-card__period">per seat / month</span>
-                    </div>
-                    <ul class="plan-card__features">
-                        <li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>Unlimited on-demand reconnaissance jobs</span>
-                        </li><li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>Live subdomain, DNS, and takeover detection</span>
-                        </li><li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>Automated PDF &amp; JSON reporting exports</span>
-                        </li><li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>Email support with 1-business-day SLA</span>
-                        </li>
-                    </ul>
-                    <button class="plan-card__cta" data-plan-cta data-plan-id="starter" data-disabled-copy="Email us to activate payments">Start free trial</button>
-                </article>                <article class="plan-card plan-card--highlight" data-plan-card data-plan-id="growth" data-us-available="false" data-eu-available="false">
-                    <span class="plan-badge">Preferred</span>
-                    <header class="plan-card__header">
-                        <span class="plan-card__eyebrow">For Agencies &amp; MSSPs</span>
-                        <h3>Growth</h3>
-                        <p>Scale your practice with team workspaces, automations, and real-time monitoring.</p>
-                    </header>
-                    <div class="plan-card__price" data-plan-price data-us-price="$ 159" data-eu-price="€ 149">
-                        <span class="plan-card__amount price-amount"></span>
-                        <span class="plan-card__period">per seat / month</span>
-                    </div>
-                    <ul class="plan-card__features">
-                        <li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>Everything in Starter plus scheduled monitoring</span>
-                        </li><li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>Team workspaces with role-based access control</span>
-                        </li><li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>Slack and webhook alerting for high-risk findings</span>
-                        </li><li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>Dedicated success engineer and quarterly playbooks</span>
-                        </li>
-                    </ul>
-                    <button class="plan-card__cta" data-plan-cta data-plan-id="growth" data-disabled-copy="Email us to activate payments">Start free trial</button>
-                </article>                <article class="plan-card" data-plan-card data-plan-id="enterprise" data-us-available="false" data-eu-available="false">
-                    
-                    <header class="plan-card__header">
-                        <span class="plan-card__eyebrow">For Global teams</span>
-                        <h3>Enterprise</h3>
-                        <p>For global security organizations that need private deployments and custom workflows.</p>
-                    </header>
-                    <div class="plan-card__price" data-plan-price data-us-price="$ 349" data-eu-price="€ 329">
-                        <span class="plan-card__amount price-amount"></span>
-                        <span class="plan-card__period">per seat / month</span>
-                    </div>
-                    <ul class="plan-card__features">
-                        <li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>Private cloud or on-premise deployment options</span>
-                        </li><li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>Custom modules and API surface for internal tooling</span>
-                        </li><li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>Advanced compliance reporting &amp; SOC2 documentation</span>
-                        </li><li>
-                            <span class="feature-icon">&#10003;</span>
-                            <span>24&#x2f;7 incident response with named TAM</span>
-                        </li>
-                    </ul>
-                    <button class="plan-card__cta" data-plan-cta data-plan-id="enterprise" data-disabled-copy="Email us to activate payments">Start free trial</button>
+            <h2 class="section-title">Enterprise-grade assurances</h2>
+            <p class="section-subhead">Designed for regulated environments that must show evidence of integrity, provenance, and governance.</p>
+            <div class="card-grid">
+                <article class="card">
+                    <h3>Deterministic double build</h3>
+                    <p>Hermetic runners rebuild every release twice, diffing checksums before any asset is published.</p>
+                </article>
+                <article class="card">
+                    <h3>Signed SLSA provenance</h3>
+                    <p>Keyless cosign signatures and DSSE attestations anchor every artifact in the Rekor transparency log.</p>
+                </article>
+                <article class="card">
+                    <h3>Full SBOM disclosure</h3>
+                    <p>Syft-generated SBOMs and automated verification scripts keep dependency risk transparent for auditors.</p>
+                </article>
+                <article class="card">
+                    <h3>Operational playbooks</h3>
+                    <p>Documentation and runbooks guide release managers through verification, incident response, and regulatory reporting.</p>
                 </article>
             </div>
-            <aside class="checkout-panel">
-                <h4>Ready when you are</h4>
-                <label>
-                    Business email
-                    <input type="email" placeholder="you@studio.com" data-email-input>
-                </label>
-                <small>We only proceed when the experience meets our standard. Share an email to unlock instant checkout or request a personal concierge.</small>
-                <div class="status-line" data-checkout-status></div>
-            </aside>
         </section>
 
-        <section class="closing">
-            <h2 class="section-heading">Let’s orchestrate your next decisive win</h2>
-            <p>Book a private strategy call and see how ShadowMap elevates every client touchpoint.</p>
-            <div class="hero-ctas">
-                <a class="hero-cta primary" href="mailto:hello@shadowmap.io">Request a concierge onboarding</a>
-                <a class="hero-cta secondary" href="https://cal.com/hello-shadowmap/30">Reserve time with our team</a>
+        <section>
+            <h2 class="section-title">Provenance pipeline at a glance</h2>
+            <p class="section-subhead">Five steps ensure build integrity from source to release.</p>
+            <div class="card-grid">
+                <article class="card">
+                    <h3>1. Immutable inputs</h3>
+                    <p>Pinned toolchains, locked dependencies, and reproducible workflows remove hidden drift.</p>
+                </article>
+                <article class="card">
+                    <h3>2. Hermetic execution</h3>
+                    <p>Network egress is sealed once dependencies resolve, preserving a trusted build context.</p>
+                </article>
+                <article class="card">
+                    <h3>3. Deterministic output</h3>
+                    <p>Independent rebuilds must match byte-for-byte. Any deviation fails the release.</p>
+                </article>
+                <article class="card">
+                    <h3>4. Transparent attestations</h3>
+                    <p>SLSA provenance captures commit, workflow, and artifact digests in DSSE format.</p>
+                </article>
+                <article class="card">
+                    <h3>5. Continuous verification</h3>
+                    <p>Verification scripts, SBOM checks, and Rekor entries give customers confidence on every download.</p>
+                </article>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="section-title">Key integrity metrics</h2>
+            <p class="section-subhead">Track performance of the supply chain controls in every release cycle.</p>
+            <div class="metrics">
+                <div class="metric">
+                    <strong>100%</strong>
+                    <span>Tagged releases with signed provenance</span>
+                </div>
+                <div class="metric">
+                    <strong>&ge;95%</strong>
+                    <span>Byte-identical rebuild success target</span>
+                </div>
+                <div class="metric">
+                    <strong>&le;30%</strong>
+                    <span>Secure CI overhead vs. fast lane</span>
+                </div>
+                <div class="metric">
+                    <strong>0</strong>
+                    <span>Verification failures tolerated</span>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="section-title">Deploy in minutes</h2>
+            <p class="section-subhead">ShadowMap is a single binary with a reproducible release pipeline. Deploy the landing page as static HTML on any host.</p>
+            <div class="card-grid">
+                <article class="card">
+                    <h3>Static first</h3>
+                    <p>No build tools required. Serve <code>landing-page/index.html</code> from an S3 bucket, GitHub Pages, or any CDN.</p>
+                </article>
+                <article class="card">
+                    <h3>Secure defaults</h3>
+                    <p>Releases ship with checksums, SBOM, provenance, and signatures ready for enterprise intake.</p>
+                </article>
+                <article class="card">
+                    <h3>Modern governance</h3>
+                    <p>Integrate verification logs into SIEM, GRC, or change-management systems via the provided scripts.</p>
+                </article>
             </div>
         </section>
 
         <footer>
-            © 2025 ShadowMap. Crafted for discerning operators. <a class="inline-link" href="mailto:hello@shadowmap.io">hello@shadowmap.io</a>
+            ShadowMap &mdash; enterprise reconnaissance with verifiable supply chain integrity.
         </footer>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const body = document.body;
-            const publishableKey = body.dataset.stripeKey;
-            const stripe = publishableKey ? Stripe(publishableKey) : null;
-            const regionButtons = document.querySelectorAll('[data-region-toggle] [data-region]');
-            const planPrices = document.querySelectorAll('[data-plan-price]');
-            const planButtons = document.querySelectorAll('[data-plan-cta]');
-            const statusLine = document.querySelector('[data-checkout-status]');
-            const emailInput = document.querySelector('[data-email-input]');
-            let activeRegion = 'us';
-
-            function updateRegionButtons() {
-                regionButtons.forEach(button => {
-                    const isActive = button.dataset.region === activeRegion;
-                    button.dataset.active = isActive ? 'true' : 'false';
-                });
-            }
-
-            function updatePlanCards() {
-                planPrices.forEach(node => {
-                    const price = node.dataset[activeRegion + 'Price'];
-                    if (price) {
-                        const amount = node.querySelector('.price-amount');
-                        if (amount) {
-                            amount.textContent = price;
-                        }
-                    }
-                });
-
-                planButtons.forEach(button => {
-                    const planCard = document.querySelector(`[data-plan-card][data-plan-id="${button.dataset.planId}"]`);
-                    if (!planCard) {
-                        return;
-                    }
-                    const available = planCard.dataset[activeRegion + 'Available'] === 'true';
-                    if (!stripe || !available) {
-                        button.disabled = true;
-                        const disabledCopy = button.dataset.disabledCopy;
-                        button.textContent = disabledCopy || 'Talk to sales';
-                    } else {
-                        button.disabled = false;
-                        button.textContent = 'Start free trial';
-                    }
-                });
-            }
-
-            regionButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    activeRegion = button.dataset.region;
-                    updateRegionButtons();
-                    updatePlanCards();
-                });
-            });
-
-            planButtons.forEach(button => {
-                button.addEventListener('click', async () => {
-                    if (!stripe) {
-                        statusLine.textContent = 'Payments are not configured yet. Email hello@shadowmap.io and we will get you set up.';
-                        return;
-                    }
-                    const planId = button.dataset.planId;
-                    const payload = {
-                        plan_id: planId,
-                        region: activeRegion,
-                        email: emailInput && emailInput.value ? emailInput.value : undefined,
-                    };
-                    button.disabled = true;
-                    button.textContent = 'Redirecting...';
-                    statusLine.textContent = '';
-                    try {
-                        const response = await fetch('/create-checkout-session', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload),
-                        });
-                        if (!response.ok) {
-                            const errorText = await response.text();
-                            throw new Error(errorText || 'Unable to start checkout');
-                        }
-                        const data = await response.json();
-                        if (data.session_id) {
-                            const result = await stripe.redirectToCheckout({ sessionId: data.session_id });
-                            if (result.error) {
-                                throw result.error;
-                            }
-                        } else {
-                            throw new Error('Invalid response from payment processor.');
-                        }
-                    } catch (err) {
-                        console.error(err);
-                        statusLine.textContent = err.message || 'We were unable to start the checkout session. Please try again or email hello@shadowmap.io.';
-                        button.disabled = false;
-                        button.textContent = 'Start free trial';
-                    }
-                });
-            });
-
-            updateRegionButtons();
-            updatePlanCards();
-        });
-    </script>
+    </main>
 </body>
 </html>
