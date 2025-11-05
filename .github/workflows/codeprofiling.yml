@@ -16,6 +16,21 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+        id: rust_cache
+        with:
+          shared-key: profiling
+
+      - name: Note cache status
+        env:
+          CACHE_HIT: ${{ steps.rust_cache.outputs.cache-hit }}
+        run: |
+          echo "### Build cache" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          if [ "$CACHE_HIT" = "true" ]; then
+            echo "Using cached cargo artifacts for hotpath profiling run." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Cache miss for hotpath profiling job. This is normal on the first run for a branch or after toolchain changes; the next run will populate the cache." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - id: head_timing_metrics
         run: |
