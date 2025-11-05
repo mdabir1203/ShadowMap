@@ -27,28 +27,6 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 ```
 
-### Performance Profiling & Hotpath CI
-
-**Issue tree (why the `hotpath-profile` workflow failed):**
-
-- GitHub Action error: `no example target named 'benchmark'`
-  - Workflow command: `cargo run --example benchmark --features='hotpath,hotpath-ci'`
-    - Repository state: no `examples/benchmark.rs` instrumented for Hotpath
-      - Outcome: profiling metrics were never emitted, so the workflow aborted before collecting JSON baselines
-
-With the new `examples/benchmark.rs` workload in place the workflow can build deterministic profiling metrics again. You can replay the job locally with the same steps the Action runs:
-
-1. **Timing profile**
-   ```bash
-   cargo run --example benchmark --features='hotpath,hotpath-ci' | grep '^{"hotpath_profiling_mode"'
-   ```
-2. **Allocation profile** (mirrors the CI's second check)
-   ```bash
-   cargo run --example benchmark --features='hotpath,hotpath-ci,hotpath-alloc-count-total' \
-     | grep '^{"hotpath_profiling_mode"'
-   ```
-3. **Interpret the JSON output** – Each run prints a DS-like payload keyed by `hotpath_profiling_mode`, listing function metrics captured from the synthetic ShadowMap pipeline (enumeration, TLS parsing, fingerprint normalization, etc.). The workflow artifacts stash both the head and base JSON blobs so regressions are easy to spot.
-
 ### Landing page, billing checkout & Vercel
 
 ShadowMap now includes a minimalist, luxury-inspired landing page that mirrors the in-app experience. The Rust server renders it dynamically with localized pricing and optional Stripe checkout, while a static export in `landing-page/index.html` is ready for Vercel hosting.
@@ -175,6 +153,7 @@ Use the Slint-powered dashboard to launch scans, review live status messages, an
 ## Additional documentation
 - [`docs/data-security.md`](docs/data-security.md) – Data security controls and compliance notes.
 - [`docs/app-governance-integration.md`](docs/app-governance-integration.md) – Extending results into governance workflows.
+- [`docs/security/slsa-whitepaper.md`](docs/security/slsa-whitepaper.md) – Executive overview of the reproducible supply chain strategy.
 - [`docs/org-adaptation.md`](docs/org-adaptation.md) – Roll-out guidance for large teams.
 - [`landing-page/`](landing-page/) – Static marketing page and Vercel deployment metadata.
 
