@@ -66,6 +66,69 @@ jobs:
           echo '${{ steps.base_alloc_metrics.outputs.metrics }}' > /tmp/metrics/base_alloc.json
           echo '${{ github.event.pull_request.number }}' > /tmp/metrics/pr_number.txt
 
+      - name: Publish metrics summary
+        env:
+          HEAD_TIMING: ${{ steps.head_timing_metrics.outputs.metrics }}
+          BASE_TIMING: ${{ steps.base_timing_metrics.outputs.metrics }}
+          HEAD_ALLOC: ${{ steps.head_alloc_metrics.outputs.metrics }}
+          BASE_ALLOC: ${{ steps.base_alloc_metrics.outputs.metrics }}
+        run: |
+          {
+            echo "## Hotpath profiling metrics"
+            echo
+            echo "### Timing"
+            echo
+            echo "<details><summary>Head</summary>"
+            echo
+            printf '```json\n'
+            if [ -n "$HEAD_TIMING" ]; then
+              printf '%s\n' "$HEAD_TIMING"
+            else
+              echo '{}'
+            fi
+            printf '```\n'
+            echo
+            echo "</details>"
+            echo
+            echo "<details><summary>Base</summary>"
+            echo
+            printf '```json\n'
+            if [ -n "$BASE_TIMING" ]; then
+              printf '%s\n' "$BASE_TIMING"
+            else
+              echo '{}'
+            fi
+            printf '```\n'
+            echo
+            echo "</details>"
+            echo
+            echo "### Allocation"
+            echo
+            echo "<details><summary>Head</summary>"
+            echo
+            printf '```json\n'
+            if [ -n "$HEAD_ALLOC" ]; then
+              printf '%s\n' "$HEAD_ALLOC"
+            else
+              echo '{}'
+            fi
+            printf '```\n'
+            echo
+            echo "</details>"
+            echo
+            echo "<details><summary>Base</summary>"
+            echo
+            printf '```json\n'
+            if [ -n "$BASE_ALLOC" ]; then
+              printf '%s\n' "$BASE_ALLOC"
+            else
+              echo '{}'
+            fi
+            printf '```\n'
+            echo
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/upload-artifact@v4
         with:
           name: profile-metrics
