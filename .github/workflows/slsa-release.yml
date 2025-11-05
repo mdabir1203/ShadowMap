@@ -71,9 +71,21 @@ jobs:
 
       - name: Package binaries
         run: |
+          set -euo pipefail
           mkdir -p dist
-          tar -czf dist/shadowmap-${GITHUB_REF_NAME}.tar.gz -C target/release shadowmap
-          sha256sum dist/* > dist/shadowmap-${GITHUB_REF_NAME}.sha256
+          umask 0022
+          GZIP=-n tar \
+            --sort=name \
+            --mtime='@0' \
+            --owner=0 \
+            --group=0 \
+            --numeric-owner \
+            -czf dist/shadowmap-${GITHUB_REF_NAME}.tar.gz \
+            -C target/release shadowmap
+          (
+            cd dist
+            sha256sum shadowmap-${GITHUB_REF_NAME}.tar.gz > shadowmap-${GITHUB_REF_NAME}.sha256
+          )
 
       - name: Generate SBOM
         uses: anchore/sbom-action@e812a0fdf0d83f33cd9ba7f8c4ce3e9e2f8d2c9d
@@ -140,9 +152,21 @@ jobs:
 
       - name: Package reproducibility outputs
         run: |
+          set -euo pipefail
           mkdir -p dist
-          tar -czf dist/shadowmap-${GITHUB_REF_NAME}.tar.gz -C target/release shadowmap
-          sha256sum dist/* > dist/shadowmap-${GITHUB_REF_NAME}.sha256
+          umask 0022
+          GZIP=-n tar \
+            --sort=name \
+            --mtime='@0' \
+            --owner=0 \
+            --group=0 \
+            --numeric-owner \
+            -czf dist/shadowmap-${GITHUB_REF_NAME}.tar.gz \
+            -C target/release shadowmap
+          (
+            cd dist
+            sha256sum shadowmap-${GITHUB_REF_NAME}.tar.gz > shadowmap-${GITHUB_REF_NAME}.sha256
+          )
 
       - name: Upload rebuild artifacts
         uses: actions/upload-artifact@c7d6c3d5c0f8b7b2e07c5e6c5a9a7d1e2b9db4c4
