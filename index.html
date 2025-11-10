@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ShadowMap – Premium Documentation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+
+<!-- Prism tomorrow-night theme for dark code blocks -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+<style>
+:root{
+  --bg:#121212;
+  --surface:#1e1e1e;
+  --accent:#c9b037;   /* muted gold */
+  --text:#f2f2f2;
+  --subtle:#888;
+}
+* {box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.6;
+  background:var(--bg);
+  color:var(--text);
+  scroll-behavior:smooth;
+}
+header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:rgba(30,30,30,.9);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid #333;
+}
+nav{
+  display:flex;
+  gap:1.2rem;
+  padding:.8rem 1.2rem;
+  overflow-x:auto;
+}
+nav a{
+  color:var(--text);
+  text-decoration:none;
+  white-space:nowrap;
+  font-weight:500;
+  padding:.3rem .6rem;
+  border-radius:4px;
+  transition:background .2s;
+}
+nav a:hover,nav a.active{background:var(--accent);color:#000}
+main{max-width:900px;margin:auto;padding:2rem 1rem 4rem}
+section{margin-bottom:3rem}
+h1,h2{font-family:'Montserrat',sans-serif;font-weight:700;color:var(--accent)}
+h1{font-size:2.2rem;margin-bottom:.5rem}
+h2{font-size:1.6rem;margin:2rem 0 .8rem}
+p,li{margin-bottom:.7rem}
+ul{padding-left:1.2rem}
+code,pre{
+  font-family:'Consolas','Courier New',monospace;
+  font-size:.9rem;
+}
+pre{
+  background:#1e1e1e !important;
+  padding:1rem;
+  border-radius:6px;
+  overflow-x:auto;
+  border:1px solid #333;
+}
+.callout{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-weight:600;
+  margin-right:.8rem;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <nav id="nav"></nav>
+</header>
+
+<main id="main"></main>
+
+<!-- Prism core + Rust language -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+<script>
+/* ---------- DATA ---------- */
+const sections=[
+{title:"Overview",emoji:"⚡",content:`
+ShadowMap is a Rust toolkit for:
+<ul>
+  <li>Mapping exposed assets</li>
+  <li>Confirming risky services</li>
+  <li>Exporting clear reconnaissance results</li>
+</ul>
+<p><strong>Key Value:</strong> Combines technical asset discovery with compliance-ready reporting and automated workflows.</p>
+`},
+{title:"Quick Start",emoji:"⚡",content:`
+<h3>Requirements</h3>
+<p>Rust 1.70+ (with Cargo)</p>
+<h3>Build</h3>
+<pre><code class="language-bash">git clone https://github.com/YOUR-ORG/ShadowMap.git
+cd ShadowMap
+cargo build --release</code></pre>
+<h3>Run First Scan</h3>
+<pre><code class="language-bash">./target/release/shadowmap -d example.com -o results.csv</code></pre>
+<h3>Routine Quality Checks</h3>
+<pre><code class="language-bash">cargo fmt --all
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace</code></pre>
+`},
+{title:"Landing Page & Checkout",emoji:"🖥️",content:`
+<ul>
+  <li>Minimalist, luxury-inspired design</li>
+  <li>Dynamic Rust server rendering with localized pricing</li>
+  <li>Optional Stripe checkout integration</li>
+  <li>Static export ready for Vercel hosting: <code>landing-page/index.html</code></li>
+</ul>
+`},
+{title:"Profiling & Benchmarking",emoji:"⚡",content:`
+<p>Run Hotpath benchmark locally:</p>
+<pre><code class="language-bash">cargo run --example benchmark --features='hotpath,hotpath-ci'</code></pre>
+<p>Optional allocation metrics:</p>
+<pre><code class="language-bash">cargo run --example benchmark --features='hotpath,hotpath-ci,hotpath-alloc-count-total'</code></pre>
+`},
+{title:"SLSA-Ready Secure Release Flow",emoji:"🔒",content:`
+<ol>
+  <li><strong>Signed Commits & Tags</strong> – Annotated tags trigger the slsa-release workflow.</li>
+  <li><strong>Primary Hermetic Build</strong> – Locked dependencies, no network, compile binaries, SBOM + checksum.</li>
+  <li><strong>Independent Rebuild</strong> – Generate a second checksum.</li>
+  <li><strong>Determinism Check</strong> – Compare manifests; failure stops the release.</li>
+  <li><strong>Provenance Generation</strong> – DSSE attestation records workflow and artifact digests.</li>
+  <li><strong>Keyless Signing & Publishing</strong> – Cosign OIDC credentials; bundle binaries, SBOM, and signature.</li>
+  <li><strong>Consumer Verification</strong> – <code>./scripts/verify_release.sh</code> validates signature, checksum, SBOM, and provenance.</li>
+</ol>
+<p>Full documentation: <code>docs/security/slsa-ready-pipeline.md</code></p>
+`},
+{title:"Day-to-Day SBOM & CI Gating",emoji:"🔒",content:`
+Primary hermetic build → Independent rebuild → Determinism check → Provenance generation → Signing & publish<br>
+Lightweight local scans supported for quick verification
+`},
+{title:"Verification",emoji:"🔒",content:`
+<pre><code class="language-bash">./scripts/verify_release.sh shadowmap-vX.Y.Z.tar.gz</code></pre>
+<p>Checks signature, provenance, checksum, and SBOM<br>
+Automation-friendly: exits non-zero on failure</p>
+<p>Optional repeatability scan:</p>
+<pre><code class="language-bash">./scripts/security-scan.sh</code></pre>
+`},
+{title:"Data Security & Compliance",emoji:"🔒",content:`
+<ul>
+  <li>SOC 2 Trust Services Criteria alignment</li>
+  <li>GDPR-compliant handling of reconnaissance data</li>
+  <li>Control owners and evidence tracking documented in <code>docs/data-security.md</code></li>
+</ul>
+`},
+{title:"Social Intelligence Automation",emoji:"📄",content:`
+<ul>
+  <li>Native integration with Codex agent</li>
+  <li>Correlates social chatter with assets</li>
+  <li>Generates normalized signals, alerts, and dashboards</li>
+</ul>
+<p>Override via:</p>
+<pre><code class="language-bash">SHADOWMAP_SOCIAL_CONFIG=/path/to/framework.yaml</code></pre>
+`},
+{title:"Technical Report Automation",emoji:"📄",content:`
+<pre><code class="language-bash">./scripts/generate-technical-report.sh</code></pre>
+<p>Outputs <code>build/technical-report.md</code><br>
+CI pipeline generates PDF via Pandoc</p>
+`},
+{title:"Application Governance & Resilience",emoji:"📄",content:`
+<ul>
+  <li>Detect unapproved apps, fragmented data flows, silent failures</li>
+  <li>Integrate with CMDBs, observability, and data lineage tools</li>
+  <li>Guide: <code>docs/app-governance-integration.md</code></li>
+</ul>
+`},
+{title:"Organizational Adoption",emoji:"📄",content:`
+<ul>
+  <li>Rollout across enterprise security programs</li>
+  <li>Governance structure and business metrics</li>
+  <li>Playbook: <code>docs/org-adaptation.md</code></li>
+</ul>
+`},
+{title:"Automated Security Workflow",emoji:"🔒",content:`
+<p>GitHub Action: <code>.github/workflows/security-scan.yml</code></p>
+<ul>
+  <li>Installs cargo-cyclonedx & grype</li>
+  <li>Generates SBOM (<code>shadowmap-bom.json</code>)</li>
+  <li>Scans for vulnerabilities and uploads JSON reports</li>
+  <li>Runs on PRs, main branch, or manually</li>
+</ul>
+`},
+{title:"Desktop GUI (Optional)",emoji:"🖥️",content:`
+<pre><code class="language-bash">cargo run --features gui --bin shadowmap-gui</code></pre>
+<p>Enter domain → Run Scan → Output directory shows results<br>
+Fully Rust-powered via iced</p>
+`},
+{title:"Slint Dashboard (Experimental)",emoji:"🖥️",content:`
+<pre><code class="language-bash">cargo run --features dashboard --bin shadowmap-dashboard</code></pre>
+<p>Launch scans, monitor live status<br>
+Visualize subdomain activity and alert categories</p>
+`},
+{title:"Additional Documentation",emoji:"📄",content:`
+<ul>
+  <li><code>docs/data-security.md</code> – Data security & compliance notes</li>
+  <li><code>docs/app-governance-integration.md</code> – Governance workflow integration</li>
+  <li><code>docs/security/slsa-whitepaper.md</code> – Executive SLSA overview</li>
+  <li><code>docs/org-adaptation.md</code> – Enterprise rollout guide</li>
+  <li><code>landing-page/</code> – Static marketing & Vercel deployment metadata</li>
+</ul>
+`}
+];
+
+/* ---------- RENDER ---------- */
+const nav=document.getElementById('nav');
+const main=document.getElementById('main');
+
+sections.forEach((s,i)=>{
+  const id='sec'+i;
+  nav.insertAdjacentHTML('beforeend',`<a href="#${id}">${s.emoji} ${s.title}</a>`);
+  main.insertAdjacentHTML('beforeend',
+`<section id="${id}">
+  <h2><span class="callout">${s.emoji}</span>${s.title}</h2>
+  ${s.content}
+</section>`);
+});
+
+/* ---------- ACTIVE LINK ON SCROLL ---------- */
+const links=Array.from(nav.children);
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      links.forEach(l=>l.classList.remove('active'));
+      const active=links.find(l=>l.getAttribute('href')==='#'+e.target.id);
+      if(active) active.classList.add('active');
+    }
+  });
+},{rootMargin:'-30% 0px -70% 0px'});
+
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
