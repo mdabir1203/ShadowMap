@@ -2,6 +2,10 @@
 
 ShadowMap is a Rust toolkit for mapping exposed assets, confirming risky services, and exporting clear recon results.
 
+# Why and the Decision Process 
+
+ShadowMap dashboards provide a live view into global subdomain reconnaissance, but they’re new! Expect hacker-grade speed, not polished analytics. Real-time data may fluctuate, charts may be dense, and initial setups need a bit of infra love. We’re improving UX, aggregation, and performance — contributions welcome!
+
 
 ## Quick start
 
