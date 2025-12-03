@@ -31,6 +31,11 @@ jobs:
         with:
           bom-file: shadowmap-bom.json
           report-file: grype-report.json
+          fail-on: medium
+          enable-reachability-analysis: true
+
+      - name: Scan ubuntu:latest base image
+        run: grype ubuntu:latest --fail-on medium
 
       - name: Upload scan artifacts
         if: always()
