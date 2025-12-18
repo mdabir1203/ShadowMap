@@ -12,6 +12,7 @@ mod headers;
 pub mod passkeys;
 mod ports;
 mod reporting;
+mod pretty_report;
 mod social;
 mod takeover;
 pub mod web;
