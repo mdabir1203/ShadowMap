@@ -48,7 +48,7 @@ impl PrettyReportGenerator {
         let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S %Z");
         
         // Header
-        writeln!(f, "# 🔍 ShadowMap Security Report")?;
+        writeln!(f, "# ShadowMap Security Report")?;
         writeln!(f)?;
         writeln!(f, "**Target Domain:** `{}`", domain)?;
         writeln!(f, "**Scan Date:** {}", timestamp)?;
@@ -58,7 +58,7 @@ impl PrettyReportGenerator {
         writeln!(f)?;
 
         // Executive Summary
-        writeln!(f, "## 📊 Executive Summary")?;
+        writeln!(f, "## Executive Summary")?;
         writeln!(f)?;
         
         let total_subs = subs.len();
@@ -67,11 +67,11 @@ impl PrettyReportGenerator {
         let cloud_assets = cloud_asset_map.len();
         
         let risk_level = if cors_issues > 0 || takeover_risks > 0 {
-            "🔴 **HIGH**"
+            "**HIGH**"
         } else if cloud_assets > 5 {
-            "🟡 **MEDIUM**"
+            "**MEDIUM**"
         } else {
-            "🟢 **LOW**"
+            "**LOW**"
         };
         
         writeln!(f, "| Metric | Value |")?;
@@ -86,20 +86,20 @@ impl PrettyReportGenerator {
 
         // Critical Findings
         if cors_issues > 0 || takeover_risks > 0 {
-            writeln!(f, "## 🚨 Critical Security Findings")?;
+            writeln!(f, "## Critical Security Findings")?;
             writeln!(f)?;
 
             if cors_issues > 0 {
-                writeln!(f, "### ⚠️ CORS Misconfigurations")?;
+                writeln!(f, "### CORS Misconfigurations")?;
                 writeln!(f)?;
-                writeln!(f, "**Severity:** 🔴 HIGH")?;
+                writeln!(f, "**Severity:** HIGH")?;
                 writeln!(f, "**Impact:** Data theft, unauthorized API access")?;
                 writeln!(f)?;
                 
                 for (sub, issues) in cors_map.iter().sorted_by_key(|(k, _)| k.as_str()) {
                     writeln!(f, "**Host:** `{}`", sub)?;
                     for issue in issues {
-                        writeln!(f, "- ⚠️ {}", issue)?;
+                        writeln!(f, "- {}", issue)?;
                     }
                     writeln!(f)?;
                 }
@@ -115,12 +115,12 @@ impl PrettyReportGenerator {
             }
 
             if takeover_risks > 0 {
-                writeln!(f, "### 🎯 Subdomain Takeover Risks")?;
+                writeln!(f, "### Subdomain Takeover Risks")?;
                 writeln!(f)?;
                 for (sub, risks) in takeover_map.iter().sorted_by_key(|(k, _)| k.as_str()) {
                     writeln!(f, "**Subdomain:** `{}`", sub)?;
                     for risk in risks {
-                        writeln!(f, "- 🎯 {}", risk)?;
+                        writeln!(f, "- {}", risk)?;
                     }
                     writeln!(f)?;
                 }
@@ -128,7 +128,7 @@ impl PrettyReportGenerator {
         }
 
         // All Discovered Subdomains
-        writeln!(f, "## 🌐 Discovered Subdomains")?;
+        writeln!(f, "## Discovered Subdomains")?;
         writeln!(f)?;
         writeln!(f, "| # | Subdomain | Status | Server | Open Ports | Issues |")?;
         writeln!(f, "|---|-----------|--------|--------|------------|--------|")?;
@@ -136,11 +136,11 @@ impl PrettyReportGenerator {
         for (idx, sub) in subs.iter().sorted().enumerate() {
             let (status, server) = header_map.get(sub).cloned().unwrap_or((0, None));
             let status_icon = match status {
-                200..=299 => "✅",
-                300..=399 => "🔄",
-                400..=499 => "⚠️",
-                500..=599 => "🔴",
-                _ => "❓",
+                200..=299 => "OK",
+                300..=399 => "REDIRECT",
+                400..=499 => "CLIENT_ERR",
+                500..=599 => "SERVER_ERR",
+                _ => "UNKNOWN",
             };
             
             let ports = open_ports_map.get(sub)
@@ -151,9 +151,9 @@ impl PrettyReportGenerator {
                 + takeover_map.get(sub).map(|v| v.len()).unwrap_or(0);
             
             let issues_display = if issues_count > 0 {
-                format!("🚨 {}", issues_count)
+                format!("ISSUES: {}", issues_count)
             } else {
-                "✅".to_string()
+                "OK".to_string()
             };
             
             writeln!(
@@ -171,7 +171,7 @@ impl PrettyReportGenerator {
         writeln!(f)?;
 
         // Port Analysis
-        writeln!(f, "## 🔌 Port Analysis")?;
+        writeln!(f, "## Port Analysis")?;
         writeln!(f)?;
         let mut all_ports: HashSet<u16> = HashSet::new();
         for ports in open_ports_map.values() {
@@ -211,7 +211,7 @@ impl PrettyReportGenerator {
 
         // Software Fingerprints
         if !software_map.is_empty() {
-            writeln!(f, "## 🔍 Software Fingerprints")?;
+            writeln!(f, "## Software Fingerprints")?;
             writeln!(f)?;
             
             for (sub, fingerprints) in software_map.iter().sorted_by_key(|(k, _)| k.as_str()) {
@@ -227,7 +227,7 @@ impl PrettyReportGenerator {
 
         // Cloud Assets
         if !cloud_asset_map.is_empty() {
-            writeln!(f, "## ☁️ Cloud Infrastructure Analysis")?;
+            writeln!(f, "## Cloud Infrastructure Analysis")?;
             writeln!(f)?;
             writeln!(f, "**Total Predicted Assets:** {}", cloud_asset_map.values().map(|v| v.len()).sum::<usize>())?;
             writeln!(f)?;
@@ -249,7 +249,7 @@ impl PrettyReportGenerator {
 
         // Social Intelligence
         if let Some(intel) = social_intel {
-            writeln!(f, "## 🤖 AI-Powered Threat Intelligence")?;
+            writeln!(f, "## AI-Powered Threat Intelligence")?;
             writeln!(f)?;
             writeln!(f, "**Framework:** {}", intel.framework_name)?;
             writeln!(f, "**Version:** {}", intel.framework_version)?;
@@ -275,7 +275,7 @@ impl PrettyReportGenerator {
             }
             
             if !intel.remediations.is_empty() {
-                writeln!(f, "### 🛠️ Remediation Plan")?;
+                writeln!(f, "### Remediation Plan")?;
                 writeln!(f)?;
                 for remediation in &intel.remediations {
                     writeln!(f, "#### {}", remediation.title)?;
@@ -296,30 +296,30 @@ impl PrettyReportGenerator {
         }
 
         // Recommendations
-        writeln!(f, "## 💡 Recommendations")?;
+        writeln!(f, "## Recommendations")?;
         writeln!(f)?;
         writeln!(f, "### Immediate Actions (P0)")?;
         if cors_issues > 0 {
-            writeln!(f, "1. ⚠️ **Fix CORS misconfigurations** on {} host(s)", cors_issues)?;
+            writeln!(f, "1. **Fix CORS misconfigurations** on {} host(s)", cors_issues)?;
         }
         if takeover_risks > 0 {
-            writeln!(f, "2. 🎯 **Investigate subdomain takeover risks** on {} subdomain(s)", takeover_risks)?;
+            writeln!(f, "2. **Investigate subdomain takeover risks** on {} subdomain(s)", takeover_risks)?;
         }
         if open_ports_map.values().any(|ports| ports.contains(&22)) {
-            writeln!(f, "3. 🔐 **Review SSH exposure** - Port 22 should not be publicly accessible")?;
+            writeln!(f, "3. **Review SSH exposure** - Port 22 should not be publicly accessible")?;
         }
         writeln!(f)?;
         
         writeln!(f, "### Short-term Actions (P1)")?;
-        writeln!(f, "1. 🔍 **Validate all predicted cloud buckets** for public access")?;
-        writeln!(f, "2. 🛡️ **Implement Web Application Firewall (WAF)**")?;
-        writeln!(f, "3. 📊 **Set up continuous monitoring** for new subdomains")?;
+        writeln!(f, "1. **Validate all predicted cloud buckets** for public access")?;
+        writeln!(f, "2. **Implement Web Application Firewall (WAF)**")?;
+        writeln!(f, "3. **Set up continuous monitoring** for new subdomains")?;
         writeln!(f)?;
         
         writeln!(f, "### Long-term Actions (P2)")?;
-        writeln!(f, "1. 🔒 **Enable DNSSEC** for domain integrity")?;
-        writeln!(f, "2. 📋 **Conduct regular penetration testing**")?;
-        writeln!(f, "3. 🎓 **Security awareness training** for development teams")?;
+        writeln!(f, "1. **Enable DNSSEC** for domain integrity")?;
+        writeln!(f, "2. **Conduct regular penetration testing**")?;
+        writeln!(f, "3. **Security awareness training** for development teams")?;
         writeln!(f)?;
 
         // Footer
@@ -348,7 +348,7 @@ impl PrettyReportGenerator {
         println!();
 
         // Quick Stats
-        println!("{}", "📊 QUICK STATS".bright_yellow().bold());
+        println!("{}", "QUICK STATS".bright_yellow().bold());
         println!("{}", "─────────────────────────────────────────────────────────".bright_black());
         println!("  {} Subdomains discovered", subs.len().to_string().bright_green().bold());
         println!("  {} Live hosts verified", subs.len().to_string().bright_green().bold());
@@ -356,13 +356,13 @@ impl PrettyReportGenerator {
         if cors_map.is_empty() {
             println!("  {} CORS vulnerabilities", "0".bright_green().bold());
         } else {
-            println!("  {} CORS vulnerabilities {}", cors_map.len().to_string().bright_red().bold(), "⚠️");
+            println!("  {} CORS vulnerabilities [WARNING]", cors_map.len().to_string().bright_red().bold());
         }
         
         if takeover_map.is_empty() {
             println!("  {} Takeover risks", "0".bright_green().bold());
         } else {
-            println!("  {} Takeover risks {}", takeover_map.len().to_string().bright_yellow().bold(), "⚠️");
+            println!("  {} Takeover risks [WARNING]", takeover_map.len().to_string().bright_yellow().bold());
         }
         
         println!("  {} Cloud assets flagged", cloud_asset_map.len().to_string().bright_cyan().bold());
@@ -370,7 +370,7 @@ impl PrettyReportGenerator {
 
         // Critical Findings
         if !cors_map.is_empty() || !takeover_map.is_empty() {
-            println!("{}", "🚨 CRITICAL FINDINGS".bright_red().bold());
+            println!("{}", "CRITICAL FINDINGS".bright_red().bold());
             println!("{}", "─────────────────────────────────────────────────────────".bright_black());
             
             for (sub, issues) in cors_map.iter().sorted_by_key(|(k, _)| k.as_str()) {
@@ -390,7 +390,7 @@ impl PrettyReportGenerator {
         }
 
         // Top Subdomains Table
-        println!("{}", "🌐 DISCOVERED SUBDOMAINS".bright_cyan().bold());
+        println!("{}", "DISCOVERED SUBDOMAINS".bright_cyan().bold());
         println!("{}", "─────────────────────────────────────────────────────────".bright_black());
         
         let mut rows: Vec<SubdomainRow> = Vec::new();
@@ -407,15 +407,15 @@ impl PrettyReportGenerator {
                 .unwrap_or_else(|| "-".to_string());
             
             let cors_str = if cors_map.contains_key(sub) {
-                "⚠️ YES".to_string()
+                "WARNING".to_string()
             } else {
-                "✓".to_string()
+                "OK".to_string()
             };
             
             let risks = if takeover_map.contains_key(sub) {
-                "⚠️".to_string()
+                "WARNING".to_string()
             } else {
-                "✓".to_string()
+                "OK".to_string()
             };
             
             rows.push(SubdomainRow {
@@ -442,7 +442,7 @@ impl PrettyReportGenerator {
         // Social Intelligence Summary
         if let Some(intel) = social_intel {
             if intel.metrics.total_signals > 0 {
-                println!("{}", "🤖 AI THREAT INTELLIGENCE".bright_magenta().bold());
+                println!("{}", "AI THREAT INTELLIGENCE".bright_magenta().bold());
                 println!("{}", "─────────────────────────────────────────────────────────".bright_black());
                 println!("  {} signal(s) detected", intel.metrics.total_signals.to_string().bright_yellow().bold());
                 println!("  {} confidence", format!("{:.0}%", intel.metrics.average_confidence * 100.0).bright_green().bold());
