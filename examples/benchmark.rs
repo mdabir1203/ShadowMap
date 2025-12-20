@@ -123,7 +123,7 @@ fn evaluate_certificate(seed: &str, offset: usize, coverage: usize) -> usize {
     measure_block!("tls_parse", {
         let len = bytes.len().max(1);
         bytes.rotate_left(offset % len);
-        if coverage % 2 == 0 {
+        if coverage.is_multiple_of(2) {
             thread::sleep(Duration::from_micros(60));
         }
     });
