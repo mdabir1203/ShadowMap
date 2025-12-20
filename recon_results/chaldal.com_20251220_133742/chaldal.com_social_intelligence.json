@@ -1,0 +1,179 @@
+{
+  "framework_name": "ShadowMap Codex Intelligence Framework",
+  "framework_version": "1.0",
+  "framework_description": "Hybrid AI system combining social listening with cloud security asset intelligence. Powered by Codex Agents orchestrated for collection, classification, correlation, remediation, and reporting.\n",
+  "scenarios": [
+    "s3_public_acl"
+  ],
+  "plans": [
+    {
+      "scenario": "s3_public_acl",
+      "topic": "Public S3 bucket misconfig leak",
+      "intents": [
+        "collect_signals",
+        "classify_risk",
+        "correlate_assets",
+        "propose_remediation",
+        "deliver_report"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "tool": "social_feed.fetch",
+          "rationale": "Apply social_feed.fetch to progress the s3 public acl pipeline for scenario 'Public S3 bucket misconfig leak'"
+        },
+        {
+          "step": 2,
+          "tool": "nvd_cve.search",
+          "rationale": "Apply nvd_cve.search to progress the s3 public acl pipeline for scenario 'Public S3 bucket misconfig leak'"
+        },
+        {
+          "step": 3,
+          "tool": "asset_graph.search",
+          "rationale": "Apply asset_graph.search to progress the s3 public acl pipeline for scenario 'Public S3 bucket misconfig leak'"
+        },
+        {
+          "step": 4,
+          "tool": "vuln_scan.query",
+          "rationale": "Apply vuln_scan.query to progress the s3 public acl pipeline for scenario 'Public S3 bucket misconfig leak'"
+        },
+        {
+          "step": 5,
+          "tool": "cloud_cfg.check",
+          "rationale": "Apply cloud_cfg.check to progress the s3 public acl pipeline for scenario 'Public S3 bucket misconfig leak'"
+        },
+        {
+          "step": 6,
+          "tool": "notify.create",
+          "rationale": "Apply notify.create to progress the s3 public acl pipeline for scenario 'Public S3 bucket misconfig leak'"
+        }
+      ],
+      "confidence": 0.99,
+      "expected_outputs": []
+    }
+  ],
+  "signals": [
+    {
+      "signal_id": "SOC-001",
+      "scenario": "s3_public_acl",
+      "topic": "Public S3 bucket misconfig leak",
+      "severity": "high",
+      "confidence": 0.8,
+      "vendor_cloud": [
+        "aws"
+      ],
+      "services": [
+        "s3",
+        "object-storage"
+      ],
+      "regions": [
+        "ap-south-1",
+        "asia-south1"
+      ],
+      "indicators": [
+        "gogo.chaldal.com with asset https://gogo.chaldal.com.s3.amazonaws.com",
+        "pk-api.chaldal.com with asset https://pk-api.chaldal.com.s3.amazonaws.com",
+        "yearbook.chaldal.com with asset https://yearbook.chaldal.com.s3.amazonaws.com",
+        "groceryintegration-api.chaldal.com with asset https://groceryintegration-api.chaldal.com.s3.amazonaws.com",
+        "admin.chaldal.com with asset https://admin.chaldal.com.s3.amazonaws.com",
+        "osm.chaldal.com with asset https://osm.chaldal.com.s3.amazonaws.com",
+        "cdvn-v2.chaldal.com with asset https://cdvn-v2.chaldal.com.s3.amazonaws.com",
+        "email.chaldal.com with asset https://email.chaldal.com.s3.amazonaws.com",
+        "addrapi.chaldal.com with asset https://addrapi.chaldal.com.s3.amazonaws.com",
+        "mapping-ui.chaldal.com with asset https://mapping-ui.chaldal.com.s3.amazonaws.com",
+        "chaldal.com with asset https://chaldal.com.s3.amazonaws.com",
+        "2020.chaldal.com with asset https://2020.chaldal.com.s3.amazonaws.com",
+        "mapping.chaldal.com with asset https://mapping.chaldal.com.s3.amazonaws.com",
+        "pk.chaldal.com with asset https://pk.chaldal.com.s3.amazonaws.com",
+        "cdvn-v2-ui.chaldal.com with asset https://cdvn-v2-ui.chaldal.com.s3.amazonaws.com",
+        "catalog.chaldal.com with asset https://catalog.chaldal.com.s3.amazonaws.com",
+        "eggyolk.chaldal.com with asset https://eggyolk.chaldal.com.s3.amazonaws.com",
+        "app-updates.chaldal.com with asset https://app-updates.chaldal.com.s3.amazonaws.com",
+        "eggfarm.chaldal.com with asset https://eggfarm.chaldal.com.s3.amazonaws.com",
+        "callcenter.chaldal.com with asset https://callcenter.chaldal.com.s3.amazonaws.com",
+        "eggtransport.chaldal.com with asset https://eggtransport.chaldal.com.s3.amazonaws.com"
+      ]
+    }
+  ],
+  "correlations": [
+    {
+      "asset_id": "gogo.chaldal.com",
+      "reasons": [
+        "HIGH alignment with Public S3 bucket misconfig leak signal"
+      ],
+      "risk_score": 0.78,
+      "supporting_findings": [
+        "Matched contextual heuristics"
+      ]
+    }
+  ],
+  "remediations": [
+    {
+      "scenario": "s3_public_acl",
+      "title": "Stabilize Public S3 bucket misconfig leak",
+      "severity": "high",
+      "due_days": 3,
+      "steps": [
+        "Validate intelligence context for 'Public S3 bucket misconfig leak' against live telemetry",
+        "Engage impacted service owners for chaldal.com to scope blast radius",
+        "Apply scp control set to mitigate s3_public_acl exposure",
+        "Apply config_rules control set to mitigate s3_public_acl exposure",
+        "Apply security_hub control set to mitigate s3_public_acl exposure"
+      ],
+      "rollback": [
+        "Document original control state and owners before execution",
+        "Use change window rollback procedure if user impact detected"
+      ],
+      "verification": [
+        "Re-run ShadowMap reconnaissance on affected assets",
+        "Confirm social feed silence for the scenario over 24h"
+      ]
+    }
+  ],
+  "reports": [
+    {
+      "scenario": "s3_public_acl",
+      "executive_brief": "Public S3 bucket misconfig leak signal detected targeting chaldal.com — severity high with 4 guardrails active across 21 live assets.",
+      "engineer_brief": "Scenario 'Public S3 bucket misconfig leak': focus on s3, object-storage services. Use Sun 02:00-04:00 BST change windows and controls (scp, config_rules, security_hub) for remediation across 21 SaaS surfaces."
+    }
+  ],
+  "metrics": {
+    "total_signals": 1,
+    "correlated_assets": 1,
+    "average_confidence": 0.8,
+    "severity_breakdown": {
+      "high": 1
+    },
+    "live_hosts": 21,
+    "saas_watchlist": 21
+  },
+  "guardrails": [
+    "Reject any claim not supported by tool output",
+    "Ensure all remediation steps have rollback",
+    "Validate JSON output against schema before next agent",
+    "Suppress repeated findings or assets"
+  ],
+  "localization": {
+    "primary_geo": "Bangladesh",
+    "languages": [
+      "en",
+      "bn"
+    ],
+    "regions": [
+      "ap-south-1",
+      "asia-south1"
+    ],
+    "environments": [
+      "prod",
+      "staging"
+    ],
+    "controls_available": [
+      "scp",
+      "config_rules",
+      "security_hub"
+    ],
+    "change_windows": [
+      "Sun 02:00-04:00 BST"
+    ]
+  }
+}
