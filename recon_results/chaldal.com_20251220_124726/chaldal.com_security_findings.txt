@@ -1,0 +1,7 @@
+Security Findings Summary for chaldal.com
+=============================================
+Total subdomains found: 21
+Subdomains with CORS issues: 1
+Potential takeover targets: 0
+Deep cloud assets flagged: 21
+Social intelligence signals: 1 (1 high+critical)

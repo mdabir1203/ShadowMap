@@ -1,0 +1,86 @@
+{
+  "cdvn-v2-ui.chaldal.com": [
+    "Predicted exists: cdvn-v2-ui.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: cdvn-v2-ui.chaldal.com.storage.googleapis.com"
+  ],
+  "app-updates.chaldal.com": [
+    "Predicted exists: app-updates.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: app-updates.chaldal.com.storage.googleapis.com"
+  ],
+  "callcenter.chaldal.com": [
+    "Predicted exists: callcenter.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: callcenter.chaldal.com.storage.googleapis.com"
+  ],
+  "groceryintegration-api.chaldal.com": [
+    "Predicted exists: groceryintegration-api.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: groceryintegration-api.chaldal.com.storage.googleapis.com"
+  ],
+  "email.chaldal.com": [
+    "Predicted exists: email.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: email.chaldal.com.storage.googleapis.com"
+  ],
+  "eggtransport.chaldal.com": [
+    "Predicted exists: eggtransport.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: eggtransport.chaldal.com.storage.googleapis.com"
+  ],
+  "chaldal.com": [
+    "Predicted exists: chaldal.com.s3.amazonaws.com",
+    "Predicted exists: chaldal.com.storage.googleapis.com"
+  ],
+  "mapping-ui.chaldal.com": [
+    "Predicted exists: mapping-ui.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: mapping-ui.chaldal.com.storage.googleapis.com"
+  ],
+  "catalog.chaldal.com": [
+    "Predicted exists: catalog.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: catalog.chaldal.com.storage.googleapis.com"
+  ],
+  "admin.chaldal.com": [
+    "Predicted exists: admin.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: admin.chaldal.com.storage.googleapis.com"
+  ],
+  "eggyolk.chaldal.com": [
+    "Predicted exists: eggyolk.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: eggyolk.chaldal.com.storage.googleapis.com"
+  ],
+  "addrapi.chaldal.com": [
+    "Predicted exists: addrapi.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: addrapi.chaldal.com.storage.googleapis.com"
+  ],
+  "yearbook.chaldal.com": [
+    "Predicted exists: yearbook.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: yearbook.chaldal.com.storage.googleapis.com"
+  ],
+  "mapping.chaldal.com": [
+    "Predicted exists: mapping.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: mapping.chaldal.com.storage.googleapis.com"
+  ],
+  "pk-api.chaldal.com": [
+    "Predicted exists: pk-api.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: pk-api.chaldal.com.storage.googleapis.com"
+  ],
+  "osm.chaldal.com": [
+    "Predicted exists: osm.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: osm.chaldal.com.storage.googleapis.com"
+  ],
+  "pk.chaldal.com": [
+    "Predicted exists: pk.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: pk.chaldal.com.storage.googleapis.com"
+  ],
+  "2020.chaldal.com": [
+    "Predicted exists: 2020.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: 2020.chaldal.com.storage.googleapis.com"
+  ],
+  "gogo.chaldal.com": [
+    "Predicted exists: gogo.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: gogo.chaldal.com.storage.googleapis.com"
+  ],
+  "cdvn-v2.chaldal.com": [
+    "Predicted exists: cdvn-v2.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: cdvn-v2.chaldal.com.storage.googleapis.com"
+  ],
+  "eggfarm.chaldal.com": [
+    "Predicted exists: eggfarm.chaldal.com.s3.amazonaws.com",
+    "Predicted exists: eggfarm.chaldal.com.storage.googleapis.com"
+  ]
+}

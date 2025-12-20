@@ -1,0 +1,926 @@
+{
+  "cdvn-v2.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://cdvn-v2.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://cdvn-v2-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://cdvn-v2.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://cdvn-v2.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://cdvn-v2.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://cdvn-v2.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://cdvn-v2.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "mapping-ui.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://mapping-ui.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping-ui.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://mapping-ui-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping-ui-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://mapping-ui.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping-ui.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://mapping-ui.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping-ui.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://mapping-ui.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping-ui.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://mapping-ui.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping-ui.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://mapping-ui.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping-ui.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "admin.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://admin.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://admin.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://admin-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://admin-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://admin.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://admin.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://admin.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://admin.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://admin.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://admin.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://admin.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://admin.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://admin.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://admin.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "gogo.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://gogo.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://gogo.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://gogo-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://gogo-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://gogo.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://gogo.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://gogo.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://gogo.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://gogo.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://gogo.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://gogo.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://gogo.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://gogo.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://gogo.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "mapping.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://mapping.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://mapping-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://mapping.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://mapping.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://mapping.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://mapping.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://mapping.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://mapping.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "pk-api.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://pk-api.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk-api.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://pk-api-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk-api-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://pk-api.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk-api.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://pk-api.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk-api.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://pk-api.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk-api.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://pk-api.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk-api.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://pk-api.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk-api.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "email.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://email.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://email.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://email-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://email-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://email.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://email.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://email.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://email.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://email.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://email.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://email.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://email.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://email.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://email.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "eggfarm.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://eggfarm.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggfarm.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://eggfarm-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggfarm-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://eggfarm.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggfarm.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://eggfarm.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggfarm.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://eggfarm.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggfarm.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://eggfarm.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggfarm.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://eggfarm.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggfarm.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "catalog.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://catalog.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://catalog.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://catalog-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://catalog-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://catalog.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://catalog.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://catalog.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://catalog.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://catalog.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://catalog.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://catalog.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://catalog.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://catalog.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://catalog.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "eggyolk.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://eggyolk.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggyolk.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://eggyolk-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggyolk-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://eggyolk.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggyolk.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://eggyolk.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggyolk.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://eggyolk.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggyolk.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://eggyolk.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggyolk.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://eggyolk.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggyolk.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "pk.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://pk.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://pk-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://pk.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://pk.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://pk.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://pk.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://pk.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://pk.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "groceryintegration-api.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://groceryintegration-api.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://groceryintegration-api.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://groceryintegration-api-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://groceryintegration-api-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://groceryintegration-api.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://groceryintegration-api.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://groceryintegration-api.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://groceryintegration-api.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://groceryintegration-api.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://groceryintegration-api.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://groceryintegration-api.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://groceryintegration-api.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://groceryintegration-api.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://groceryintegration-api.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "yearbook.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://yearbook.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://yearbook.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://yearbook-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://yearbook-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://yearbook.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://yearbook.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://yearbook.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://yearbook.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://yearbook.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://yearbook.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://yearbook.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://yearbook.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://yearbook.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://yearbook.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "callcenter.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://callcenter.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://callcenter.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://callcenter-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://callcenter-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://callcenter.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://callcenter.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://callcenter.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://callcenter.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://callcenter.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://callcenter.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://callcenter.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://callcenter.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://callcenter.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://callcenter.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "2020.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://2020.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://2020.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://2020-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://2020-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://2020.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://2020.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://2020.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://2020.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://2020.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://2020.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://2020.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://2020.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://2020.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://2020.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "app-updates.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://app-updates.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://app-updates.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://app-updates-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://app-updates-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://app-updates.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://app-updates.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://app-updates.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://app-updates.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://app-updates.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://app-updates.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://app-updates.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://app-updates.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://app-updates.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://app-updates.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "osm.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://osm.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://osm.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://osm-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://osm-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://osm.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://osm.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://osm.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://osm.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://osm.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://osm.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://osm.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://osm.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://osm.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://osm.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "addrapi.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://addrapi.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://addrapi.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://addrapi-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://addrapi-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://addrapi.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://addrapi.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://addrapi.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://addrapi.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://addrapi.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://addrapi.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://addrapi.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://addrapi.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://addrapi.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://addrapi.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "eggtransport.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://eggtransport.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggtransport.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://eggtransport-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggtransport-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://eggtransport.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggtransport.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://eggtransport.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggtransport.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://eggtransport.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggtransport.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://eggtransport.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggtransport.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://eggtransport.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://eggtransport.chaldal.com.wasabisys.com/)"
+    }
+  ],
+  "cdvn-v2-ui.chaldal.com": [
+    {
+      "provider": "aws_s3",
+      "asset": "https://cdvn-v2-ui.chaldal.com.s3.amazonaws.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2-ui.chaldal.com.s3.amazonaws.com/)"
+    },
+    {
+      "provider": "aws_cloudfront",
+      "asset": "https://cdvn-v2-ui-chaldal-com.cloudfront.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2-ui-chaldal-com.cloudfront.net/)"
+    },
+    {
+      "provider": "azure_blob",
+      "asset": "https://cdvn-v2-ui.chaldal.com.blob.core.windows.net",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2-ui.chaldal.com.blob.core.windows.net/)"
+    },
+    {
+      "provider": "gcp_storage",
+      "asset": "https://cdvn-v2-ui.chaldal.com.storage.googleapis.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2-ui.chaldal.com.storage.googleapis.com/)"
+    },
+    {
+      "provider": "digitalocean_spaces",
+      "asset": "https://cdvn-v2-ui.chaldal.com.digitaloceanspaces.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2-ui.chaldal.com.digitaloceanspaces.com/)"
+    },
+    {
+      "provider": "cloudflare_r2",
+      "asset": "https://cdvn-v2-ui.chaldal.com.r2.cloudflarestorage.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2-ui.chaldal.com.r2.cloudflarestorage.com/)"
+    },
+    {
+      "provider": "wasabi",
+      "asset": "https://cdvn-v2-ui.chaldal.com.wasabisys.com",
+      "status": "unknown",
+      "notes": "error sending request for url (https://cdvn-v2-ui.chaldal.com.wasabisys.com/)"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ use itertools::Itertools;
 
 use crate::cloud::CloudAssetFinding;
 use crate::social::SocialIntelligenceSummary;
+use crate::pretty_report::{PrettyReportGenerator, ReconSummary};
 
 pub struct ReconMaps<'a> {
     pub header_map: &'a HashMap<String, (u16, Option<String>)>,
@@ -187,6 +188,26 @@ pub fn write_outputs(
         deep_cloud_file,
         serde_json::to_string_pretty(&maps.cloud_asset_map)?,
     )?;
+
+    // Generate beautiful markdown report
+    let summary = ReconSummary {
+        domain,
+        subs,
+        header_map: maps.header_map,
+        open_ports_map: maps.open_ports_map,
+        cors_map: maps.cors_map,
+        software_map: maps.software_map,
+        takeover_map: maps.takeover_map,
+        cloud_saas_map: maps.cloud_saas_map,
+        cloud_asset_map: maps.cloud_asset_map,
+        social_intel: maps.social_intel,
+        output_dir,
+    };
+    
+    PrettyReportGenerator::generate_markdown_report(&summary)?;
+
+    // Print terminal summary
+    PrettyReportGenerator::print_terminal_summary(&summary);
 
     Ok(())
 }
