@@ -9,6 +9,18 @@ inputs:
     description: "Optional JSON file to store Grype results"
     required: false
     default: ""
+  fail-on:
+    description: "Lowest severity level that should fail the scan"
+    required: false
+    default: "medium"
+  enable-reachability-analysis:
+    description: "Set to true to flag vulnerabilities without reachable call sites as unreachable"
+    required: false
+    default: "false"
+  reachability-function-map:
+    description: "Optional JSON file mapping CVE IDs to vulnerable functions"
+    required: false
+    default: ""
 runs:
   using: "composite"
   steps:
@@ -31,7 +43,14 @@ runs:
     - name: Run security scan
       shell: bash
       run: |
-        ARGS=("${{ inputs.bom-file }}")
+        ARGS=("--fail-on" "${{ inputs.fail-on }}")
+        if [[ "${{ inputs.enable-reachability-analysis }}" == "true" ]]; then
+          ARGS+=("--enable-reachability-analysis" "--source-root" "$GITHUB_WORKSPACE")
+          if [[ -n "${{ inputs.reachability-function-map }}" ]]; then
+            ARGS+=("--function-map" "${{ inputs.reachability-function-map }}")
+          fi
+        fi
+        ARGS+=("${{ inputs.bom-file }}")
         if [[ -n "${{ inputs.report-file }}" ]]; then
           ARGS+=("${{ inputs.report-file }}")
         fi
