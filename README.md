@@ -35,6 +35,10 @@ cargo test --workspace
 
 ShadowMap now includes a minimalist, luxury-inspired landing page that mirrors the in-app experience. The Rust server renders it dynamically with localized pricing and optional Stripe checkout, while a static export in `landing-page/index.html` is ready for Vercel hosting.
 
+### Tech explainer video starter (Remotion)
+
+Need an enterprise-grade motion explainer for internal demos or leadership updates? Start from `remotion-explainer/` and follow `docs/video/enterprise-tech-explainer.md` for the first-principles storyboard and production checklist.
+
 ## Profiling benchmark
 The Hotpath CI workflow expects an example benchmark. You can replay the same workload locally to confirm profiling data is produced:
 
@@ -160,4 +164,3 @@ Use the Slint-powered dashboard to launch scans, review live status messages, an
 - [`docs/security/slsa-whitepaper.md`](docs/security/slsa-whitepaper.md) – Executive overview of the reproducible supply chain strategy.
 - [`docs/org-adaptation.md`](docs/org-adaptation.md) – Roll-out guidance for large teams.
 - [`landing-page/`](landing-page/) – Static marketing page and Vercel deployment metadata.
-

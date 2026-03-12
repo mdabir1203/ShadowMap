@@ -1,0 +1,22 @@
+{
+  "name": "@shadowmap/remotion-explainer",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "yarn@4.4.1",
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion bundle",
+    "render": "remotion render src/index.ts ShadowMapTechExplainer out/shadowmap-tech-explainer.mp4",
+    "test:video": "bash ./scripts/test-and-download.sh"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.230"
+  },
+  "devDependencies": {
+    "@remotion/cli": "4.0.230",
+    "@types/react": "18.3.12",
+    "typescript": "5.6.3"
+  }
+}
